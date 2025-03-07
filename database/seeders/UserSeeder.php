@@ -29,7 +29,8 @@ class UserSeeder extends Seeder
             'poste' => 'accepted',
             'nb_offres' => 4,
             'nbvalidation' => 1,
-            'password' => Hash::make('1234'), // ✅ Mot de passe sécurisé
+            'password' => Hash::make('1234'), // ✅ Mot de passe sécurisé,
+            'role'=>"admin",
         ]);
     }
 }
