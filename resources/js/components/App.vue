@@ -1,181 +1,125 @@
+<script setup>
+import logo from "../../assets/logo.png";
+import search from "../../assets/search.png";
+</script>
+
 <template>
-  <div>
-    <!-- Barre de Navigation -->
+  <div id="app">
     <nav class="navbar">
       <div class="nav-container">
-        <a class="logo">
-          <div class="logo-content">
-            <img class="logo-img" src="C:\laragon\www\PFE_2025\public\images\logo.png" alt="Logo JobGo" />
-          </div>
-        </a>
+        <router-link to="/" class="logo">
+          <img class="logo-img" :src="logo" alt="Logo JobGo" />
+          <p class="jobgo">JobGo</p>
+        </router-link>
 
         <div class="nav-links">
-          <button @click="page = 'home'">Accueil</button>
-          <button @click="page = 'offres'">Nos Offres</button>
-
-          <!-- Mon Espace avec menu déroulant -->
-          <div 
-            class="espace">
-            <button @click="page = 'authentification'">
-              Mon Espace
-              <img class="icon" src="C:\laragon\www\PFE_2025\public\images\login.png" alt="Mon Espace Icon" />
-            </button>
-
-            <!-- Menu déroulant qui apparaît sur survol -->
-            
+          <router-link to="/" class="nav-btn">Accueil</router-link>
+          <router-link to="/Apropos" class="nav-btn">A propos</router-link>
+          <router-link to="/Offres" class="nav-btn">Nos Offres</router-link>
+          <div class="search">
+            <input class="search-input" type="text" placeholder="Trouvez votre job" />
+            <img class="search-img" :src="search" alt="Search" />
           </div>
+          <router-link to="/authentification" class="nav-btn">Mon Espace</router-link>
         </div>
       </div>
     </nav>
 
-    <!-- Contenu Dynamique -->
-    <div>
-      <component :is="currentComponent"></component>
-    </div>
-
-    <!-- Pied de page -->
-    <!--<footer>
-      <p>© 2024 JobGo - Tous droits réservés.</p>
-    </footer>-->
+    <!-- Contenu de la page -->
+    <router-view />
   </div>
 </template>
 
-<script>
-import Home from '../components/Home.vue';
-import Offres from '../components/Offres.vue';
-
-export default {
-  components: { Home, Offres },
-  data() {
-    return {
-      page: 'home',
-      showDropdown: false
-    };
-  },
-  computed: {
-    currentComponent() {
-      return this.page === 'home' ? Home
-           : this.page === 'offres' ? Offres
-           : null;
-    }
-  },
-  methods: {
-    logout() {
-      alert("Déconnexion réussie !");
-      this.page = 'home';
-    },
-    hideDropdownWithDelay() {
-      setTimeout(() => {
-        this.showDropdown = false;
-      }, 200); // Délai pour éviter la fermeture instantanée
-    }
-  }
-};
-</script>
-
 <style scoped>
-/* --- Navigation Bar --- */
+/* Navbar Styling */
 .navbar {
-  background-color: #2c3e50;
-  padding: 15px 30px;
+  background-color: #ffffff;
+  padding: 18px 40px;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .nav-container {
+  width: 100%;
+  max-width: 1440px;
   display: flex;
   align-items: center;
-  width: 100%;
   justify-content: space-between;
 }
 
-.logo-content {
-  display: flex;
-  align-items: center;
-}
-
-.logo-img {
-  height: 50px;
-}
-
-/* --- Navigation Links --- */
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.nav-links button {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 10px 15px;
-  transition: background 0.3s, color 0.3s;
-}
-
-.nav-links button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 5px;
-}
-
-/* --- Dropdown Container --- */
-.espace {
-  position: relative;
-  display: inline-block;
-}
-
-/* --- Bouton Mon Espace --- */
-.espace button {
+.logo {
   display: flex;
   align-items: center;
   gap: 10px;
-  background: none;
-  border: none;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 10px;
-}
-
-.espace .icon {
-  width: 20px;
-  height: 20px;
-}
-
-/* --- Menu déroulant --- */
-.dropdown-content {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background: white;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  border-radius: 5px;
-  min-width: 150px;
-  display: flex;
-  flex-direction: column;
-}
-
-.dropdown-content a {
-  padding: 10px;
   text-decoration: none;
+}
+
+.logo-img {
+  height: 40px;
+  width: auto;
+}
+
+.jobgo {
+  font-family: "Inspiration", cursive;
+  font-size: 26px;
+  color: #2c3e50;
+  margin: 3px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.nav-btn {
+  font-size: 16px;
   color: #333;
-  display: block;
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.dropdown-content a:hover {
-  background: #f1f1f1;
+.nav-btn:hover {
+  background-color: #f0f0f0;
+  color: #0056b3;
 }
 
-/* --- Footer --- */
-/*footer {
-  background: #2c3e50;
-  color: white;
-  text-align: center;
-  padding: 10px;
-  margin-top: 50px;
-}*/
+.search {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.search-input {
+  padding: 8px 14px;
+  border: 1px solid #ccc;
+  border-radius: 30px;
+  font-size: 14px;
+  width: 200px;
+  margin: 0 16px;
+  outline: none;
+}
+
+.search-img {
+  height: 40px;
+  width: auto;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .nav-links {
+    gap: 16px;
+  }
+
+  .search-input {
+    width: 150px;
+  }
+}
 </style>

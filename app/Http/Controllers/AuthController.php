@@ -14,15 +14,17 @@ class AuthController extends Controller
     {
         // Validation des données
         $request->validate([
-            'name' => 'required|string',
+            'prenom' => 'required|string',
+            'nom' => 'required|string',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6',
-            'role' => 'required|in:candidat,recruteur,admin', // Validation du rôle
+            'role' => 'required|in:candidat,recruteur,admin',
         ]);
+        
 
         // Créer un nouvel utilisateur
         $user = User::create([
-            'name' => $request->name,
+            'name' => $request->prenom . ' ' . $request->nom,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role, // Récupérer le rôle

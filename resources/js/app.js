@@ -1,10 +1,13 @@
-import { createApp } from 'vue';
-import App from './components/App.vue'; // ✅ Chemin relatif
+import { createApp } from 'vue'
+import App from './components/App.vue'
+import router from './router'
 
-// 🔥 Import de Bootstrap (CSS et JS)
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+const app = createApp(App)
 
-// 🚀 Création de l'application Vue
-const app = createApp(App);
-app.mount('#app');
+app.use(router)
+app.mount('#app')
+import axios from 'axios';
+
+axios.defaults.baseURL = 'http://localhost:8000';
+axios.defaults.withCredentials = true;
+axios.defaults.headers.common['Accept'] = 'application/json';
