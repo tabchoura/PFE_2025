@@ -1,6 +1,10 @@
 <template>
   <div class="auth-container">
-    <img class="logo-img" :src="télécharger" alt="Logo img" />
+    <!-- Image correctement importée -->
+
+    <div class="image-container">
+      <img :src="hiringImage" alt="Recrutement" class="img" />
+    </div>
 
     <div class="auth-box login-box" v-if="!isSubmitted">
       <h2 class="auth-title">Inscription Candidat</h2>
@@ -42,17 +46,31 @@
             required
           />
           <span class="error-message" v-if="submitted && !email">Email est requis.</span>
+          <span class="error-message" v-if="submitted && email && !isValidEmail"
+            >Format d'email invalide.</span
+          >
         </div>
 
         <div class="input-group">
           <label for="password">Mot de passe</label>
-          <input
-            type="password"
-            v-model="password"
-            id="password"
-            placeholder="Entrez votre mot de passe"
-            required
-          />
+          <div class="password-input-container">
+            <input
+              :type="showPassword ? 'text' : 'password'"
+              v-model="password"
+              id="password"
+              placeholder="Entrez votre mot de passe"
+              required
+            />
+            <button
+              type="button"
+              class="toggle-password"
+              @click="showPassword = !showPassword"
+              aria-label="Afficher/masquer le mot de passe"
+            >
+              <span v-if="!showPassword">👁️</span>
+              <span v-else>🔒</span>
+            </button>
+          </div>
           <span class="error-message" v-if="submitted && !password"
             >Mot de passe est requis.</span
           >
@@ -73,7 +91,7 @@
           <div class="input-group">
             <label for="numtel">Numéro de téléphone</label>
             <input
-              type="text"
+              type="tel"
               v-model="numtel"
               id="numtel"
               placeholder="Votre numéro de téléphone"
@@ -108,11 +126,19 @@
           </div>
         </div>
 
-        <button type="submit" class="btn-submit">S'inscrire</button>
+        <div v-if="apiError" class="error-message global-error">
+          {{ apiError }}
+        </div>
+
+        <button type="submit" class="btn-submit" :disabled="loading">
+          <span v-if="loading">Traitement en cours...</span>
+          <span v-else>S'inscrire</span>
+        </button>
       </form>
     </div>
 
-    <div v-else class="auth-box login-box">
+    <div v-else class="auth-box login-box success-box">
+      <div class="check-icon">✓</div>
       <h2 class="auth-title">Inscription réussie !</h2>
       <div class="welcome-page">
         <h1>Bienvenue, {{ prenom }} ! 🎉</h1>
@@ -120,19 +146,20 @@
           Votre compte a bien été créé. Vous pouvez maintenant accéder à votre espace
           candidat.
         </p>
-        <router-link to="/" class="btn-back">Retour à l'accueil</router-link>
+        <router-link to="/CompteCandidat" class="btn-back"></router-link>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import télécharger from "../../assets/télécharger.jpg";
+import hiringImage from "../../assets/hiring.jpg";
 
 export default {
   name: "RegisterCandidat",
   data() {
     return {
+      hiringImage,
       email: "",
       password: "",
       prenom: "",
@@ -143,11 +170,22 @@ export default {
       numtel: "",
       isSubmitted: false,
       submitted: false,
+      loading: false,
+      apiError: null,
+      showPassword: false,
     };
   },
+  computed: {
+    isValidEmail() {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(this.email);
+    },
+  },
   methods: {
-    async register() {
+    validateForm() {
       this.submitted = true;
+      this.apiError = null;
+
       if (
         !this.email ||
         !this.password ||
@@ -158,45 +196,54 @@ export default {
         !this.date ||
         !this.lieu
       ) {
-        alert("Veuillez remplir tous les champs.");
-        return;
+        return false;
       }
-      try {
-        await fetch("http://localhost:8000/sanctum/csrf-cookie", {
-          credentials: "include",
-        });
-        const response = await fetch("http://localhost:8000/api/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            email: this.email,
-            password: this.password,
-            prenom: this.prenom,
-            nom: this.nom,
-            date_naissance: this.date,
-            lieu_naissance: this.lieu,
-            cin: this.cin,
-            num_tel: this.numtel,
-            role: "candidat",
-          }),
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          alert(data.message || "Erreur lors de l'inscription.");
-          return;
-        }
+
+      if (!this.isValidEmail) {
+        return false;
+      }
+
+      return true;
+    },
+
+    register() {
+      this.submitted = true;
+      if (!this.validateForm()) return;
+
+      this.loading = true;
+
+      // Création de l'objet avec TOUTES les informations du formulaire
+      const candidatData = {
+        nom: this.nom,
+        prenom: this.prenom,
+        email: this.email,
+        numtel: this.numtel,
+        date: this.date,
+        lieu: this.lieu,
+        cin: this.cin,
+        // Ajoutez d'autres champs si nécessaire
+      };
+
+      // Enregistrement dans localStorage
+      localStorage.setItem("candidat", JSON.stringify(candidatData));
+
+      // Simulation d'un délai (comme si c'était une requête API)
+      setTimeout(() => {
+        this.loading = false;
         this.isSubmitted = true;
-      } catch (error) {
-        console.error("Erreur:", error);
-        alert("Erreur réseau, veuillez réessayer.");
-      }
+
+        // La redirection doit se faire après l'affichage du message de succès
+        // pour une meilleure expérience utilisateur
+        setTimeout(() => {
+          this.$router.push({ name: "CompteCandidat" });
+        }, 2000); // Attendre 2 secondes après l'affichage du message de succès
+      }, 1500);
     },
   },
 };
 </script>
 
-<style scoped>
+<style>
 /* ===== Auth Container ===== */
 .auth-container {
   display: flex;
@@ -204,18 +251,47 @@ export default {
   align-items: center;
   min-height: 100vh;
   background-color: #f4f6f9;
-  padding: 20px;
+  padding: 33px;
   box-sizing: border-box;
+  margin-left: 20px;
+  flex-direction: row; /* Place image and form side by side */
+  gap: 30px; /* Space between image and form */
+}
+
+.image-container {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.img {
+  max-width: 80%; /* Adjust the image size */
+  height: auto;
+  object-fit: contain;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  position: relative;
+  border-radius: 15%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
 }
 
 .auth-box {
   background: #fff;
   border-radius: 12px;
-  max-width: 600px;
+  max-width: 480px;
   width: 100%;
   padding: 40px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  transition: 0.3s ease;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid #ddd;
+  text-align: center;
 }
 
 .auth-title {
@@ -226,108 +302,18 @@ export default {
   text-align: center;
 }
 
-/* Form Fields Styles */
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  margin-bottom: 30px;
-  text-align: left;
-}
-
-.input-group input {
-  width: 100%;
-  padding: 14px 16px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 1rem;
-  color: #333;
-  background-color: #fafafa;
-  transition: all 0.3s ease;
-}
-
-.input-group input:focus {
-  border-color: #3d63ea;
-  outline: none;
-  background-color: #fff;
-  box-shadow: 0 0 5px rgba(61, 99, 234, 0.4);
-}
-
-/* Error message style */
-.error-message {
-  color: #e74c3c;
-  font-size: 0.875rem;
-  margin-top: 5px;
-  margin-bottom: 10px;
-}
-
-/* Grid Styles for Form */
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-}
-
-/* Submit Button Styles */
-.btn-submit {
-  width: 100%;
-  padding: 14px;
-  background: linear-gradient(90deg, #3d63ea, #506df5);
-  border: none;
-  color: white;
-  font-size: 1.1rem;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-top: 16px;
-  transition: background-color 0.3s ease;
-}
-
-.btn-submit:hover {
-  background: #2f53d6;
-}
-
-/* Success and Back Buttons */
-.btn-back {
-  margin-top: 1rem;
-  display: inline-block;
-  background-color: #3d63ea;
-  color: #fff;
-  padding: 10px 20px;
-  border-radius: 8px;
-  text-decoration: none;
-}
-
-.btn-back:hover {
-  background-color: #2f53d6;
-}
-
-.welcome-page {
-  text-align: center;
-}
-.logo-img {
-  height: 50px;
-  width: auto;
-  transition: transform 0.3s ease;
-}
-
-/* ===== Responsive Styles ===== */
+/* Add responsive styles */
 @media (max-width: 768px) {
-  .auth-box {
-    padding: 30px;
-    width: 100%;
+  .auth-container {
+    flex-direction: column; /* Stack the image and form vertically on smaller screens */
   }
 
-  .input-group input {
-    padding: 12px 14px;
-    margin-right: 20px;
+  .image-container {
+    margin-bottom: 20px; /* Space between image and form */
   }
 
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .btn-submit {
-    font-size: 1rem;
+  .img {
+    max-width: 80%;
   }
 }
 </style>

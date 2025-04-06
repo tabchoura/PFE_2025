@@ -398,5 +398,76 @@ export default {
   .btn-submit {
     font-size: 1rem;
   }
+} /* ===== Auth Container ===== */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f4f6f9;
+  padding: 33px;
+  box-sizing: border-box;
+  margin-left: 20px;
+  flex-direction: row; /* Place image and form side by side */
+  gap: 30px; /* Space between image and form */
+}
+
+.image-container {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.img {
+  max-width: 80%; /* Adjust the image size */
+  height: auto;
+  object-fit: contain;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  position: relative;
+  border-radius: 15%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+.auth-box {
+  background: #fff;
+  border-radius: 12px;
+  max-width: 480px;
+  width: 100%;
+  padding: 40px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+.auth-title {
+  font-size: 1.8rem;
+  margin-bottom: 24px;
+  color: #2c3e50;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Add responsive styles */
+@media (max-width: 768px) {
+  .auth-container {
+    flex-direction: column; /* Stack the image and form vertically on smaller screens */
+  }
+
+  .image-container {
+    margin-bottom: 20px; /* Space between image and form */
+  }
+
+  .img {
+    max-width: 80%;
+  }
 }
 </style>
