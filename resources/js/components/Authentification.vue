@@ -195,6 +195,23 @@ export default {
       this.page = "compteCandidat";
     },
   },
+  mounted() {
+    // Check if user is already logged in
+    const userSession =
+      localStorage.getItem("userSession") || sessionStorage.getItem("userSession");
+    if (userSession) {
+      const userData = JSON.parse(userSession);
+      this.isRecruteur = userData.type === "recruteur";
+      this.email = userData.email;
+
+      // Auto redirect to dashboard if session exists
+      if (this.isRecruteur) {
+        this.$router.push("/dashboard-recruteur");
+      } else {
+        this.page = "compteCandidat";
+      }
+    }
+  },
 };
 </script>
 

@@ -1,158 +1,147 @@
 <template>
-  <div class="monprofil-container">
-    <h2>👤 Modifier mon profil</h2>
-    <form @submit.prevent="submitForm" class="profil-form">
-      <!-- Infos personnelles -->
+  <div class="profil-container">
+    <h2>👤 Bienvenue {{ profile.prenom }} {{ profile.nom }}</h2>
+
+    <ul class="profil-details" v-if="!editMode">
+      <li><strong>Date de naissance :</strong> {{ profile.date }}</li>
+      <li><strong>Numéro de téléphone :</strong> {{ profile.numtel }}</li>
+      <li><strong>CIN :</strong> {{ profile.cin }}</li>
+      <li><strong>Lieu de naissance :</strong> {{ profile.lieu }}</li>
+      <li><strong>Email :</strong> {{ profile.email }}</li>
+    </ul>
+
+    <button class="btn-edit" @click="editMode = !editMode">
+      {{ editMode ? "❌ Annuler" : "✏️ Modifier le profil" }}
+    </button>
+
+    <form v-if="editMode" @submit.prevent="updateProfile" class="edit-form">
       <div class="form-group">
-        <label for="infopersonnels">Infos personnelles *</label>
-        <textarea v-model="formData.infopersonnels" id="infopersonnels" rows="2" />
-        <span v-if="errors.infopersonnels" class="error">{{
-          errors.infopersonnels
-        }}</span>
+        <label>Nom</label>
+        <input type="text" v-model="form.nom" />
+      </div>
+      <div class="form-group">
+        <label>Prénom</label>
+        <input type="text" v-model="form.prenom" />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" v-model="form.email" />
+      </div>
+      <div class="form-group">
+        <label>Téléphone</label>
+        <input type="tel" v-model="form.numtel" />
+      </div>
+      <div class="form-group">
+        <label>Date de naissance</label>
+        <input type="date" v-model="form.date" />
+      </div>
+      <div class="form-group">
+        <label>Lieu de naissance</label>
+        <input type="text" v-model="form.lieu" />
+      </div>
+      <div class="form-group">
+        <label>CIN</label>
+        <input type="text" v-model="form.cin" />
       </div>
 
-      <!-- Diplômes -->
-      <div class="form-group">
-        <label for="diplomes">Diplômes</label>
-        <input v-model="formData.diplomes" type="text" id="diplomes" />
-      </div>
-
-      <!-- Expériences -->
-      <div class="form-group">
-        <label for="experiences">Expériences</label>
-        <input v-model="formData.experiences" type="text" id="experiences" />
-      </div>
-
-      <!-- Compétences -->
-      <div class="form-group">
-        <label for="competences">Compétences</label>
-        <input v-model="formData.competences" type="text" id="competences" />
-      </div>
-
-      <!-- Langues -->
-      <div class="form-group">
-        <label for="langues">Langues</label>
-        <input v-model="formData.langues" type="text" id="langues" />
-      </div>
-
-      <!-- Upload de fichier -->
-      <div class="form-group">
-        <label for="fichier">Joindre un CV (PDF, Word)</label>
-        <input type="file" id="fichier" @change="handleFileUpload" />
-        <div v-if="formData.fichier" class="file-preview">
-          <span>{{ formData.fichier.name }}</span>
-          <button type="button" @click="removeFile">Supprimer</button>
-        </div>
-        <span v-if="errors.fichier" class="error">{{ errors.fichier }}</span>
-      </div>
-
-      <!-- Bouton de soumission -->
-      <button type="submit" :disabled="isSubmitting">
-        {{ isSubmitting ? "Envoi en cours..." : "Mettre à jour" }}
-      </button>
+      <button type="submit" class="btn-save">💾 Enregistrer</button>
     </form>
   </div>
 </template>
 
 <script>
-const ALLOWED_FILE_TYPES = [
-  "application/pdf",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-];
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-
 export default {
   name: "Monprofile",
   data() {
     return {
-      formData: {
-        infopersonnels: "",
-        diplomes: "",
-        experiences: "",
-        competences: "",
-        langues: "",
-        fichier: null,
+      profile: {
+        nom: "",
+        prenom: "",
+        email: "",
+        date: "",
+        lieu: "",
+        cin: "",
+        numtel: "",
       },
-      errors: {},
-      isSubmitting: false,
+      form: {}, // Pour le formulaire d'édition
+      editMode: false,
     };
   },
   mounted() {
-    this.loadProfile();
+    const candidat = JSON.parse(localStorage.getItem("candidat"));
+    if (candidat) {
+      this.profile = { ...this.profile, ...candidat };
+      this.form = { ...this.profile }; // Initialiser le formulaire avec les mêmes données
+    }
   },
   methods: {
-    loadProfile() {
-      const existingData = {
-        infopersonnels: "Étudiant en informatique",
-        diplomes: "Master en Data Science",
-        experiences: "Stage chez Capgemini",
-        competences: "Python, SQL",
-        langues: "Français, Anglais",
-      };
-
-      this.formData = { ...this.formData, ...existingData };
-    },
-
-    validateForm() {
-      this.errors = {};
-
-      if (!this.formData.infopersonnels.trim()) {
-        this.errors.infopersonnels = "Ce champ est requis";
-      }
-
-      if (this.formData.fichier) {
-        if (!ALLOWED_FILE_TYPES.includes(this.formData.fichier.type)) {
-          this.errors.fichier = "Formats acceptés : PDF, Word";
-        }
-        if (this.formData.fichier.size > MAX_FILE_SIZE) {
-          this.errors.fichier = "Fichier trop volumineux (max 5MB)";
-        }
-      }
-
-      return Object.keys(this.errors).length === 0;
-    },
-
-    handleFileUpload(event) {
-      const file = event.target.files[0];
-      if (file) {
-        this.formData.fichier = file;
-        this.errors.fichier = "";
-      }
-    },
-
-    removeFile() {
-      this.formData.fichier = null;
-      this.errors.fichier = "";
-    },
-
-    async submitForm() {
-      if (!this.validateForm()) return;
-      this.isSubmitting = true;
-
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        alert("Profil mis à jour avec succès !");
-      } catch (error) {
-        alert("Une erreur est survenue");
-      } finally {
-        this.isSubmitting = false;
-      }
+    updateProfile() {
+      this.profile = { ...this.form };
+      localStorage.setItem("candidat", JSON.stringify(this.profile));
+      this.editMode = false;
+      alert("✅ Profil mis à jour !");
     },
   },
 };
 </script>
 
 <style scoped>
-.monprofil-container {
+.profil-container {
   max-width: 600px;
-  margin: auto;
+  margin: 40px auto;
+  background: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+  font-family: Arial, sans-serif;
 }
 
-.profil-form {
+h2 {
+  margin-bottom: 20px;
+  color: #2563eb;
+}
+
+.profil-details {
+  list-style: none;
+  padding: 0;
+  font-size: 1rem;
+}
+
+.profil-details li {
+  margin-bottom: 10px;
+  padding-left: 10px;
+  position: relative;
+}
+
+.profil-details li::before {
+  content: "•";
+  color: #2563eb;
+  font-weight: bold;
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
+}
+
+.btn-edit {
+  margin-top: 20px;
+  background-color: #2563eb;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-edit:hover {
+  background-color: #1e40af;
+}
+
+.edit-form {
+  margin-top: 25px;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 15px;
 }
 
 .form-group {
@@ -160,47 +149,24 @@ export default {
   flex-direction: column;
 }
 
-textarea,
-input[type="text"],
-input[type="file"] {
-  padding: 0.5rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
+input {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
 }
 
-label {
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.error {
-  color: #dc2626;
-  font-size: 0.875rem;
-}
-
-button[type="submit"] {
-  background-color: #2563eb;
+.btn-save {
+  margin-top: 10px;
+  background-color: #16a34a;
   color: white;
-  font-weight: 600;
-  padding: 0.75rem;
+  padding: 10px 16px;
   border: none;
-  border-radius: 0.375rem;
+  border-radius: 6px;
+  font-weight: bold;
   cursor: pointer;
-  transition: background 0.2s ease;
 }
 
-button[type="submit"]:disabled {
-  background-color: #93c5fd;
-  cursor: not-allowed;
-}
-
-.file-preview {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f3f4f6;
-  padding: 0.5rem;
-  border-radius: 0.375rem;
-  margin-top: 0.5rem;
+.btn-save:hover {
+  background-color: #15803d;
 }
 </style>

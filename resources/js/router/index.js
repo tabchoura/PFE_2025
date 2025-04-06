@@ -1,4 +1,3 @@
-
 import { createRouter, createWebHistory } from 'vue-router'
 
 import Home from '@/components/Home.vue'
@@ -15,21 +14,17 @@ const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/offres', name: 'Offres', component: Offres },
   { path: '/authentification', name: 'Authentification', component: Authentification },
-  { path: '/RegisterCandidat', name: 'RegisterCandidat', component: RegisterCandidat },
-  { path: '/RegisterRecruteur', name: 'RegisterRecruteut', component: RegisterRecruteur },
-  {path :'/Apropos', name:'Apropos' , component:Apropos},
-  {path :'/CompteCandidat', name:'CompteCandidat' , component:CompteCandidat ,  props: true} ,
-  {path :'/Monprofile', name:'Monprofile' , component:Monprofile ,  props: true} ,
-  {path :'/Candidature', name:'Candidature' , component:Candidature ,  props: true} ,
-
-
-
+  { path: '/register-candidat', name: 'RegisterCandidat', component: RegisterCandidat },
+  { path: '/register-recruteur', name: 'RegisterRecruteur', component: RegisterRecruteur },
+  { path: '/apropos', name: 'Apropos', component: Apropos },
+  { path: '/compte-candidat', name: 'CompteCandidat', component: CompteCandidat, props: true },
+  { path: '/mon-profile', name: 'Monprofile', component: Monprofile, props: true },
+  { path: '/candidature', name: 'Candidature', component: Candidature, props: true }
 ]
 
-  
-  const router = createRouter({
-    history: createWebHistory(),
-    routes
-  })
-  
-  export default router
+const router = createRouter({
+  history: createWebHistory(),
+  routes
+})
+
+export default router

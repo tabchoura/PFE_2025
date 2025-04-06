@@ -1,219 +1,107 @@
 <template>
-  <div class="dashboard-container">
-    <!-- Sidebar -->
+  <div class="mon-espace">
     <aside class="sidebar">
-      <div class="sidebar-header">
-        <div class="welcome-box">
-          <h2 class="welcome-title">Bienvenue 👋</h2>
-          <p class="welcome-user">{{ profile.prenom }} {{ profile.nom }}</p>
-        </div>
-      </div>
-      <nav class="nav-links">
-        <button
-          v-for="section in navigationSections"
-          :key="section.id"
-          class="nav-btn"
-          :class="{
-            active: currentSection === section.id,
-            'logout-btn': section.id === 'logout',
-          }"
-          @click="handleNavigation(section.id)"
-          :aria-label="`Naviguer vers ${section.name}`"
+      <h2>Mon Espace</h2>
+      <ul>
+        <li @click="current = 'profil'" :class="{ active: current === 'profil' }">
+          Mon profil
+        </li>
+        <li
+          @click="current = 'candidatures'"
+          :class="{ active: current === 'candidatures' }"
         >
-          <i :class="section.icon" />
-          <span>{{ section.name }}</span>
-        </button>
-      </nav>
+          Mes candidatures
+        </li>
+        <li @click="current = 'entretiens'" :class="{ active: current === 'entretiens' }">
+          Mes entretiens
+        </li>
+        <li @click="current = 'offres'" :class="{ active: current === 'offres' }">
+          Mes offres
+        </li>
+        <li @click="current = 'documents'" :class="{ active: current === 'documents' }">
+          Mes CV & Lettres
+        </li>
+        <li @click="logout">Déconnexion</li>
+      </ul>
     </aside>
 
-    <!-- Main content -->
-    <main class="main-content">
-      <div class="content-card">
-        <component :is="currentComponent" />
-      </div>
+    <main class="content">
+      <component :is="currentComponent" />
     </main>
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed } from "vue";
 import Monprofile from "../components/Monprofile.vue";
 import Candidature from "../components/Candidature.vue";
 import Entretiens from "../components/Entretiens.vue";
+import Mesoffres from "../components/Mesoffres.vue";
+import MesCvEtLettres from "../components/MesCvEtLettres.vue";
 
-import Test from "../components/Test.vue";
+const current = ref("profil");
 
-export default {
-  name: "CandidateProfile",
-  components: {
-    Monprofile,
-    Candidature,
-    Test,
-    Entretiens,
-  },
+const currentComponent = computed(() => {
+  return (
+    {
+      profil: Monprofile,
+      candidatures: Candidature,
+      entretiens: Entretiens,
+      offres: Mesoffres,
+      documents: MesCvEtLettres,
+    }[current.value] || Monprofile
+  );
+});
 
-  data() {
-    return {
-      profile: {
-        nom: "",
-        prenom: "",
-      },
-      currentSection: "profile",
-      navigationSections: [
-        { id: "profile", name: "Mon profil", icon: "fas fa-user" },
-        { id: "applications", name: "Mes candidatures", icon: "fas fa-briefcase" },
-        { id: "tests", name: "Mes tests", icon: "fas fa-vial" },
-        { id: "interviews", name: "Mes entretiens", icon: "fas fa-calendar-alt" },
-        { id: "cv", name: "Creer un cv ", icon: "fas fa-graduation-cap" },
-        { id: "lettre", name: "Creer lettre de motivation", icon: "fas fa-cog" },
-        { id: "logout", name: "Déconnexion", icon: "fas fa-sign-out-alt" },
-      ],
-    };
-  },
-
-  computed: {
-    currentComponent() {
-      const map = {
-        profile: this.$options.components.Monprofile,
-        applications: this.$options.components.Candidature,
-        tests: this.$options.components.Test,
-        interviews: this.$options.components.Entretiens,
-      };
-
-      return (
-        map[this.currentSection] || {
-          template: "<div><p>📌 Composant introuvable.</p></div>",
-        }
-      );
-    },
-  },
-
-  mounted() {
-    const data = JSON.parse(localStorage.getItem("candidat") || "{}");
-    this.profile.nom = data.nom || "";
-    this.profile.prenom = data.prenom || "";
-  },
-
-  methods: {
-    handleNavigation(sectionId) {
-      if (sectionId === "logout") {
-        this.logout();
-      } else {
-        this.currentSection = sectionId;
-      }
-    },
-    logout() {
-      localStorage.removeItem("candidat");
-      alert("Vous avez été déconnecté(e).");
-      window.location.href = "/login";
-    },
-  },
-};
+function logout() {
+  localStorage.clear();
+  window.location.href = "/authentification";
+}
 </script>
 
 <style scoped>
-.dashboard-container {
+.mon-espace {
   display: flex;
   min-height: 100vh;
-  background-color: #f3f4f6;
+  font-family: Arial, sans-serif;
 }
 
 .sidebar {
-  width: 16rem;
-  background-color: #fff;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
-  padding: 1.25rem;
-  display: none;
+  width: 250px;
+  background-color: #f4f6f8;
+  padding: 20px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
 }
 
-@media (min-width: 768px) {
-  .sidebar {
-    display: block;
-    flex-shrink: 0;
-  }
+.sidebar h2 {
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+  color: #0055a5;
 }
 
-.sidebar-header {
-  margin-bottom: 2rem;
+.sidebar ul {
+  list-style: none;
+  padding: 0;
 }
 
-.welcome-box {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.welcome-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1f2937;
-}
-
-.welcome-user {
-  font-size: 1rem;
-  font-weight: bold;
-  color: #2563eb;
-}
-
-.nav-links {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.nav-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-weight: 500;
-  background: transparent;
-  border: none;
-  padding: 0.75rem;
-  width: 100%;
-  text-align: left;
-  color: #374151;
-  border-radius: 0.5rem;
+.sidebar li {
+  padding: 12px;
   cursor: pointer;
-  transition: background 0.2s ease;
+  border-radius: 5px;
+  margin-bottom: 8px;
+  color: #333;
+  transition: 0.2s;
 }
 
-.nav-btn:hover {
-  background-color: #f0f4ff;
-  color: #2563eb;
+.sidebar li.active,
+.sidebar li:hover {
+  background-color: #e1ecf8;
+  color: #0055a5;
 }
 
-.nav-btn.active {
-  background-color: #e0e7ff;
-  color: #2563eb;
-  font-weight: 600;
-}
-
-.logout-btn {
-  background-color: #fee2e2;
-  color: #b91c1c;
-  font-weight: 600;
-}
-
-.logout-btn:hover {
-  background-color: #fecaca;
-  color: #991b1b;
-}
-
-.main-content {
+.content {
   flex: 1;
-  padding: 1rem;
-  background-color: #f9fafb;
-}
-
-@media (min-width: 768px) {
-  .main-content {
-    padding: 2.5rem;
-    margin-left: 16rem;
-  }
-}
-
-.content-card {
-  background-color: #ffffff;
-  border-radius: 0.5rem;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 40px;
+  background: #ffffff;
 }
 </style>
