@@ -35,21 +35,24 @@ import search from "../../assets/search.png";
 .navbar {
   background-color: #ffffff;
   padding: 18px 40px;
+  margin-bottom: 20px;
   display: flex;
-  justify-content: center;
+  justify-content: space-between; /* Changer de center à space-between pour espacer les éléments */
   align-items: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  position: sticky;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Ombre plus douce */
+  position: fixed;
   top: 0;
+  width: 100%; /* Assurer que la navbar occupe toute la largeur */
   z-index: 1000;
 }
 
 .nav-container {
   width: 100%;
-  max-width: 1440px;
+  max-width: 1440px; /* Limiter la largeur du conteneur pour les grands écrans */
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 0 20px; /* Espacement à gauche et à droite */
 }
 
 .logo {

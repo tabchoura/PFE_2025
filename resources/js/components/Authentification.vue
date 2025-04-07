@@ -1,26 +1,20 @@
 <template>
   <div class="auth-container">
     <div class="login-layout">
-      <!-- Image à gauche -->
       <div class="image-container">
         <img :src="recrutlogin" alt="Plateforme de recrutement" class="img" />
       </div>
 
       <!-- Formulaire à droite -->
       <div class="form-container">
-        <!-- Formulaire de Connexion -->
         <div class="auth-box login-box" v-if="page === 'login'">
           <h2 class="auth-title">Connexion à votre espace</h2>
 
-          <!-- Toggle Candidat / Recruteur avec animation améliorée -->
+          <!-- Toggle Candidat / Recruteur -->
           <div class="toggle-container">
             <span :class="{ active: !isRecruteur }">Candidat</span>
-            <label class="switch" role="switch" :aria-checked="isRecruteur">
-              <input
-                type="checkbox"
-                v-model="isRecruteur"
-                aria-label="Basculer entre Candidat et Recruteur"
-              />
+            <label class="switch">
+              <input type="checkbox" v-model="isRecruteur" />
               <span class="slider round"></span>
             </label>
             <span :class="{ active: isRecruteur }">Recruteur</span>
@@ -35,10 +29,8 @@
                   type="email"
                   v-model="email"
                   id="email"
-                  placeholder="Entrez votre email"
                   required
                   :class="{ 'error-input': emailError }"
-                  aria-required="true"
                   @input="emailError = false"
                 />
               </div>
@@ -53,17 +45,14 @@
                   :type="showPassword ? 'text' : 'password'"
                   v-model="password"
                   id="password"
-                  placeholder="Entrez votre mot de passe"
                   required
                   :class="{ 'error-input': passwordError }"
-                  aria-required="true"
                   @input="passwordError = false"
                 />
                 <button
                   type="button"
                   class="toggle-password"
                   @click="showPassword = !showPassword"
-                  aria-label="Afficher/masquer le mot de passe"
                 >
                   <i :class="showPassword ? 'fa fa-eye-slash' : 'fa fa-eye'"></i>
                 </button>
@@ -74,7 +63,6 @@
             <div class="remember-forgot">
               <label class="remember-me">
                 <input type="checkbox" v-model="rememberMe" />
-                <span class="checkmark"></span>
                 Se souvenir de moi
               </label>
               <a href="#" class="forgot-password">Mot de passe oublié?</a>
@@ -104,11 +92,6 @@
     <div v-if="page === 'registerRecruteur'">
       <RegisterRecruteur @registration-complete="handleRegistrationComplete" />
     </div>
-
-    <!-- Page compte candidat -->
-    <div v-if="page === 'compteCandidat'">
-      <CompteCandidat />
-    </div>
   </div>
 </template>
 
@@ -116,12 +99,10 @@
 import recrutlogin from "../../assets/recrutlogin.jpg";
 import RegisterCandidat from "../components/RegisterCandidat.vue";
 import RegisterRecruteur from "../components/RegisterRecruteur.vue";
-import CompteCandidat from "../components/CompteCandidat.vue";
 
 export default {
   components: {
     RegisterCandidat,
-    CompteCandidat,
     RegisterRecruteur,
   },
   data() {
@@ -140,28 +121,17 @@ export default {
   },
   methods: {
     validateForm() {
-      let isValid = true;
-
-      // Validation email avec regex
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       this.emailError = !emailRegex.test(this.email);
-
-      // Validation du mot de passe
       this.passwordError = this.password.length < 6;
-
       return !this.emailError && !this.passwordError;
     },
     login() {
-      if (!this.validateForm()) {
-        return;
-      }
+      if (!this.validateForm()) return;
 
       this.isLoading = true;
-      console.log("Connexion en tant que", this.isRecruteur ? "Recruteur" : "Candidat");
 
-      // Simulation d'une authentification
       setTimeout(() => {
-        // Store user type and basic info in localStorage for persistence
         const userType = this.isRecruteur ? "recruteur" : "candidat";
         const userData = {
           email: this.email,
@@ -169,46 +139,43 @@ export default {
           lastLogin: new Date().toISOString(),
         };
 
-        if (this.rememberMe) {
-          localStorage.setItem("userSession", JSON.stringify(userData));
-        } else {
-          sessionStorage.setItem("userSession", JSON.stringify(userData));
-        }
+        const storage = this.rememberMe ? localStorage : sessionStorage;
+        storage.setItem("userSession", JSON.stringify(userData));
 
         this.isLoading = false;
 
-        // Redirect to appropriate dashboard
+        // Redirection vers la nouvelle URL
         if (this.isRecruteur) {
-          this.$router.push("/dashboard-recruteur");
+          this.$router.push("/CompteRecruteur");
         } else {
-          this.page = "compteCandidat";
+          this.$router.push("/CompteCandidat");
         }
       }, 1500);
     },
     goToSignup() {
-      // Change la page pour afficher le formulaire d'inscription selon le type d'utilisateur
       this.page = this.isRecruteur ? "registerRecruteur" : "registerCandidat";
     },
     handleRegistrationComplete(userData) {
-      // Handle successful registration
-      console.log("Registration complete", userData);
-      this.page = "compteCandidat";
+      console.log("Inscription terminée :", userData);
+      if (userData.type === "recruteur") {
+        this.$router.push("/CompteRecruteur");
+      } else {
+        this.$router.push("/CompteCandidat");
+      }
     },
   },
   mounted() {
-    // Check if user is already logged in
-    const userSession =
+    const session =
       localStorage.getItem("userSession") || sessionStorage.getItem("userSession");
-    if (userSession) {
-      const userData = JSON.parse(userSession);
-      this.isRecruteur = userData.type === "recruteur";
-      this.email = userData.email;
 
-      // Auto redirect to dashboard if session exists
-      if (this.isRecruteur) {
-        this.$router.push("/dashboard-recruteur");
+    if (session) {
+      const user = JSON.parse(session);
+      this.email = user.email;
+      this.isRecruteur = user.type === "recruteur";
+      if (user.type === "recruteur") {
+        this.$router.push("/CompteRecruteur");
       } else {
-        this.page = "compteCandidat";
+        this.$router.push("/CompteCandidat");
       }
     }
   },
@@ -224,8 +191,10 @@ export default {
   min-height: 100vh;
   background-color: #f4f6f9;
   padding: 20px;
+  margin-top: 80px;
   box-sizing: border-box;
   text-align: left;
+
   flex-direction: column;
 }
 
@@ -236,8 +205,9 @@ export default {
   justify-content: center;
   gap: 30px;
   max-width: 1200px;
-  margin: 0 auto;
+  margin: 20px auto;
   width: 100%;
+  padding: 20px;
 }
 
 .image-container {
@@ -249,19 +219,19 @@ export default {
 
 .form-container {
   flex: 1;
+  max-width: 500px;
 }
 
 /* ===== Auth Box Styles ===== */
 .auth-box {
   background: #fff;
   border-radius: 12px;
-  max-width: 480px;
   width: 100%;
   padding: 40px;
   box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
   border: 1px solid #eaedf3;
   text-align: center;
+  transition: all 0.3s ease;
 }
 
 .auth-box:hover {
@@ -270,11 +240,10 @@ export default {
 }
 
 .auth-title {
-  font-size: 1.8rem;
-  margin-bottom: 20px;
-  color: #2c3e50;
+  font-size: 2rem;
+  margin-bottom: 25px;
+  color: #333;
   font-weight: 600;
-  letter-spacing: 0.5px;
 }
 
 /* ===== Toggle Candidat / Recruteur ===== */
@@ -420,7 +389,7 @@ input:checked + .slider:before {
   margin-top: 5px;
 }
 
-/* Remember me and forgot password */
+/* ===== Remember me and forgot password ===== */
 .remember-forgot {
   display: flex;
   justify-content: space-between;

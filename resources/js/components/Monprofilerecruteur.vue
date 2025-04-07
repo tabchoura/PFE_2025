@@ -6,8 +6,10 @@
       <li><strong>Date de naissance :</strong> {{ formatDate(profile.date) }}</li>
       <li><strong>Numéro de téléphone :</strong> {{ profile.numtel }}</li>
       <li><strong>CIN :</strong> {{ profile.cin }}</li>
-      <li><strong>Lieu de naissance :</strong> {{ profile.lieu }}</li>
       <li><strong>Email :</strong> {{ profile.email }}</li>
+      <li><strong>Nom de la Société</strong>{{ profile.nomsociete }}</li>
+      <li><strong>Num Société</strong>{{ profile.numsociete }}</li>
+      <li><strong>lieu de la Société</strong>{{ profile.lieu }}</li>
     </ul>
 
     <button
@@ -32,33 +34,28 @@
         <input type="email" id="email" v-model="form.email" required />
       </div>
       <div class="form-group">
-        <label for="numtel">Téléphone</label>
-        <input
-          type="tel"
-          id="numtel"
-          v-model="form.numtel"
-          required
-          pattern="[0-9]{8,}"
-          title="Numéro de téléphone valide (minimum 8 chiffres)"
-        />
+        <label for="nom">Nom de la Société</label>
+        <input type="text" id="nomsociete" v-model="form.nomsociete" required />
       </div>
+
       <div class="form-group">
-        <label for="date">Date de naissance</label>
-        <input type="date" id="date" v-model="form.date" required />
-      </div>
-      <div class="form-group">
-        <label for="lieu">Lieu de naissance</label>
+        <label for="lieu">Localisation de la Société</label>
         <input type="text" id="lieu" v-model="form.lieu" required />
       </div>
       <div class="form-group">
         <label for="cin">CIN</label>
+        <input type="text" id="cin" v-model="form.cin" required pattern="[0-9]+"
+        title="CIN doit contenir uniquement des chiffres"
+      </div>
+      <div class="form-group">
+        <label for="numsociété">Numéro de la Société</label>
         <input
-          type="text"
-          id="cin"
-          v-model="form.cin"
+          type="tel"
+          id="numsociete"
+          v-model="form.numsociete"
           required
-          pattern="[0-9]+"
-          title="CIN doit contenir uniquement des chiffres"
+          pattern="[0-9]{8,}"
+          title="Numéro de téléphone valide (minimum 8 chiffres)"
         />
       </div>
 
