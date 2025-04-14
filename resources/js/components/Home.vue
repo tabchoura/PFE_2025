@@ -1,26 +1,27 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import home from "../../assets/home.jpg"; // Image commune pour l'illustration générale
-import candidat from "../../assets/candidat.jpg"; // Image spécifique pour "candidat"
+import home from "../../assets/recrutementapp.png";
+import candidat from "../../assets/candidat.jpg";
 import recruteur from "../../assets/recruteur.jpg";
+
 const showPopup = ref(false);
-const selectedRole = ref("");
+const isRecruteur = ref("");
 const router = useRouter();
 
-const togglePopup = () => {
+function togglePopup() {
   showPopup.value = true;
-};
+}
 
 const closePopup = () => {
   showPopup.value = false;
-  selectedRole.value = "";
+  isRecruteur.value = "";
 };
 
 const continueAs = () => {
-  if (selectedRole.value === "candidat") {
+  if (isRecruteur.value === "candidat") {
     router.push("/RegisterCandidat");
-  } else if (selectedRole.value === "recruteur") {
+  } else if (isRecruteur.value === "recruteur") {
     router.push("/RegisterRecruteur");
   }
 };
@@ -37,30 +38,43 @@ const continueAs = () => {
         Explorez nos offres d’emploi, créez votre CV ou déposez-le directement pour
         commencer votre carrière.
       </p>
-
       <button @click="togglePopup" class="btn">Commencer par ici</button>
 
       <!-- ✅ POPUP -->
       <div v-if="showPopup" class="popup-overlay">
-        <div class="popup-box">
-          <button class="close-btn" @click="closePopup">×</button>
+        <div class="popup-box" role="dialog" aria-modal="true">
+          <button class="close-btn" @click="closePopup" aria-label="Fermer la fenêtre">×</button>
           <p class="popup-title">Vous êtes :</p>
 
-          <!-- Option Candidat -->
-          <label class="radio-option" :class="{ active: selectedRole === 'candidat' }">
-            <img class="role-img" :src="candidat" alt="illustration candidat" />
-            <input type="radio" value="candidat" v-model="selectedRole" />
-            <span>Candidat</span>
-          </label>
+          <div class="radio-group-horizontal" role="radiogroup" aria-label="Choix de type d'utilisateur">
+            <!-- Option Candidat -->
+            <label
+              class="radio-option"
+              :class="{ active: isRecruteur === 'candidat' }"
+              :aria-checked="isRecruteur === 'candidat'"
+              role="radio"
+              tabindex="0"
+            >
+              <img class="role-img" :src="candidat" alt="Icône représentant un candidat" />
+              <input type="radio" value="candidat" v-model="isRecruteur" />
+              <span>Candidat</span>
+            </label>
 
-          <!-- Option Recruteur -->
-          <label class="radio-option" :class="{ active: selectedRole === 'recruteur' }">
-            <img class="role-img" :src="recruteur" alt="illustration recruteur" />
-            <input type="radio" value="recruteur" v-model="selectedRole" />
-            <span>Recruteur</span>
-          </label>
+            <!-- Option Recruteur -->
+            <label
+              class="radio-option"
+              :class="{ active: isRecruteur === 'recruteur' }"
+              :aria-checked="isRecruteur === 'recruteur'"
+              role="radio"
+              tabindex="0"
+            >
+              <img class="role-img" :src="recruteur" alt="Icône représentant un recruteur" />
+              <input type="radio" value="recruteur" v-model="isRecruteur" />
+              <span>Recruteur</span>
+            </label>
+          </div>
 
-          <button class="btn-continue" :disabled="!selectedRole" @click="continueAs">
+          <button class="btn-continue" :disabled="!isRecruteur" @click="continueAs">
             Continuer
           </button>
         </div>
@@ -68,7 +82,7 @@ const continueAs = () => {
     </div>
 
     <div class="image-content">
-      <img class="recrut-img" :src="home" alt="illustration recrutement" />
+      <img class="recrut-img" :src="home" alt="Illustration de recrutement" />
     </div>
   </div>
 </template>
@@ -80,9 +94,13 @@ const continueAs = () => {
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   align-items: center;
   gap: 3rem;
-  padding: clamp(3rem, 6vw, 5rem);
   max-width: 1440px;
   margin: 0 auto;
+  padding: 0;
+}
+
+.text-content {
+  padding: clamp(2rem, 5vw, 4rem);
 }
 
 h1 {
@@ -92,20 +110,7 @@ h1 {
   font-weight: 800;
   font-family: "Inter", sans-serif;
   margin-bottom: 4rem;
-}
-.recrut-img {
-  width: 100%; /* Utiliser toute la largeur disponible */
-  max-width: 500px; /* Agrandir à 700px max */
-  height: auto;
-  object-fit: contain;
-  border-radius: 20px;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15); /* Ombre ajoutée */
-  aspect-ratio: 4 / 3;
-  transition: transform 0.3s ease;
-}
-
-.recrut-img:hover {
-  transform: scale(1.05); /* Légère mise à l'échelle au survol */
+  margin-top: 2rem;
 }
 
 .emploi {
@@ -138,11 +143,29 @@ h1 {
   transform: scale(1.05);
 }
 
+.recrut-img {
+  width: 100%;
+  height: 100%;
+  max-width: 600px;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 20px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
+}
+
+.recrut-img:hover {
+  transform: scale(1.05);
+}
+
 /* ===== POPUP ===== */
 .popup-overlay {
   position: fixed;
   inset: 0;
+
   background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -151,35 +174,45 @@ h1 {
 }
 
 .popup-box {
-  background: #fff;
-  padding: 3rem 2.5rem; /* Augmenter le padding */
+  background-color: #f8faff;
+  padding: 3rem 2.5rem;
   border-radius: 20px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  width: 400px;
-  max-width: 90%;
+  width: 500px;
   position: relative;
   animation: scaleIn 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 .popup-title {
-  font-size: 24px; /* Agrandir le titre */
+  font-size: 24px;
   font-weight: 700;
   margin-bottom: 2rem;
-  color: #1a202c;
+  color: #14326f;
+  text-align: center;
+}
+
+.radio-group-horizontal {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .radio-option {
+  flex: 1 1 45%;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 15px; /* Augmenter l'espace entre l'image et le texte */
-  margin-bottom: 1.5rem;
-  font-size: 18px; /* Agrandir la taille du texte */
+  gap: 10px;
+  font-size: 18px;
   color: #333;
   padding: 15px;
   border: 1px solid #ddd;
   border-radius: 12px;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease;
+  text-align: center;
 }
 
 .radio-option:hover {
@@ -193,19 +226,24 @@ h1 {
 
 .radio-option input[type="radio"] {
   accent-color: #3d63ea;
-  transform: scale(1.4); /* Agrandir le bouton radio */
+  transform: scale(1.4);
   cursor: pointer;
 }
 
+.radio-option:focus-within {
+  outline: 2px solid #3d63ea;
+  outline-offset: 4px;
+}
+
 .role-img {
-  width: 100px; /* Agrandir les images */
-  height: 100px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   object-fit: cover;
 }
 
 .btn-continue {
-  margin-top: 2rem; /* Augmenter l'espace entre le bouton et les options */
+  margin-top: 2rem;
   background: #3d63ea;
   color: #fff;
   border: none;
@@ -213,7 +251,7 @@ h1 {
   padding: 15px;
   border-radius: 999px;
   font-weight: bold;
-  font-size: 16px; /* Agrandir le texte du bouton */
+  font-size: 16px;
   cursor: pointer;
   transition: background 0.3s ease;
 }
@@ -231,7 +269,7 @@ h1 {
   position: absolute;
   top: 12px;
   right: 14px;
-  font-size: 26px; /* Agrandir le bouton de fermeture */
+  font-size: 26px;
   font-weight: bold;
   color: #555;
   background: none;
@@ -262,6 +300,18 @@ h1 {
   to {
     transform: scale(1);
     opacity: 1;
+  }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .radio-group-horizontal {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .radio-option {
+    width: 100%;
   }
 }
 </style>

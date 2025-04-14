@@ -1,6 +1,5 @@
 <template>
   <div class="offers-section">
-    <h2 class="title">Nos offres</h2>
 
     <!-- Premier offre -->
     <div class="offer-card">
@@ -99,86 +98,95 @@ function closePopup() {
 </script>
 
 <style scoped>
-/* Main section for the offers */
+/* General Styling */
+body {
+  font-family: 'Arial', sans-serif;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* ================= OFFERS SECTION ================= */
 .offers-section {
+
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center; /* Center cards horizontally */
+  gap: 20px;
   padding: 40px 20px;
   max-width: 1200px;
-  margin: 0 auto;
+  margin: 120px auto; /* Add some top/bottom margin */
   text-align: center;
   background-color: #f8f9fa;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); /* Reduced shadow intensity */
 }
 
-/* Title styling */
-.title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #2c3e50;
-  margin-bottom: 40px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-}
+/* Title Styling */
 
-/* Offer card styles */
+/* Offer Card Styles */
 .offer-card {
+
   background-color: #fff;
   border-radius: 12px;
-  padding: 30px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  padding: 25px; /* Slightly reduced padding */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Reduced shadow intensity */
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  margin-bottom: 30px;
+  width: calc(33.33% - 20px);
+  margin-bottom: 30px; /* Adjusted spacing */
   position: relative;
+  animation: slideUp 0.5s ease-in-out;
 }
 
 .offer-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  transform: translateY(-5px); /* Reduced lift effect */
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); /* Adjusted shadow on hover */
 }
 
-/* Offer title styling */
+/* Offer Title Styling */
 .title-offre {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 1.6rem; /* Adjusted size */
+  font-weight: 600; /* Slightly reduced weight */
   color: #2c3e50;
-  margin-bottom: 20px;
-  letter-spacing: 1px;
+  margin-bottom: 15px; /* Adjusted spacing */
+  letter-spacing: 0.5px; /* Reduced letter spacing */
 }
 
-/* Description styling */
+/* Description Styling */
 .description {
-  font-size: 1.1rem;
+  font-size: 1rem; /* Adjusted size */
   color: #7f8c8d;
-  line-height: 1.6;
-  margin-bottom: 20px;
+  line-height: 1.5; /* Adjusted line height */
+  margin-bottom: 15px; /* Adjusted spacing */
   text-align: justify;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px; /* Reduced letter spacing */
 }
 
-/* Button styling */
+/* Button Styling */
 .btn-see-more {
-  padding: 14px 28px;
+  padding: 12px 24px; /* Adjusted padding */
   background-color: #2980b9;
   color: #fff;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 1.2rem;
-  font-weight: 600;
-  letter-spacing: 1px;
+  font-size: 1rem; /* Adjusted size */
+  font-weight: 500; /* Slightly reduced weight */
+  letter-spacing: 0.5px; /* Reduced letter spacing */
   transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .btn-see-more:hover {
   background-color: #3498db;
-  box-shadow: 0 6px 18px rgba(41, 128, 185, 0.2);
+  box-shadow: 0 4px 12px rgba(41, 128, 185, 0.2); /* Adjusted shadow on hover */
+  transform: translateY(-2px); /* Subtle lift on hover */
 }
 
 .btn-see-more:focus {
-  box-shadow: 0 0 8px rgba(41, 128, 185, 0.6);
+  outline: none; /* Remove default focus outline */
+  box-shadow: 0 0 6px rgba(41, 128, 185, 0.5); /* Adjusted focus shadow */
 }
 
-/* Modal Overlay */
+/* ================= MODAL OVERLAY & CONTENT ================= */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -188,39 +196,33 @@ function closePopup() {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.7); /* Darker overlay */
+  background-color: rgba(0, 0, 0, 0.7);
   z-index: 1099;
-  overflow: hidden; /* Prevents background scrolling */
+  overflow: auto; /* Allow scrolling if content overflows */
 }
 
-/* Modal Content */
 .modal-content {
   background-color: #fff;
   border-radius: 12px;
-  max-height: 80vh;
-  height: 100%;
+  max-height: 90vh; /* Increased max height */
   padding: 20px;
-  width: 90%; /* Adjust width for better visibility */
-  max-width: 1000px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 800px; /* Adjusted max width */
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); /* Adjusted shadow */
   border: 1px solid #ddd;
-  text-align: center;
+  text-align: left; /* Adjusted text alignment */
   overflow-y: auto;
   position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
 }
 
 /* Close Button */
 .close-button {
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: 10px;
+  right: 10px;
   background: transparent;
   border: none;
-  font-size: 2rem;
+  font-size: 1.5rem; /* Adjusted size */
   color: #e74c3c;
   cursor: pointer;
   z-index: 2;
@@ -230,22 +232,7 @@ function closePopup() {
   color: #c0392b;
 }
 
-/* Modal Overlay */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: rgba(0, 0, 0, 0.8); /* Darker overlay */
-  z-index: 1099;
-  overflow: hidden;
-}
-
-/* ===== Auth Container ===== */
+/* ================= AUTHENTICATION STYLES ================= */
 .auth-container {
   display: flex;
   justify-content: center;
@@ -461,8 +448,38 @@ input:checked + .slider:before {
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
 }
 
-/* ===== Responsive Styles ===== */
+/* ================= RESPONSIVE DESIGN ================= */
+/* Small screens */
 @media (max-width: 768px) {
+  .offers-section {
+    padding: 30px 10px;
+  }
+
+  .title {
+    font-size: 1.75rem;
+    margin-bottom: 25px;
+  }
+
+  .offer-card {
+    width: calc(50% - 20px); /* Two cards per row on smaller screens */
+    padding: 20px;
+    margin-bottom: 25px;
+  }
+
+  .title-offre {
+    font-size: 1.4rem;
+  }
+
+  .description {
+    font-size: 0.9rem;
+  }
+
+  .btn-see-more {
+    font-size: 0.9rem;
+    padding: 10px 20px;
+  }
+
+  /* Styles for Authentication */
   .login-layout {
     flex-direction: column;
     gap: 20px;
@@ -489,4 +506,20 @@ input:checked + .slider:before {
     padding: 12px;
   }
 }
+
+/* Extra small screens */
+@media (max-width: 576px) {
+  .offer-card {
+    width: 100%; /* One card per row on very small screens */
+  }
+
+  .auth-container {
+    padding: 10px;
+  }
+
+  .auth-box {
+    padding: 20px;
+  }
+}
+
 </style>

@@ -40,20 +40,17 @@ const router = createRouter({
 
 // ✅ Navigation guard
 router.beforeEach((to, from, next) => {
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  const userSession = JSON.parse(localStorage.getItem('userSession') || sessionStorage.getItem('userSession') || 'null');
+  const requiresAuth = to.meta.requiresAuth; // Vérifie si l'authentification est requise pour la route
+  const isAuthenticated = localStorage.getItem('userSession') !== null; // Vérifie si l'utilisateur est authentifié
 
-  if (requiresAuth && !userSession) {
-    next('/authentification');
-  } else if (to.path === '/authentification' && userSession) {
-    if (userSession.type === 'recruteur') {
-      next('/CompteRecruteur');
-    } else {
-      next('/CompteCandidat');
-    }
+  if (requiresAuth && !isAuthenticated) {
+    // Si l'authentification est requise mais l'utilisateur n'est pas authentifié
+    next('/authentification'); // Redirection vers la page d'authentification
   } else {
+    // Sinon, autoriser la navigation
     next();
   }
 });
+
 
 export default router;

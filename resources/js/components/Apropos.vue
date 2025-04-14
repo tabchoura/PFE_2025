@@ -1,7 +1,6 @@
 <template>
   <section class="about-container">
     <div class="about-content">
-      <h2>A propos de nous</h2>
       <h4>JobGO</h4>
       <p class="intro">
         JobGo est une plateforme innovante dédiée au recrutement en ligne. Conçue pour
@@ -40,7 +39,7 @@ export default {
   justify-content: center;
   align-items: center;
   max-width: 1200px;
-  margin: 0 auto;
+  margin: 120px auto;
   padding: 40px 20px;
   background-color: #f9f9f9;
   border-radius: 10px;
