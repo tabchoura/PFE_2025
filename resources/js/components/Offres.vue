@@ -204,9 +204,8 @@ body {
 .modal-content {
   background-color: #fff;
   border-radius: 12px;
-  max-height: 90vh; /* Increased max height */
-  padding: 20px;
-  width: 90%;
+  max-height: 95vh; /* Increased max height */
+  width: 60%;
   max-width: 800px; /* Adjusted max width */
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); /* Adjusted shadow */
   border: 1px solid #ddd;
@@ -237,6 +236,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-top: 0px;
   min-height: 100vh;
   background-color: #f4f6f9;
   padding: 20px;

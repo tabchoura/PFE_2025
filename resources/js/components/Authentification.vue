@@ -122,40 +122,56 @@ export default {
       return !this.emailError && !this.passwordError;
     },
     login() {
-      if (!this.validateForm()) return;
+  if (!this.validateForm()) return;
 
-      this.isLoading = true;
+  this.isLoading = true;
 
-      setTimeout(() => {
-        const userType = this.isRecruteur ? "recruteur" : "candidat";
-        const userData = {
-          email: this.email,
-          type: userType,
-          lastLogin: new Date().toISOString(),
-        };
+  setTimeout(() => {
+    const userType = this.isRecruteur ? "recruteur" : "candidat";
+    let userData = null;
 
-        const storage = this.rememberMe ? localStorage : sessionStorage;
-        storage.setItem("userSession", JSON.stringify(userData));
+    if (userType === "candidat") {
+      const allUsers = JSON.parse(localStorage.getItem("allCandidats") || "[]");
+      userData = allUsers.find(user => user.email === this.email);
+    } else if (userType === "recruteur") {
+      const allUsers = JSON.parse(localStorage.getItem("allRecruteurs") || "[]");
+      userData = allUsers.find(user => user.email === this.email);
+    }
 
-        this.isLoading = false;
+    if (!userData) {
+      alert("❌ Utilisateur non trouvé ou données manquantes !");
+      this.isLoading = false;
+      return;
+    }
 
-        // Redirection vers la page appropriée
-        this.$router.push(this.isRecruteur ? "/CompteRecruteur" : "/CompteCandidat");
-      }, 1500);
-    },
+    userData.lastLogin = new Date().toISOString();
+
+    const storage = this.rememberMe ? localStorage : sessionStorage;
+    storage.setItem("userSession", JSON.stringify(userData));
+
+    this.isLoading = false;
+    this.$router.push(userType === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat");
+  }, 1500);
+}
+,
+
+
     goToSignup() {
       this.page = this.isRecruteur ? "registerRecruteur" : "registerCandidat";
       // Redirection vers la page d'inscription en tant que Candidat ou Recruteur
       this.$router.push(this.isRecruteur ? "/registerRecruteur" : "/registerCandidat");
     },
     handleRegistrationComplete(userData) {
-      console.log("Inscription terminée :", userData);
-      this.$router.push(userData.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat");
-    },
+  const storage = this.rememberMe ? localStorage : sessionStorage;
+  storage.setItem("userSession", JSON.stringify(userData));
+  this.$router.push(userData.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat");
+}
+
   },
   mounted() {
-    const session =
-      localStorage.getItem("userSession") || sessionStorage.getItem("userSession");
+  // Vérifier si l'utilisateur vient d'une autre page (pas après une inscription)
+  if (document.referrer === "") { // Si document.referrer est vide, c'est un accès direct
+    const session = localStorage.getItem("userSession") || sessionStorage.getItem("userSession");
 
     if (session) {
       const user = JSON.parse(session);
@@ -163,7 +179,9 @@ export default {
       this.isRecruteur = user.type === "recruteur";
       this.$router.push(user.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat");
     }
-  },
+  }
+}
+,
 };
 </script>
 

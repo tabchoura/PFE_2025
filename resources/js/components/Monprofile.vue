@@ -96,15 +96,26 @@ export default {
   methods: {
     loadProfileData() {
       try {
-        const candidat = JSON.parse(localStorage.getItem("candidat"));
-        if (candidat) {
-          this.profile = { ...this.profile, ...candidat };
+        // Rechercher les données dans sessionStorage d'abord, puis dans localStorage
+        const userSession = JSON.parse(
+          sessionStorage.getItem("userSession") || 
+          localStorage.getItem("userSession") || '{}'
+        );
+        
+        if (userSession) {
+          this.profile = { 
+            nom: userSession.nom || "",
+            prenom: userSession.prenom || "",
+            email: userSession.email || "",
+            date: userSession.dateNaissance || "",
+            lieu: userSession.lieuNaissance || "",
+            cin: userSession.cin || "",
+            numtel: userSession.numtel || ""
+          };
           this.form = { ...this.profile }; // Initialiser le formulaire avec les mêmes données
         }
       } catch (error) {
         console.error("Erreur lors du chargement des données du profil:", error);
-        // Réinitialiser le profil en cas d'erreur
-        localStorage.removeItem("candidat");
       }
     },
     toggleEditMode() {
@@ -132,9 +143,33 @@ export default {
       this.profile = { ...this.form };
 
       try {
-        localStorage.setItem("candidat", JSON.stringify(this.profile));
+        // Récupérer la session actuelle
+        const userSession = JSON.parse(
+          sessionStorage.getItem("userSession") || 
+          localStorage.getItem("userSession") || '{}'
+        );
+        
+        // Mettre à jour les données de la session
+        const updatedSession = {
+          ...userSession,
+          nom: this.form.nom,
+          prenom: this.form.prenom,
+          email: this.form.email,
+          numtel: this.form.numtel,
+          dateNaissance: this.form.date,
+          lieuNaissance: this.form.lieu,
+          cin: this.form.cin
+        };
+        
+        // Sauvegarder dans sessionStorage (ou localStorage si c'est là que la session existe)
+        if (sessionStorage.getItem("userSession")) {
+          sessionStorage.setItem("userSession", JSON.stringify(updatedSession));
+        }
+        if (localStorage.getItem("userSession")) {
+          localStorage.setItem("userSession", JSON.stringify(updatedSession));
+        }
+        
         this.editMode = false;
-        // Utilisation d'un message plus discret
         this.showSuccessMessage("Profil mis à jour avec succès !");
       } catch (error) {
         console.error("Erreur lors de la sauvegarde du profil:", error);

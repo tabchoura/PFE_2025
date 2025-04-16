@@ -1,197 +1,208 @@
 <template>
   <div class="auth-container">
-   <div class="auth-content">
-    <div class="image-section">
-      <img :src="hiringImage" alt="Recrutement" class="hiring-image" />
-    </div>
+    <div class="auth-content">
+      <div class="image-section">
+        <img :src="hiringImage" alt="Recrutement" class="hiring-image" />
+      </div>
 
-    <div class="form-section">
-    <div v-if="!isSubmitted" class="auth-box login-box">
-      <h2 class="auth-title">Inscription Recruteur</h2>
-      <form @submit.prevent="register" class="auth-form" novalidate>
-        <div class="form-grid">
-          <div class="input-group">
-            <label for="nom">Nom</label>
-            <input
-              type="text"
-              v-model.trim="formData.nom"
-              id="nom"
-              placeholder="Entrez votre nom"
-              :class="{ 'input-error': errors.nom }"
-              required
-            />
-            <span class="error-message" v-if="errors.nom">{{ errors.nom }}</span>
-          </div>
-          <div class="input-group">
-            <label for="prenom">Prénom</label>
-            <input
-              type="text"
-              v-model.trim="formData.prenom"
-              id="prenom"
-              placeholder="Entrez votre prénom"
-              :class="{ 'input-error': errors.prenom }"
-              required
-            />
-            <span class="error-message" v-if="errors.prenom">{{ errors.prenom }}</span>
-          </div>
-        </div>
+      <div class="form-section">
+        <div v-if="!isSubmitted" class="auth-box login-box">
+          <h2 class="auth-title">Inscription Recruteur</h2>
+          <form @submit.prevent="register" class="auth-form" novalidate>
+            <div class="form-grid">
+              <div class="input-group">
+                <label for="nom">Nom</label>
+                <input
+                  type="text"
+                  v-model.trim="formData.nom"
+                  id="nom"
+                  placeholder="Entrez votre nom"
+                  :class="{ 'input-error': errors.nom }"
+                  required
+                />
+                <span class="error-message" v-if="errors.nom">{{ errors.nom }}</span>
+              </div>
+              <div class="input-group">
+                <label for="prenom">Prénom</label>
+                <input
+                  type="text"
+                  v-model.trim="formData.prenom"
+                  id="prenom"
+                  placeholder="Entrez votre prénom"
+                  :class="{ 'input-error': errors.prenom }"
+                  required
+                />
+                <span class="error-message" v-if="errors.prenom">{{ errors.prenom }}</span>
+              </div>
+            </div>
 
-        <div class="input-group">
-          <label for="email">Email</label>
-          <input
-            type="email"
-            v-model.trim="formData.email"
-            id="email"
-            placeholder="Entrez votre email"
-            :class="{ 'input-error': errors.email }"
-            required
-          />
-          <span class="error-message" v-if="errors.email">{{ errors.email }}</span>
-        </div>
+            <div class="input-group">
+              <label for="email">Email</label>
+              <input
+                type="email"
+                v-model.trim="formData.email"
+                id="email"
+                placeholder="Entrez votre email"
+                :class="{ 'input-error': errors.email }"
+                required
+              />
+              <span class="error-message" v-if="errors.email">{{ errors.email }}</span>
+            </div>
 
-        <div class="input-group">
-          <label for="password">Mot de passe</label>
-          <div class="password-input-container">
-            <input
-              :type="showPassword ? 'text' : 'password'"
-              v-model.trim="formData.password"
-              id="password"
-              placeholder="Entrez votre mot de passe"
-              :class="{ 'input-error': errors.password }"
-              required
-              autocomplete="new-password"
-            />
-            <button
-              type="button"
-              class="toggle-password"
-              @click="togglePassword"
-              :aria-label="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
-            >
-              <span aria-hidden="true">{{ showPassword ? '🔒' : '👁️' }}</span>
+            <div class="input-group">
+              <label for="password">Mot de passe</label>
+              <div class="password-input-container">
+                <input
+                  :type="showPassword ? 'text' : 'password'"
+                  v-model.trim="formData.password"
+                  id="password"
+                  placeholder="Entrez votre mot de passe"
+                  :class="{ 'input-error': errors.password }"
+                  required
+                  autocomplete="new-password"
+                />
+                <button
+                  type="button"
+                  class="toggle-password"
+                  @click="togglePassword"
+                  :aria-label="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+                >
+                  <span aria-hidden="true">{{ showPassword ? '🔒' : '👁️' }}</span>
+                </button>
+              </div>
+              <span class="error-message" v-if="errors.password">{{ errors.password }}</span>
+              <div class="password-strength" v-if="formData.password">
+                <div class="strength-bar" :class="passwordStrengthClass"></div>
+                <span>{{ passwordStrengthText }}</span>
+              </div>
+              <p class="password-requirements" v-if="formData.password">
+                Le mot de passe doit contenir au moins 8 caractères, incluant majuscules, minuscules,
+                chiffres et caractères spéciaux.
+              </p>
+            </div>
+
+            <div class="form-grid">
+              <div class="input-group">
+                <label for="cin">CIN</label>
+                <input
+                  type="text"
+                  v-model.trim="formData.cin"
+                  id="cin"
+                  placeholder="Entrez votre CIN"
+                  :class="{ 'input-error': errors.cin }"
+                  required
+                />
+                <span class="error-message" v-if="errors.cin">{{ errors.cin }}</span>
+              </div>
+              <div class="input-group">
+                <label for="numtel">Numéro de téléphone</label>
+                <input
+                  type="tel"
+                  v-model.trim="formData.numtel"
+                  id="numtel"
+                  placeholder="Votre numéro de téléphone"
+                  :class="{ 'input-error': errors.numtel }"
+                  required
+                />
+                <span class="error-message" v-if="errors.numtel">{{ errors.numtel }}</span>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="input-group">
+                <label for="nomentreprise">Nom de l'entreprise</label>
+                <input
+                  type="text"
+                  v-model="formData.nomentreprise"
+                  id="nomentreprise"
+                  :class="{ 'input-error': errors.nomentreprise }"
+                  required
+                />
+                <span class="error-message" v-if="errors.nomentreprise">{{ errors.nomentreprise }}</span>
+              </div>
+              <div class="input-group">
+                <label for="site">Site</label>
+                <input
+                  type="url"
+                  v-model.trim="formData.site"
+                  id="site"
+                  placeholder="Écrire votre site web"
+                  :class="{ 'input-error': errors.Site }"
+                  required
+                />
+                <span class="error-message" v-if="errors.Site">{{ errors.Site }}</span>
+              </div>
+            </div>
+            <div class="input-group">
+  <label for="departement">Département</label>
+  <input
+    type="text"
+    v-model.trim="formData.departement"
+    id="departement"
+    placeholder="Écrire votre département"
+    :class="{ 'input-error': errors.departement }"
+    required
+  />
+  <span class="error-message" v-if="errors.departement">{{ errors.departement }}</span>
+</div>
+
+            <div class="input-group">
+              <label for="lieu">Localisation</label>
+              <input
+                type="text"
+                v-model.trim="formData.lieu"
+                id="lieu"
+                placeholder="Écrire votre localisation"
+                :class="{ 'input-error': errors.lieu }"
+                required
+              />
+              <span class="error-message" v-if="errors.lieu">{{ errors.lieu }}</span>
+            </div>
+
+            <div class="input-group">
+              <label for="decription">Description de l'entreprise</label>
+              <textarea
+                v-model.trim="formData.decription"
+                id="decription"
+                placeholder="Écrire votre description"
+                :class="{ 'input-error': errors.decription }"
+                required
+              ></textarea>
+              <span class="error-message" v-if="errors.decription">{{ errors.decription }}</span>
+            </div>
+
+            <button type="submit" class="btn-submit" :disabled="loading">
+              <span v-if="loading" class="loading-spinner"></span>
+              <span>{{ loading ? 'Traitement en cours...' : "S'inscrire" }}</span>
             </button>
-          </div>
-          <span class="error-message" v-if="errors.password">{{ errors.password }}</span>
-          <div class="password-strength" v-if="formData.password">
-            <div class="strength-bar" :class="passwordStrengthClass"></div>
-            <span>{{ passwordStrengthText }}</span>
-          </div>
-          <p class="password-requirements" v-if="formData.password">
-            Le mot de passe doit contenir au moins 8 caractères, incluant majuscules, minuscules,
-            chiffres et caractères spéciaux.
-          </p>
+          </form>
         </div>
 
-        <div class="form-grid">
-          <div class="input-group">
-            <label for="cin">CIN</label>
-            <input
-              type="text"
-              v-model.trim="formData.cin"
-              id="cin"
-              placeholder="Entrez votre CIN"
-              :class="{ 'input-error': errors.cin }"
-              required
-            />
-            <span class="error-message" v-if="errors.cin">{{ errors.cin }}</span>
-          </div>
-          <div class="input-group">
-            <label for="numtel">Numéro de téléphone</label>
-            <input
-              type="tel"
-              v-model.trim="formData.numtel"
-              id="numtel"
-              placeholder="Votre numéro de téléphone"
-              :class="{ 'input-error': errors.numtel }"
-              required
-            />
-            <span class="error-message" v-if="errors.numtel">{{ errors.numtel }}</span>
-          </div>
+        <div v-else class="auth-box success-box">
+          <h2 class="auth-title">Inscription réussie !</h2>
+          <p>Votre compte a été créé avec succès.</p>
+          <button @click="goToCompteRecruteur" class="btn-submit">
+            Accéder à votre compte
+          </button>
         </div>
-
-        <div class="form-grid">
-          <div class="input-group">
-            <label for="nomentreprise">Nom de l'entreprise</label>
-            <input
-              type="text"
-              v-model="formData.nomentreprise"
-              id="nomentreprise"
-              
-              :class="{ 'input-error': errors.nomentreprise }"
-              required
-            />
-            <span class="error-message" v-if="errors.nomentreprise">{{ errors.nomentreprise }}</span>
-          </div>
-          <div class="input-group">
-            <label for="site">Site</label>
-            <input
-              type="text"
-              v-model.trim="formData.Site"
-              id="Site"
-              placeholder="Ecrire votre site web"
-              :class="{ 'input-error': errors.Site }"
-              required
-            />
-            <span class="error-message" v-if="errors.Site">{{ errors.Site }}</span>
-          </div>
-        </div>
-        <div class="input-group">
-            <label for="lieu">Localisation</label>
-            <input
-              type="text"
-              v-model.trim="formData.lieu"
-              id="lieu"
-              placeholder="Ecrire votre localisation "
-              :class="{ 'input-error': errors.lieu }"
-              required
-            />
-            <span class="error-message" v-if="errors.lieu">{{ errors.lieu }}</span>
-          </div>
-          <div class="input-group">
-            <label for="decription">Description de l'entreprise</label>
-            <textarea
-              type="text"
-              v-model.trim="formData.decription"
-              id="decription"
-              placeholder="Ecrire votre decription "
-              :class="{ 'input-error': errors.decription }"
-              required
-            />
-            <span class="error-message" v-if="errors.decription">{{ errors.decription }}</span>
-          </div>
-
-
-          <button type="submit" class="btn-submit" :disabled="loading">
-  <span v-if="loading" class="loading-spinner"></span>
-  <span>{{ loading ? 'Traitement en cours...' : "S'inscrire" }}</span>
-</button>
-
-      </form>
-    </div>
-    
-
-    <div v-else class="auth-box success-box">
-      <h2 class="auth-title">Inscription réussie !</h2>
-      <p>Votre compte a été créé avec succès.</p>
-      <button @click="goToCompteCandidat" class="btn-submit">
-        Accéder à votre compte
-      </button>
+      </div>
     </div>
   </div>
-</div>
-</div>
 </template>
 
 <script>
 import { defineComponent, ref, computed, reactive } from 'vue';
 import { useRouter } from 'vue-router';
-import hiringImage from "../../assets/recruteurhiring.png"
+import hiringImage from "../../assets/recruteurhiring.png";
 
 export default defineComponent({
-  name: "RegisterCandidat",
+  name: "RegisterRecruteur",
   setup() {
     const router = useRouter();
     const isSubmitted = ref(false);
-    const nomentreprise=ref("");
+    const loading = ref(false);
+    const showPassword = ref(false);
+
     const formData = reactive({
       email: "",
       password: "",
@@ -201,47 +212,32 @@ export default defineComponent({
       lieu: "",
       cin: "",
       numtel: "",
-      decription:"",
+      decription: "",
+      site: "",
+      departement: "",
     });
 
-    const loading = ref(false);
     const errors = reactive({});
-    const showPassword = ref(false);
-
-    const maxDate = computed(() => {
-      const today = new Date();
-      const eighteenYearsAgo = new Date(
-        today.getFullYear() - 18,
-        today.getMonth(),
-        today.getDate()
-      );
-      return eighteenYearsAgo.toISOString().split('T')[0];
-    });
 
     const passwordStrength = computed(() => {
-      if (!formData.password) return 0;
-      let strength = 0;
-      const password = formData.password;
-      if (password.length >= 8) strength += 1;
-      if (/[a-z]/.test(password)) strength += 1;
-      if (/[A-Z]/.test(password)) strength += 1;
-      if (/[0-9]/.test(password)) strength += 1;
-      if (/[^a-zA-Z0-9]/.test(password)) strength += 1;
-      return strength;
+      const pwd = formData.password;
+      let score = 0;
+      if (pwd.length >= 8) score++;
+      if (/[a-z]/.test(pwd)) score++;
+      if (/[A-Z]/.test(pwd)) score++;
+      if (/[0-9]/.test(pwd)) score++;
+      if (/[^a-zA-Z0-9]/.test(pwd)) score++;
+      return score;
     });
 
     const passwordStrengthClass = computed(() => {
-      const strength = passwordStrength.value;
-      if (strength <= 2) return 'weak';
-      if (strength <= 4) return 'medium';
-      return 'strong';
+      const s = passwordStrength.value;
+      return s <= 2 ? "weak" : s <= 4 ? "medium" : "strong";
     });
 
     const passwordStrengthText = computed(() => {
-      const strength = passwordStrength.value;
-      if (strength <= 2) return 'Faible';
-      if (strength <= 4) return 'Moyen';
-      return 'Fort';
+      const s = passwordStrength.value;
+      return s <= 2 ? "Faible" : s <= 4 ? "Moyen" : "Fort";
     });
 
     function togglePassword() {
@@ -249,74 +245,66 @@ export default defineComponent({
     }
 
     function validateForm() {
-      Object.keys(errors).forEach(key => delete errors[key]);
+      Object.keys(errors).forEach(k => delete errors[k]);
       let isValid = true;
 
-      if (!formData.nom) {
-        errors.nom = "Le nom est requis";
+      const nameRegex = /^[a-zA-ZÀ-ÿ\s'-]+$/;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const urlRegex = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/\S*)?$/;
+
+      if (!formData.nom || !nameRegex.test(formData.nom)) {
+        errors.nom = "Le nom est requis et doit contenir uniquement des lettres.";
         isValid = false;
       }
 
-      if (!formData.prenom) {
-        errors.prenom = "Le prénom est requis";
+      if (!formData.prenom || !nameRegex.test(formData.prenom)) {
+        errors.prenom = "Le prénom est requis et doit contenir uniquement des lettres.";
         isValid = false;
       }
 
-      if (!formData.email) {
-        errors.email = "L'email est requis";
-        isValid = false;
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-        errors.email = "Veuillez entrer un email valide";
+      if (!formData.email || !emailRegex.test(formData.email)) {
+        errors.email = "Email invalide (il doit contenir '@' et un domaine).";
         isValid = false;
       }
 
-      if (!formData.password) {
-        errors.password = "Le mot de passe est requis";
-        isValid = false;
-      } else if (formData.password.length < 8) {
-        errors.password = "Le mot de passe doit contenir au moins 8 caractères";
-        isValid = false;
-      } else if (!/[A-Z]/.test(formData.password)) {
-        errors.password = "Le mot de passe doit contenir au moins une majuscule";
-        isValid = false;
-      } else if (!/[a-z]/.test(formData.password)) {
-        errors.password = "Le mot de passe doit contenir au moins une minuscule";
-        isValid = false;
-      } else if (!/[0-9]/.test(formData.password)) {
-        errors.password = "Le mot de passe doit contenir au moins un chiffre";
-        isValid = false;
-      } else if (!/[^a-zA-Z0-9]/.test(formData.password)) {
-        errors.password = "Le mot de passe doit contenir au moins un caractère spécial";
+      const pwd = formData.password;
+      if (!pwd || pwd.length < 8 || !/[A-Z]/.test(pwd) || !/[a-z]/.test(pwd) || !/[0-9]/.test(pwd) || !/[^a-zA-Z0-9]/.test(pwd)) {
+        errors.password = "Mot de passe : 8 caractères, majuscule, minuscule, chiffre, caractère spécial.";
         isValid = false;
       }
 
-      if (!formData.cin) {
-        errors.cin = "Le CIN est requis";
-        isValid = false;
-      } else if (!/^[0-9]{8}$/.test(formData.cin)) {
-        errors.cin = "Le CIN doit contenir 8 chiffres";
+      if (!/^\d{8}$/.test(formData.cin)) {
+        errors.cin = "Le CIN doit contenir exactement 8 chiffres.";
         isValid = false;
       }
 
-      if (!formData.numtel) {
-        errors.numtel = "Le numéro de téléphone est requis";
-        isValid = false;
-      } else if (!/^[0-9]{8}$/.test(formData.numtel)) {
-        errors.numtel = "Le numéro de téléphone doit contenir 8 chiffres";
+      if (!/^\d{8}$/.test(formData.numtel)) {
+        errors.numtel = "Le numéro de téléphone doit contenir exactement 8 chiffres.";
         isValid = false;
       }
 
-      if (!formData.nomentreprise) {
-        errors.nomentreprise = "La nom de l'entreprise est requise";
+      if (!formData.nomentreprise || !nameRegex.test(formData.nomentreprise)) {
+        errors.nomentreprise = "Le nom de l'entreprise est requis (lettres uniquement).";
+        isValid = false;
+      }
+
+      if (!formData.site || !urlRegex.test(formData.site)) {
+        errors.Site = "Le site web est invalide. Exemple : https://monsite.com";
+        isValid = false;
+      }
+
+      if (!formData.departement || !nameRegex.test(formData.departement)) {
+        errors.departement = "Le département est requis et doit contenir uniquement des lettres.";
+        isValid = false;
+      }
+
+      if (!formData.decription || !nameRegex.test(formData.decription)) {
+        errors.decription = "La description doit contenir uniquement des lettres.";
         isValid = false;
       }
 
       if (!formData.lieu) {
-        errors.Site = "Le Site web est requis";
-        isValid = false;
-      }
-      if (!formData.lieu) {
-        errors.lieu = "La localisation est requise";
+        errors.lieu = "La localisation est requise.";
         isValid = false;
       }
 
@@ -325,44 +313,83 @@ export default defineComponent({
 
     async function register() {
       if (!validateForm()) return;
-
       loading.value = true;
-      try {
-        // Appelle API ici pour enregistrer l'utilisateur
-        console.log("Données envoyées :", formData);
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Simule un délai
 
+      try {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        sessionStorage.removeItem("userSession");
+
+        const userData = {
+          email: formData.email,
+          type: "recruteur",
+          lastLogin: new Date().toISOString(),
+          nom: formData.nom,
+          prenom: formData.prenom,
+          cin: formData.cin,
+          numtel: formData.numtel,
+          nomsociete: formData.nomentreprise,
+          numsociete: formData.numtel,
+          siteweb: formData.site,
+          lieu: formData.lieu,
+          description: formData.decription,
+          departement: formData.departement,
+          password: formData.password
+        };
+
+        sessionStorage.setItem("userSession", JSON.stringify(userData));
+
+        const allUsers = JSON.parse(localStorage.getItem("allRecruteurs") || "[]");
+        allUsers.push(userData);
+        localStorage.setItem("allRecruteurs", JSON.stringify(allUsers));
+
+        loading.value = false;
         isSubmitted.value = true;
       } catch (error) {
-        console.error("Erreur d'enregistrement :", error);
-      } finally {
         loading.value = false;
+        console.error("Erreur d'inscription:", error);
       }
     }
 
-    function goToCompteCandidat() {
-      router.push("/CompteRecruteur")
+    function goToCompteRecruteur() {
+      const sessionData = sessionStorage.getItem("userSession");
+      if (!sessionData) {
+        const userData = {
+          email: formData.email,
+          type: "recruteur",
+          lastLogin: new Date().toISOString(),
+          nom: formData.nom,
+          prenom: formData.prenom,
+          cin: formData.cin,
+          numtel: formData.numtel,
+          nomsociete: formData.nomentreprise,
+          numsociete: formData.numtel,
+          siteweb: formData.site,
+          lieu: formData.lieu,
+          description: formData.decription,
+          departement: formData.departement
+        };
+        sessionStorage.setItem("userSession", JSON.stringify(userData));
+      }
+
+      window.location.href = "/CompteRecruteur";
     }
 
     return {
       formData,
       errors,
       loading,
-      nomentreprise,
       register,
-      hiringImage,
       showPassword,
       togglePassword,
-      maxDate,
       passwordStrengthClass,
       passwordStrengthText,
       isSubmitted,
-      goToCompteCandidat
+      goToCompteRecruteur,
+      hiringImage
     };
   }
 });
 </script>
-
 
 
 <style>

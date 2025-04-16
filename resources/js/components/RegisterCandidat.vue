@@ -151,8 +151,6 @@
               <span v-if="loading" class="loading-spinner"></span>
               <span>{{ loading ? 'Traitement en cours...' : 'S\'inscrire' }}</span>
             </button>
-            
-           
           </form>
         </div>
 
@@ -194,40 +192,52 @@ export default defineComponent({
     const errors = reactive({});
     const showPassword = ref(false);
 
+    const existingData = {
+      emails: ["test@example.com", "utilisateur@domaine.com"],
+      phones: ["12345678", "23456789"],
+      cins: ["12345678", "87654321"]
+    };
+
+    const getExistingSessionData = () => {
+      const localData = localStorage.getItem("userSessions");
+      const sessionData = sessionStorage.getItem("userSessions");
+      let existingSessions = [];
+
+      try {
+        if (localData) existingSessions = existingSessions.concat(JSON.parse(localData));
+        if (sessionData) existingSessions = existingSessions.concat(JSON.parse(sessionData));
+      } catch (e) {
+        console.error("Erreur parsing session:", e);
+      }
+
+      return existingSessions;
+    };
+
     const maxDate = computed(() => {
       const today = new Date();
-      const eighteenYearsAgo = new Date(
-        today.getFullYear() - 18,
-        today.getMonth(),
-        today.getDate()
-      );
+      const eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
       return eighteenYearsAgo.toISOString().split('T')[0];
     });
 
     const passwordStrength = computed(() => {
-      if (!formData.password) return 0;
-      let strength = 0;
-      const password = formData.password;
-      if (password.length >= 8) strength += 1;
-      if (/[a-z]/.test(password)) strength += 1;
-      if (/[A-Z]/.test(password)) strength += 1;
-      if (/[0-9]/.test(password)) strength += 1;
-      if (/[^a-zA-Z0-9]/.test(password)) strength += 1;
-      return strength;
+      const pwd = formData.password || "";
+      let score = 0;
+      if (pwd.length >= 8) score++;
+      if (/[a-z]/.test(pwd)) score++;
+      if (/[A-Z]/.test(pwd)) score++;
+      if (/[0-9]/.test(pwd)) score++;
+      if (/[^a-zA-Z0-9]/.test(pwd)) score++;
+      return score;
     });
 
     const passwordStrengthClass = computed(() => {
-      const strength = passwordStrength.value;
-      if (strength <= 2) return 'weak';
-      if (strength <= 4) return 'medium';
-      return 'strong';
+      const s = passwordStrength.value;
+      return s <= 2 ? "weak" : s <= 4 ? "medium" : "strong";
     });
 
     const passwordStrengthText = computed(() => {
-      const strength = passwordStrength.value;
-      if (strength <= 2) return 'Faible';
-      if (strength <= 4) return 'Moyen';
-      return 'Fort';
+      const s = passwordStrength.value;
+      return s <= 2 ? "Faible" : s <= 4 ? "Moyen" : "Fort";
     });
 
     function togglePassword() {
@@ -235,46 +245,98 @@ export default defineComponent({
     }
 
     function validateForm() {
-      Object.keys(errors).forEach(key => delete errors[key]);
+      Object.keys(errors).forEach(k => delete errors[k]);
       let isValid = true;
 
-      if (!formData.nom) {
-        errors.nom = "Le nom est requis";
+      const nameRegex = /^[a-zA-ZÀ-ÿ\s'-]+$/;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+      const existingSessions = getExistingSessionData();
+
+      // Nom
+      if (!formData.nom || !nameRegex.test(formData.nom)) {
+        errors.nom = "Le nom est requis et doit contenir uniquement des lettres.";
         isValid = false;
       }
 
-      if (!formData.prenom) {
-        errors.prenom = "Le prénom est requis";
+      // Prénom
+      if (!formData.prenom || !nameRegex.test(formData.prenom)) {
+        errors.prenom = "Le prénom est requis et doit contenir uniquement des lettres.";
         isValid = false;
       }
 
-      if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-        errors.email = "Email invalide";
+      // Email
+      if (!formData.email || !emailRegex.test(formData.email)) {
+        errors.email = "Adresse email invalide.";
+        isValid = false;
+      } else if (
+        existingData.emails.includes(formData.email.toLowerCase()) ||
+        existingSessions.some(s => s.email?.toLowerCase() === formData.email.toLowerCase())
+      ) {
+        errors.email = "Email déjà utilisé.";
         isValid = false;
       }
 
-      if (!formData.password || formData.password.length < 8) {
-        errors.password = "Mot de passe trop court";
+      // Mot de passe
+      const pwd = formData.password || "";
+      if (pwd.length < 8) {
+        errors.password = "Mot de passe trop court (min 8 caractères)";
+        isValid = false;
+      } else if (
+        !/[a-z]/.test(pwd) ||
+        !/[A-Z]/.test(pwd) ||
+        !/[0-9]/.test(pwd) ||
+        !/[^a-zA-Z0-9]/.test(pwd)
+      ) {
+        errors.password = "Mot de passe : majuscule, minuscule, chiffre et caractère spécial requis.";
         isValid = false;
       }
 
-      if (!formData.cin || !/^\d{8}$/.test(formData.cin)) {
-        errors.cin = "CIN invalide";
+      // CIN
+      if (!/^\d{8}$/.test(formData.cin)) {
+        errors.cin = "Le CIN doit contenir exactement 8 chiffres.";
+        isValid = false;
+      } else if (
+        existingData.cins.includes(formData.cin) ||
+        existingSessions.some(s => s.cin === formData.cin)
+      ) {
+        errors.cin = "CIN déjà enregistré.";
         isValid = false;
       }
 
-      if (!formData.numtel || !/^\d{8}$/.test(formData.numtel)) {
-        errors.numtel = "Numéro de téléphone invalide";
+      // Numéro téléphone
+      if (!/^\d{8}$/.test(formData.numtel)) {
+        errors.numtel = "Le numéro de téléphone doit contenir exactement 8 chiffres.";
+        isValid = false;
+      } else if (
+        existingData.phones.includes(formData.numtel) ||
+        existingSessions.some(s => s.numtel === formData.numtel)
+      ) {
+        errors.numtel = "Numéro de téléphone déjà utilisé.";
         isValid = false;
       }
 
+      // Date de naissance
       if (!formData.date) {
-        errors.date = "Date de naissance requise";
+        errors.date = "Date de naissance requise.";
         isValid = false;
+      } else {
+        const birth = new Date(formData.date);
+        const today = new Date();
+        const age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+        const d = today.getDate() - birth.getDate();
+        const is18 = age > 18 || (age === 18 && (m > 0 || (m === 0 && d >= 0)));
+
+        if (!is18) {
+          errors.date = "Vous devez avoir au moins 18 ans.";
+          isValid = false;
+        }
       }
 
-      if (!formData.lieu) {
-        errors.lieu = "Lieu de naissance requis";
+      // Lieu de naissance
+      if (!formData.lieu || !nameRegex.test(formData.lieu)) {
+        errors.lieu = "Le lieu doit contenir uniquement des lettres.";
         isValid = false;
       }
 
@@ -285,22 +347,44 @@ export default defineComponent({
       if (!validateForm()) return;
       loading.value = true;
 
+      await new Promise(r => setTimeout(r, 1000));
+
+      const userData = {
+        email: formData.email,
+        type: "candidat",
+        lastLogin: new Date().toISOString(),
+        nom: formData.nom,
+        prenom: formData.prenom,
+        cin: formData.cin,
+        numtel: formData.numtel,
+        dateNaissance: formData.date,
+        lieuNaissance: formData.lieu,
+        password: formData.password // ⚠️ à ne pas stocker en clair en production !
+      };
+
+      sessionStorage.setItem("userSession", JSON.stringify(userData));
+
+      let userSessions = [];
       try {
-        // Simulate async registration process
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        loading.value = false;
-        isSubmitted.value = true;
-      } catch (error) {
-        loading.value = false;
-        console.error("Erreur d'inscription:", error);
-      }
+        userSessions = JSON.parse(sessionStorage.getItem("userSessions") || "[]");
+      } catch {}
+      userSessions.push(userData);
+      sessionStorage.setItem("userSessions", JSON.stringify(userSessions));
+
+      loading.value = false;
+      isSubmitted.value = true;
     }
+
     function goToCompteCandidat() {
-  router.push({
-    path: "/CompteCandidat",
-    state: { userData: formData }
-  });
-}
+      if (!sessionStorage.getItem("userSession")) {
+        sessionStorage.setItem("userSession", JSON.stringify({
+          ...formData,
+          type: "candidat",
+          lastLogin: new Date().toISOString()
+        }));
+      }
+      window.location.href = "/CompteCandidat";
+    }
 
     return {
       formData,
@@ -314,7 +398,7 @@ export default defineComponent({
       register,
       goToCompteCandidat,
       isSubmitted,
-      hiringImage,
+      hiringImage
     };
   }
 });
@@ -356,14 +440,13 @@ export default defineComponent({
 .hiring-image {
   width: 100%;
   margin-top: 10rem;
-
   max-width: 500px;
   height: auto;
   object-fit: cover;
   border-radius: 12px;
   box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
   transition: transform 0.4s ease;
-  max-width: 550px; /* Augmenté depuis 500px */
+  max-width: 550px; 
   max-height: 480px; 
 }
 
@@ -407,7 +490,7 @@ export default defineComponent({
 
 .input-group input {
   padding: 12px;
-  padding-right: 40px; /* ✅ Ajout pour éviter le chevauchement avec l’icône 👁️ */
+  padding-right: 40px;
   border: 1px solid #ccc;
   border-radius: 8px;
   font-size: 15px;
@@ -436,14 +519,14 @@ export default defineComponent({
 
 .password-input-container {
   position: relative;
-  width: 100%; /* 🔥 Fait en sorte que le container ne soit pas plus petit */
+  width: 100%;
   display: flex;
   align-items: center;
 }
 
 .password-input-container input {
-  flex: 1; /* 🔥 Permet à l’input de prendre toute la largeur disponible */
-  padding-right: 40px; /* Assure de la place pour l’icône */
+  flex: 1;
+  padding-right: 40px;
 }
 
 .toggle-password {
@@ -581,5 +664,4 @@ export default defineComponent({
     font-size: 15px;
   }
 }
-
 </style>

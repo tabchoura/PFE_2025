@@ -5,40 +5,71 @@
       <!-- Infos personnelles -->
       <div class="form-group">
         <label for="infopersonnels">Infos personnelles *</label>
-        <textarea v-model="form.infopersonnels" id="infopersonnels" rows="2" />
-        <span v-if="errors.infopersonnels" class="error">{{
-          errors.infopersonnels
-        }}</span>
+        <textarea
+          v-model="form.infopersonnels"
+          id="infopersonnels"
+          rows="2"
+          placeholder="Entrez vos informations personnelles (nom, adresse, etc.)"
+          :aria-invalid="errors.infopersonnels ? 'true' : 'false'"
+        />
+        <span v-if="errors.infopersonnels" class="error">
+          {{ errors.infopersonnels }}
+        </span>
       </div>
 
       <!-- Diplômes -->
       <div class="form-group">
         <label for="diplomes">Diplômes</label>
-        <input v-model="form.diplomes" type="text" id="diplomes" />
+        <input
+          v-model="form.diplomes"
+          type="text"
+          id="diplomes"
+          placeholder="Entrez vos diplômes"
+        />
       </div>
 
       <!-- Expériences -->
       <div class="form-group">
         <label for="experiences">Expériences</label>
-        <input v-model="form.experiences" type="text" id="experiences" />
+        <input
+          v-model="form.experiences"
+          type="text"
+          id="experiences"
+          placeholder="Décrivez vos expériences professionnelles"
+        />
       </div>
 
       <!-- Compétences -->
       <div class="form-group">
         <label for="competences">Compétences</label>
-        <input v-model="form.competences" type="text" id="competences" />
+        <input
+          v-model="form.competences"
+          type="text"
+          id="competences"
+          placeholder="Listez vos compétences"
+        />
       </div>
 
       <!-- Langues -->
       <div class="form-group">
         <label for="langues">Langues</label>
-        <input v-model="form.langues" type="text" id="langues" />
+        <input
+          v-model="form.langues"
+          type="text"
+          id="langues"
+          placeholder="Indiquez vos langues parlées"
+        />
       </div>
 
       <!-- Fichier -->
       <div class="form-group">
         <label for="cvFile">Téléverser un CV (PDF ou Word)</label>
-        <input type="file" id="cvFile" @change="handleFile" />
+        <input
+          type="file"
+          id="cvFile"
+          @change="handleFile"
+          accept=".pdf, .doc, .docx"
+        />
         <div v-if="form.fichier" class="file-preview">
           <span>{{ form.fichier.name }}</span>
           <button type="button" @click="removeFile">Supprimer</button>
@@ -47,7 +78,7 @@
       </div>
 
       <!-- Soumettre -->
-      <button type="submit" :disabled="loading">
+      <button type="submit" :disabled="loading" aria-live="polite">
         {{ loading ? "Création en cours..." : "Créer mon CV" }}
       </button>
     </form>
@@ -126,6 +157,7 @@ export default {
   max-width: 600px;
   margin: auto;
   padding: 20px;
+  font-family: Arial, sans-serif;
 }
 
 .cv-form {
@@ -142,9 +174,14 @@ export default {
 textarea,
 input[type="text"],
 input[type="file"] {
-  padding: 0.5rem;
+  padding: 0.75rem;
   border: 1px solid #d1d5db;
-  border-radius: 5px;
+  border-radius: 8px;
+  margin-top: 5px;
+}
+
+input[type="file"] {
+  padding: 0.5rem;
 }
 
 label {
@@ -176,10 +213,15 @@ button[type="submit"] {
   border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 button[type="submit"]:disabled {
   background-color: #93c5fd;
   cursor: not-allowed;
+}
+
+button[type="submit"]:not(:disabled):hover {
+  background-color: #1d4ed8;
 }
 </style>

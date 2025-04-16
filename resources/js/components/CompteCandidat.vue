@@ -114,9 +114,12 @@ function navigateTo(page) {
 }
 
 // Vérifier la session utilisateur à l'initialisation
+// Dans la partie <script setup> et la fonction onMounted()
+
 onMounted(() => {
+  // Lire d'abord dans sessionStorage, puis dans localStorage
   const session = JSON.parse(
-    localStorage.getItem("userSession") || sessionStorage.getItem("userSession") || "null"
+    sessionStorage.getItem("userSession") || localStorage.getItem("userSession") || "null"
   );
   if (session) {
     userData.value = session;
@@ -125,6 +128,7 @@ onMounted(() => {
     router.push("/authentification");
   }
 });
+
 
 // Déconnexion
 function logout() {

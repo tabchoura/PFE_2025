@@ -3,13 +3,16 @@
     <h2 class="title">👤 Bienvenue {{ profile.prenom }} {{ profile.nom }}</h2>
 
     <ul class="profil-details" v-if="!editMode">
-      <li><strong>Date de naissance :</strong> {{ formatDate(profile.date) }}</li>
-      <li><strong>Numéro de téléphone :</strong> {{ profile.numtel }}</li>
-      <li><strong>CIN :</strong> {{ profile.cin }}</li>
+      <li><strong>Nom de la Société :</strong> {{ profile.nomsociete }}
+      </li>
+      <li><strong>Département de la Société :</strong> {{ profile.departement }}</li>
       <li><strong>Email :</strong> {{ profile.email }}</li>
-      <li><strong>Nom de la Société</strong>{{ profile.nomsociete }}</li>
-      <li><strong>Num Société</strong>{{ profile.numsociete }}</li>
-      <li><strong>lieu de la Société</strong>{{ profile.lieu }}</li>
+
+      <li><strong>CIN :</strong> {{ profile.cin }}</li>
+      <li><strong>Numéro de téléphone :</strong> {{ profile.numtel }}</li>
+
+      <li><strong>Num Société :</strong> {{ profile.numsociete }}</li>
+      <li><strong>Lieu de la Société :</strong> {{ profile.lieu }}</li>
     </ul>
 
     <button
@@ -34,21 +37,30 @@
         <input type="email" id="email" v-model="form.email" required />
       </div>
       <div class="form-group">
-        <label for="nom">Nom de la Société</label>
+        <label for="nomsociete">Nom de la Société</label>
         <input type="text" id="nomsociete" v-model="form.nomsociete" required />
       </div>
-
+      <div class="form-group">
+        <label for="departement">Département de la Société</label>
+        <input type="text" id="departement" v-model="form.departement" required />
+      </div>
       <div class="form-group">
         <label for="lieu">Localisation de la Société</label>
         <input type="text" id="lieu" v-model="form.lieu" required />
       </div>
       <div class="form-group">
         <label for="cin">CIN</label>
-        <input type="text" id="cin" v-model="form.cin" required pattern="[0-9]+"
-        title="CIN doit contenir uniquement des chiffres"
+        <input
+          type="text"
+          id="cin"
+          v-model="form.cin"
+          required
+          pattern="[0-9]+"
+          title="CIN doit contenir uniquement des chiffres"
+        />
       </div>
       <div class="form-group">
-        <label for="numsociété">Numéro de la Société</label>
+        <label for="numsociete">Numéro de la Société</label>
         <input
           type="tel"
           id="numsociete"
@@ -60,9 +72,7 @@
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn-cancel" @click="toggleEditMode">
-          ❌ Annuler
-        </button>
+        <button type="button" class="btn-cancel" @click="toggleEditMode">❌ Annuler</button>
         <button type="submit" class="btn-save">💾 Enregistrer</button>
       </div>
     </form>
@@ -78,12 +88,15 @@ export default {
         nom: "",
         prenom: "",
         email: "",
-        date: "",
         lieu: "",
         cin: "",
         numtel: "",
+        nomsociete: "",
+        numsociete: "",
+        departement:"",
       },
-      form: {}, // Pour le formulaire d'édition
+    
+      form: {},
       editMode: false,
     };
   },
@@ -93,65 +106,89 @@ export default {
   methods: {
     loadProfileData() {
       try {
-        const candidat = JSON.parse(localStorage.getItem("candidat"));
-        if (candidat) {
-          this.profile = { ...this.profile, ...candidat };
-          this.form = { ...this.profile }; // Initialiser le formulaire avec les mêmes données
+        const userSession = JSON.parse(
+          sessionStorage.getItem("userSession") ||
+          localStorage.getItem("userSession") ||
+          '{}'
+        );
+
+        if (userSession) {
+          this.profile = {
+  nom: userSession.nom || "",
+  prenom: userSession.prenom || "",
+  email: userSession.email || "",
+  lieu: userSession.lieu || userSession.lieuNaissance || "",
+  cin: userSession.cin || "",
+  numtel: userSession.numtel || "",
+  nomsociete: userSession.nomsociete || userSession.nomentreprise || "",
+  numsociete: userSession.numsociete || "",
+  departement: userSession.departement || "",
+};
+
+          this.form = { ...this.profile };
         }
       } catch (error) {
         console.error("Erreur lors du chargement des données du profil:", error);
-        // Réinitialiser le profil en cas d'erreur
-        localStorage.removeItem("candidat");
       }
     },
+
     toggleEditMode() {
       if (this.editMode) {
-        // Réinitialiser le formulaire si on annule
         this.form = { ...this.profile };
       }
       this.editMode = !this.editMode;
     },
+
     updateProfile() {
-      // Validation de base
       if (!this.form.email || !this.form.nom || !this.form.prenom) {
         alert("❌ Veuillez remplir tous les champs obligatoires");
         return;
       }
 
-      // Validation de l'email
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(this.form.email)) {
         alert("❌ Veuillez entrer un email valide");
         return;
       }
 
-      // Mise à jour du profil
       this.profile = { ...this.form };
 
       try {
-        localStorage.setItem("candidat", JSON.stringify(this.profile));
+        const userSession = JSON.parse(
+          sessionStorage.getItem("userSession") ||
+          localStorage.getItem("userSession") ||
+          '{}'
+        );
+
+        const updatedSession = {
+  ...userSession,
+  nom: this.form.nom,
+  prenom: this.form.prenom,
+  email: this.form.email,
+  numtel: this.form.numtel,
+  lieu: this.form.lieu,
+  cin: this.form.cin,
+  nomsociete: this.form.nomsociete,
+  numsociete: this.form.numsociete,
+  departement: this.form.departement,
+};
+
+        if (sessionStorage.getItem("userSession")) {
+          sessionStorage.setItem("userSession", JSON.stringify(updatedSession));
+        }
+        if (localStorage.getItem("userSession")) {
+          localStorage.setItem("userSession", JSON.stringify(updatedSession));
+        }
+
         this.editMode = false;
-        // Utilisation d'un message plus discret
         this.showSuccessMessage("Profil mis à jour avec succès !");
       } catch (error) {
         console.error("Erreur lors de la sauvegarde du profil:", error);
         alert("❌ Une erreur est survenue lors de la sauvegarde du profil.");
       }
     },
-    formatDate(dateString) {
-      if (!dateString) return "Non renseigné";
 
-      try {
-        const date = new Date(dateString);
-        return new Intl.DateTimeFormat("fr-FR", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        }).format(date);
-      } catch (e) {
-        return dateString;
-      }
-    },
+   
     showSuccessMessage(message) {
       const notification = document.createElement("div");
       notification.className = "success-notification";
@@ -159,10 +196,7 @@ export default {
 
       document.body.appendChild(notification);
 
-      setTimeout(() => {
-        notification.classList.add("show");
-      }, 100);
-
+      setTimeout(() => notification.classList.add("show"), 100);
       setTimeout(() => {
         notification.classList.remove("show");
         setTimeout(() => {
@@ -173,6 +207,8 @@ export default {
   },
 };
 </script>
+
+
 
 <style scoped>
 .profil-container {
