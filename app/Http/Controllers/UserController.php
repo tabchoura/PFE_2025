@@ -17,6 +17,8 @@ public function store(Request $request){
         'name'          => 'required|string|max:255',
         'last_name'     => 'required|string|max:255',
         'age'           => 'required|integer|min:18',
+        'lieudenaissance'=> 'required|integer|min:18',
+   
         'phone'         => 'required|string|max:20',
         'cv'            => 'required|string', 
         'cover_letter'  => 'required|string',
@@ -36,6 +38,7 @@ public function store(Request $request){
         'last_name'     => $validatedData['last_name'],
         'age'           => $validatedData['age'],
         'phone'         => $validatedData['phone'],
+        'lieudenaissance' => $validatedData['lieudenaissance'],
         'cv'            => $validatedData['cv'], 
         'cover_letter'  => $validatedData['cover_letter'],
         'datedepot'     => $validatedData['datedepot'],
@@ -64,6 +67,8 @@ public function update(Request $request, $id)
         'age'           => 'sometimes|integer|min:18',
         'phone'         => 'sometimes|string|max:20',
         'cv'            => 'sometimes|string',
+        'lieudenaissance'=> 'sometimes|string',
+
         'cover_letter'  => 'sometimes|string',
         'datedepot'     => 'nullable|date',
         'datevalidation'=> 'sometimes|date',

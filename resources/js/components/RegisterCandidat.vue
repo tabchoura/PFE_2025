@@ -166,242 +166,118 @@
     </div>
   </div>
 </template>
-
-<script>
-import { defineComponent, ref, computed, reactive } from 'vue';
+<script setup>
+import { ref, reactive, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import hiringImage from "../../assets/Rejoignez-nous.png";
+import api from '@/axios';
+import hiringImage from '../../assets/Rejoignez-nous.png';
 
-export default defineComponent({
-  name: "RegisterCandidat",
-  setup() {
-    const router = useRouter();
-    const isSubmitted = ref(false);
-    const formData = reactive({
-      email: "",
-      password: "",
-      prenom: "",
-      nom: "",
-      date: "",
-      lieu: "",
-      cin: "",
-      numtel: ""
-    });
+const router = useRouter();
+const isSubmitted = ref(false);
+const loading = ref(false);
+const showPassword = ref(false);
 
-    const loading = ref(false);
-    const errors = reactive({});
-    const showPassword = ref(false);
-
-    const existingData = {
-      emails: ["test@example.com", "utilisateur@domaine.com"],
-      phones: ["12345678", "23456789"],
-      cins: ["12345678", "87654321"]
-    };
-
-    const getExistingSessionData = () => {
-      const localData = localStorage.getItem("userSessions");
-      const sessionData = sessionStorage.getItem("userSessions");
-      let existingSessions = [];
-
-      try {
-        if (localData) existingSessions = existingSessions.concat(JSON.parse(localData));
-        if (sessionData) existingSessions = existingSessions.concat(JSON.parse(sessionData));
-      } catch (e) {
-        console.error("Erreur parsing session:", e);
-      }
-
-      return existingSessions;
-    };
-
-    const maxDate = computed(() => {
-      const today = new Date();
-      const eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
-      return eighteenYearsAgo.toISOString().split('T')[0];
-    });
-
-    const passwordStrength = computed(() => {
-      const pwd = formData.password || "";
-      let score = 0;
-      if (pwd.length >= 8) score++;
-      if (/[a-z]/.test(pwd)) score++;
-      if (/[A-Z]/.test(pwd)) score++;
-      if (/[0-9]/.test(pwd)) score++;
-      if (/[^a-zA-Z0-9]/.test(pwd)) score++;
-      return score;
-    });
-
-    const passwordStrengthClass = computed(() => {
-      const s = passwordStrength.value;
-      return s <= 2 ? "weak" : s <= 4 ? "medium" : "strong";
-    });
-
-    const passwordStrengthText = computed(() => {
-      const s = passwordStrength.value;
-      return s <= 2 ? "Faible" : s <= 4 ? "Moyen" : "Fort";
-    });
-
-    function togglePassword() {
-      showPassword.value = !showPassword.value;
-    }
-
-    function validateForm() {
-      Object.keys(errors).forEach(k => delete errors[k]);
-      let isValid = true;
-
-      const nameRegex = /^[a-zA-ZÀ-ÿ\s'-]+$/;
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-      const existingSessions = getExistingSessionData();
-
-      // Nom
-      if (!formData.nom || !nameRegex.test(formData.nom)) {
-        errors.nom = "Le nom est requis et doit contenir uniquement des lettres.";
-        isValid = false;
-      }
-
-      // Prénom
-      if (!formData.prenom || !nameRegex.test(formData.prenom)) {
-        errors.prenom = "Le prénom est requis et doit contenir uniquement des lettres.";
-        isValid = false;
-      }
-
-      // Email
-      if (!formData.email || !emailRegex.test(formData.email)) {
-        errors.email = "Adresse email invalide.";
-        isValid = false;
-      } else if (
-        existingData.emails.includes(formData.email.toLowerCase()) ||
-        existingSessions.some(s => s.email?.toLowerCase() === formData.email.toLowerCase())
-      ) {
-        errors.email = "Email déjà utilisé.";
-        isValid = false;
-      }
-
-      // Mot de passe
-      const pwd = formData.password || "";
-      if (pwd.length < 8) {
-        errors.password = "Mot de passe trop court (min 8 caractères)";
-        isValid = false;
-      } else if (
-        !/[a-z]/.test(pwd) ||
-        !/[A-Z]/.test(pwd) ||
-        !/[0-9]/.test(pwd) ||
-        !/[^a-zA-Z0-9]/.test(pwd)
-      ) {
-        errors.password = "Mot de passe : majuscule, minuscule, chiffre et caractère spécial requis.";
-        isValid = false;
-      }
-
-      // CIN
-      if (!/^\d{8}$/.test(formData.cin)) {
-        errors.cin = "Le CIN doit contenir exactement 8 chiffres.";
-        isValid = false;
-      } else if (
-        existingData.cins.includes(formData.cin) ||
-        existingSessions.some(s => s.cin === formData.cin)
-      ) {
-        errors.cin = "CIN déjà enregistré.";
-        isValid = false;
-      }
-
-      // Numéro téléphone
-      if (!/^\d{8}$/.test(formData.numtel)) {
-        errors.numtel = "Le numéro de téléphone doit contenir exactement 8 chiffres.";
-        isValid = false;
-      } else if (
-        existingData.phones.includes(formData.numtel) ||
-        existingSessions.some(s => s.numtel === formData.numtel)
-      ) {
-        errors.numtel = "Numéro de téléphone déjà utilisé.";
-        isValid = false;
-      }
-
-      // Date de naissance
-      if (!formData.date) {
-        errors.date = "Date de naissance requise.";
-        isValid = false;
-      } else {
-        const birth = new Date(formData.date);
-        const today = new Date();
-        const age = today.getFullYear() - birth.getFullYear();
-        const m = today.getMonth() - birth.getMonth();
-        const d = today.getDate() - birth.getDate();
-        const is18 = age > 18 || (age === 18 && (m > 0 || (m === 0 && d >= 0)));
-
-        if (!is18) {
-          errors.date = "Vous devez avoir au moins 18 ans.";
-          isValid = false;
-        }
-      }
-
-      // Lieu de naissance
-      if (!formData.lieu || !nameRegex.test(formData.lieu)) {
-        errors.lieu = "Le lieu doit contenir uniquement des lettres.";
-        isValid = false;
-      }
-
-      return isValid;
-    }
-
-    async function register() {
-      if (!validateForm()) return;
-      loading.value = true;
-
-      await new Promise(r => setTimeout(r, 1000));
-
-      const userData = {
-        email: formData.email,
-        type: "candidat",
-        lastLogin: new Date().toISOString(),
-        nom: formData.nom,
-        prenom: formData.prenom,
-        cin: formData.cin,
-        numtel: formData.numtel,
-        dateNaissance: formData.date,
-        lieuNaissance: formData.lieu,
-        password: formData.password // ⚠️ à ne pas stocker en clair en production !
-      };
-
-      sessionStorage.setItem("userSession", JSON.stringify(userData));
-
-      let userSessions = [];
-      try {
-        userSessions = JSON.parse(sessionStorage.getItem("userSessions") || "[]");
-      } catch {}
-      userSessions.push(userData);
-      sessionStorage.setItem("userSessions", JSON.stringify(userSessions));
-
-      loading.value = false;
-      isSubmitted.value = true;
-    }
-
-    function goToCompteCandidat() {
-      if (!sessionStorage.getItem("userSession")) {
-        sessionStorage.setItem("userSession", JSON.stringify({
-          ...formData,
-          type: "candidat",
-          lastLogin: new Date().toISOString()
-        }));
-      }
-      window.location.href = "/CompteCandidat";
-    }
-
-    return {
-      formData,
-      errors,
-      loading,
-      showPassword,
-      maxDate,
-      passwordStrengthClass,
-      passwordStrengthText,
-      togglePassword,
-      register,
-      goToCompteCandidat,
-      isSubmitted,
-      hiringImage
-    };
-  }
+const formData = reactive({
+  nom: '',
+  prenom: '',
+  email: '',
+  password: '',
+  cin: '',
+  numtel: '',
+  date: '',
+  lieu: ''
 });
+
+const errors = reactive({});
+const passwordStrengthClass = computed(() => {
+  if (formData.password.length < 8) return 'weak';
+  if (/[A-Z]/.test(formData.password) && /[0-9]/.test(formData.password)) return 'medium';
+  if (/[A-Z]/.test(formData.password) && /[0-9]/.test(formData.password) && /[^A-Za-z0-9]/.test(formData.password)) return 'strong';
+  return '';
+});
+
+const passwordStrengthText = computed(() => {
+  const length = formData.password.length;
+  if (length < 8) return 'Faible';
+  if (length < 12) return 'Moyen';
+  return 'Fort';
+});
+
+
+const maxDate = computed(() => {
+  const today = new Date();
+  today.setFullYear(today.getFullYear() - 18);
+  return today.toISOString().split('T')[0];
+});
+
+function togglePassword() {
+  showPassword.value = !showPassword.value;
+}
+
+function validateForm() {
+  Object.keys(errors).forEach(k => delete errors[k]);
+  let valid = true;
+  const nameRegex = /^[a-zA-ZÀ-ÿ\s'-]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (!formData.nom || !nameRegex.test(formData.nom)) {
+    errors.nom = 'Nom invalide'; valid = false;
+  }
+  if (!formData.prenom || !nameRegex.test(formData.prenom)) {
+    errors.prenom = 'Prénom invalide'; valid = false;
+  }
+  if (!formData.email || !emailRegex.test(formData.email)) {
+    errors.email = 'Email invalide'; valid = false;
+  }
+  if (formData.password.length < 8) {
+    errors.password = 'Mot de passe trop court'; valid = false;
+  }
+  if (!/^\d{8}$/.test(formData.cin)) {
+    errors.cin = 'CIN invalide'; valid = false;
+  }
+  if (!/^\d{8}$/.test(formData.numtel)) {
+    errors.numtel = 'Téléphone invalide'; valid = false;
+  }
+  if (!formData.date) {
+    errors.date = 'Date requise'; valid = false;
+  }
+  if (!formData.lieu || !nameRegex.test(formData.lieu)) {
+    errors.lieu = 'Lieu invalide'; valid = false;
+  }
+  return valid;
+}
+
+async function register() {
+  if (!validateForm()) return;
+  loading.value = true;
+  try {
+    await api.get('/sanctum/csrf-cookie');
+    const payload = {
+      prenom: formData.prenom,
+      nom: formData.nom,
+      email: formData.email,
+      password: formData.password,
+      role: 'candidat',
+      cin: formData.cin,
+      numtel: formData.numtel,
+      date: formData.date,
+      lieu: formData.lieu
+    };
+    const response = await api.post('/api/register', payload);
+    const { user } = response.data;
+    sessionStorage.setItem('userSession', JSON.stringify(user));
+    isSubmitted.value = true;
+  } catch (error) {
+    console.error(error);
+    alert("Erreur serveur lors de l'inscription");
+  } finally {
+    loading.value = false;
+  }
+}
+
+function goToCompteCandidat() {
+  router.push('/CompteCandidat');
+}
 </script>
 
 <style scoped>

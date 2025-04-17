@@ -20,6 +20,9 @@ return new class extends Migration
                 $table->string('email')->nullable();
                 $table->string('department');
                 $table->string('phone');
+                $table->string('description');  // Correction ici, suppression de "column:"
+                $table->string('siteweb');  // Correction ici, suppression de "column:"
+                
                 $table->timestamps();
             });
         }

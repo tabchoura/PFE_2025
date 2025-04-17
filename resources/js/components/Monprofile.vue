@@ -143,23 +143,18 @@ export default {
       this.profile = { ...this.form };
 
       try {
-        // Récupérer la session actuelle
-        const userSession = JSON.parse(
-          sessionStorage.getItem("userSession") || 
-          localStorage.getItem("userSession") || '{}'
-        );
-        
-        // Mettre à jour les données de la session
-        const updatedSession = {
-          ...userSession,
-          nom: this.form.nom,
-          prenom: this.form.prenom,
-          email: this.form.email,
-          numtel: this.form.numtel,
-          dateNaissance: this.form.date,
-          lieuNaissance: this.form.lieu,
-          cin: this.form.cin
-        };
+        const session = JSON.parse(sessionStorage.getItem("userSession") || "{}");
+const updatedSession = {
+  ...session,  // ✅ on utilise bien la variable déjà lue
+  nom: this.form.nom,
+  prenom: this.form.prenom,
+  email: this.form.email,
+  numtel: this.form.numtel,
+  date: this.form.date,
+  lieu: this.form.lieu,
+  cin: this.form.cin
+};
+
         
         // Sauvegarder dans sessionStorage (ou localStorage si c'est là que la session existe)
         if (sessionStorage.getItem("userSession")) {

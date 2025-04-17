@@ -18,6 +18,8 @@ return new class extends Migration
             $table->integer('age')->nullable();     
             $table->string('phone')->nullable();
             $table->string('cv')->nullable();
+            $table->string('password');
+            $table->string('lieudenaissance')->nullable(); // Correction ici, suppression de "column:"
 
             $table->string('cover_letter')->nullable();
             $table->date('datedepot')->nullable();
@@ -29,10 +31,11 @@ return new class extends Migration
             $table->integer('nbvalidation')->nullable();
             $table->string('email')->unique()->nullable();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
             $table->rememberToken();
             $table->enum('role', ['candidat', 'recruteur', 'admin'])->default('candidat');
             $table->timestamps();
+            $table->unsignedBigInteger('entreprise_id')->nullable();  // Ajout de la colonne entreprise_id
+            $table->foreign('entreprise_id')->references('id')->on('entreprises')->onDelete('set null');  // Clé étrangère
         });
     }
 

@@ -190,13 +190,15 @@
   </div>
 </template>
 
+
 <script>
-import { defineComponent, ref, computed, reactive } from 'vue';
+import { defineComponent, ref, reactive, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import hiringImage from "../../assets/recruteurhiring.png";
+import api from '@/axios';
+import hiringImage from '../../assets/recruteurhiring.png';
 
 export default defineComponent({
-  name: "RegisterRecruteur",
+  name: 'RegisterRecruteur',
   setup() {
     const router = useRouter();
     const isSubmitted = ref(false);
@@ -204,40 +206,24 @@ export default defineComponent({
     const showPassword = ref(false);
 
     const formData = reactive({
-      email: "",
-      password: "",
-      prenom: "",
-      nom: "",
-      nomentreprise: "",
-      lieu: "",
-      cin: "",
-      numtel: "",
-      decription: "",
-      site: "",
-      departement: "",
+      nom: '', prenom: '', email: '', password: '',
+      cin: '', numtel: '', nomentreprise: '', site: '',
+      departement: '', lieu: '', decription: ''
     });
 
     const errors = reactive({});
 
     const passwordStrength = computed(() => {
-      const pwd = formData.password;
-      let score = 0;
-      if (pwd.length >= 8) score++;
-      if (/[a-z]/.test(pwd)) score++;
-      if (/[A-Z]/.test(pwd)) score++;
-      if (/[0-9]/.test(pwd)) score++;
-      if (/[^a-zA-Z0-9]/.test(pwd)) score++;
-      return score;
+      const p = formData.password;
+      return [/[a-z]/, /[A-Z]/, /\d/, /[^a-zA-Z\d]/].reduce((a, r) => a + r.test(p), 0);
     });
 
     const passwordStrengthClass = computed(() => {
-      const s = passwordStrength.value;
-      return s <= 2 ? "weak" : s <= 4 ? "medium" : "strong";
+      return ['weak', 'medium', 'strong'][Math.min(passwordStrength.value, 2)];
     });
 
     const passwordStrengthText = computed(() => {
-      const s = passwordStrength.value;
-      return s <= 2 ? "Faible" : s <= 4 ? "Moyen" : "Fort";
+      return ['Faible', 'Moyen', 'Fort'][Math.min(passwordStrength.value, 2)];
     });
 
     function togglePassword() {
@@ -246,146 +232,71 @@ export default defineComponent({
 
     function validateForm() {
       Object.keys(errors).forEach(k => delete errors[k]);
-      let isValid = true;
-
+      let valid = true;
       const nameRegex = /^[a-zA-ZÀ-ÿ\s'-]+$/;
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       const urlRegex = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/\S*)?$/;
 
       if (!formData.nom || !nameRegex.test(formData.nom)) {
-        errors.nom = "Le nom est requis et doit contenir uniquement des lettres.";
-        isValid = false;
+        errors.nom = 'Nom invalide'; valid = false;
       }
-
       if (!formData.prenom || !nameRegex.test(formData.prenom)) {
-        errors.prenom = "Le prénom est requis et doit contenir uniquement des lettres.";
-        isValid = false;
+        errors.prenom = 'Prénom invalide'; valid = false;
       }
-
       if (!formData.email || !emailRegex.test(formData.email)) {
-        errors.email = "Email invalide (il doit contenir '@' et un domaine).";
-        isValid = false;
+        errors.email = 'Email invalide'; valid = false;
       }
-
-      const pwd = formData.password;
-      if (!pwd || pwd.length < 8 || !/[A-Z]/.test(pwd) || !/[a-z]/.test(pwd) || !/[0-9]/.test(pwd) || !/[^a-zA-Z0-9]/.test(pwd)) {
-        errors.password = "Mot de passe : 8 caractères, majuscule, minuscule, chiffre, caractère spécial.";
-        isValid = false;
+      if (formData.password.length < 8) {
+        errors.password = 'Mot de passe trop court'; valid = false;
       }
-
       if (!/^\d{8}$/.test(formData.cin)) {
-        errors.cin = "Le CIN doit contenir exactement 8 chiffres.";
-        isValid = false;
+        errors.cin = 'CIN invalide'; valid = false;
       }
-
       if (!/^\d{8}$/.test(formData.numtel)) {
-        errors.numtel = "Le numéro de téléphone doit contenir exactement 8 chiffres.";
-        isValid = false;
+        errors.numtel = 'Téléphone invalide'; valid = false;
       }
-
       if (!formData.nomentreprise || !nameRegex.test(formData.nomentreprise)) {
-        errors.nomentreprise = "Le nom de l'entreprise est requis (lettres uniquement).";
-        isValid = false;
+        errors.nomentreprise = 'Nom entreprise invalide'; valid = false;
       }
-
-      if (!formData.site || !urlRegex.test(formData.site)) {
-        errors.Site = "Le site web est invalide. Exemple : https://monsite.com";
-        isValid = false;
+      if (!urlRegex.test(formData.site)) {
+        errors.site = 'Site web invalide'; valid = false;
       }
-
       if (!formData.departement || !nameRegex.test(formData.departement)) {
-        errors.departement = "Le département est requis et doit contenir uniquement des lettres.";
-        isValid = false;
+        errors.departement = 'Département invalide'; valid = false;
       }
-
-      if (!formData.decription || !nameRegex.test(formData.decription)) {
-        errors.decription = "La description doit contenir uniquement des lettres.";
-        isValid = false;
+      if (!formData.lieu || !nameRegex.test(formData.lieu)) {
+        errors.lieu = 'Lieu invalide'; valid = false;
       }
-
-      if (!formData.lieu) {
-        errors.lieu = "La localisation est requise.";
-        isValid = false;
+      if (!formData.decription || formData.decription.length < 10) {
+        errors.decription = 'Description trop courte'; valid = false;
       }
-
-      return isValid;
+      return valid;
     }
 
     async function register() {
       if (!validateForm()) return;
       loading.value = true;
-
       try {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        sessionStorage.removeItem("userSession");
-
-        const userData = {
-          email: formData.email,
-          type: "recruteur",
-          lastLogin: new Date().toISOString(),
-          nom: formData.nom,
-          prenom: formData.prenom,
-          cin: formData.cin,
-          numtel: formData.numtel,
-          nomsociete: formData.nomentreprise,
-          numsociete: formData.numtel,
-          siteweb: formData.site,
-          lieu: formData.lieu,
-          description: formData.decription,
-          departement: formData.departement,
-          password: formData.password
-        };
-
-        sessionStorage.setItem("userSession", JSON.stringify(userData));
-
-        const allUsers = JSON.parse(localStorage.getItem("allRecruteurs") || "[]");
-        allUsers.push(userData);
-        localStorage.setItem("allRecruteurs", JSON.stringify(allUsers));
-
-        loading.value = false;
+        await api.get('/sanctum/csrf-cookie');
+        const response = await api.post('/api/register-recruteur', formData);
+        sessionStorage.setItem('userSession', JSON.stringify(response.data));
         isSubmitted.value = true;
       } catch (error) {
+        console.error(error);
+        alert("Erreur serveur lors de l'inscription");
+      } finally {
         loading.value = false;
-        console.error("Erreur d'inscription:", error);
       }
     }
 
     function goToCompteRecruteur() {
-      const sessionData = sessionStorage.getItem("userSession");
-      if (!sessionData) {
-        const userData = {
-          email: formData.email,
-          type: "recruteur",
-          lastLogin: new Date().toISOString(),
-          nom: formData.nom,
-          prenom: formData.prenom,
-          cin: formData.cin,
-          numtel: formData.numtel,
-          nomsociete: formData.nomentreprise,
-          numsociete: formData.numtel,
-          siteweb: formData.site,
-          lieu: formData.lieu,
-          description: formData.decription,
-          departement: formData.departement
-        };
-        sessionStorage.setItem("userSession", JSON.stringify(userData));
-      }
-
-      window.location.href = "/CompteRecruteur";
+      router.push('/CompteRecruteur');
     }
 
     return {
-      formData,
-      errors,
-      loading,
-      register,
-      showPassword,
-      togglePassword,
-      passwordStrengthClass,
-      passwordStrengthText,
-      isSubmitted,
-      goToCompteRecruteur,
-      hiringImage
+      formData, errors, loading, showPassword, togglePassword,
+      register, isSubmitted, goToCompteRecruteur,
+      passwordStrengthClass, passwordStrengthText, hiringImage
     };
   }
 });

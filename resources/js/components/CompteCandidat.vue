@@ -131,12 +131,21 @@ onMounted(() => {
 
 
 // Déconnexion
-function logout() {
-  // Supprimer la session et rediriger vers la page de connexion
-  localStorage.removeItem("userSession");
-  sessionStorage.removeItem("userSession");
-  router.push("/authentification");
+import api from "@/axios";
+
+
+async function logout() {
+  try {
+    await api.post("/api/logout");
+  } catch (error) {
+    console.error("Erreur lors de la déconnexion :", error.response?.data || error.message);
+  } finally {
+    localStorage.removeItem("userSession");
+    sessionStorage.removeItem("userSession");
+    router.push("/authentification");
+  }
 }
+
 </script>
 
 <style scoped>

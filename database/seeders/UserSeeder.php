@@ -21,6 +21,7 @@ class UserSeeder extends Seeder
             'age'=>23,
             'phone' => '54212712', // ✅ Entre guillemets
             'cv' => 'cv.pdf',
+            'lieudenaissance'=>"monastir",
             'cover_letter' => 'cl.pdf',
             'datedepot' => Carbon::create(2025, 3, 8)->format('Y-m-d'), // ✅ Format corrigé
             'datevalidation' => Carbon::create(2025, 3, 9)->format('Y-m-d'),

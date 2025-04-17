@@ -93,7 +93,7 @@
 import recrutlogin from "../../assets/authentification.jpg";
 import RegisterCandidat from "../components/RegisterCandidat.vue";
 import RegisterRecruteur from "../components/RegisterRecruteur.vue";
-import { useRouter } from 'vue-router'; // Importer useRouter pour rediriger
+import api from '@/axios';
 
 export default {
   components: {
@@ -106,7 +106,7 @@ export default {
       email: "",
       password: "",
       isRecruteur: false,
-      page: "login", // Page initiale
+      page: "login",
       isLoading: false,
       emailError: false,
       passwordError: false,
@@ -121,67 +121,51 @@ export default {
       this.passwordError = this.password.length < 6;
       return !this.emailError && !this.passwordError;
     },
-    login() {
-  if (!this.validateForm()) return;
+    async login() {
+      if (!this.validateForm()) return;
+      this.isLoading = true;
 
-  this.isLoading = true;
+      try {
+        await api.get("/sanctum/csrf-cookie");
+        const response = await api.post("/api/login", {
+          email: this.email,
+          password: this.password,
+          type: this.isRecruteur ? "recruteur" : "candidat"
+        });
 
-  setTimeout(() => {
-    const userType = this.isRecruteur ? "recruteur" : "candidat";
-    let userData = null;
+        const userData = response.data;
+        const storage = this.rememberMe ? localStorage : sessionStorage;
+        storage.setItem("userSession", JSON.stringify(userData));
 
-    if (userType === "candidat") {
-      const allUsers = JSON.parse(localStorage.getItem("allCandidats") || "[]");
-      userData = allUsers.find(user => user.email === this.email);
-    } else if (userType === "recruteur") {
-      const allUsers = JSON.parse(localStorage.getItem("allRecruteurs") || "[]");
-      userData = allUsers.find(user => user.email === this.email);
-    }
-
-    if (!userData) {
-      alert("❌ Utilisateur non trouvé ou données manquantes !");
-      this.isLoading = false;
-      return;
-    }
-
-    userData.lastLogin = new Date().toISOString();
-
-    const storage = this.rememberMe ? localStorage : sessionStorage;
-    storage.setItem("userSession", JSON.stringify(userData));
-
-    this.isLoading = false;
-    this.$router.push(userType === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat");
-  }, 1500);
-}
-,
-
-
+        this.$router.push(
+          userData.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat"
+        );
+      } catch (error) {
+        alert("❌ Identifiants incorrects ou utilisateur non trouvé");
+        console.error("Erreur lors de la connexion:", error);
+      } finally {
+        this.isLoading = false;
+      }
+    },
     goToSignup() {
       this.page = this.isRecruteur ? "registerRecruteur" : "registerCandidat";
-      // Redirection vers la page d'inscription en tant que Candidat ou Recruteur
-      this.$router.push(this.isRecruteur ? "/registerRecruteur" : "/registerCandidat");
+      this.$router.push(this.page === "registerRecruteur" ? "/registerRecruteur" : "/registerCandidat");
     },
     handleRegistrationComplete(userData) {
-  const storage = this.rememberMe ? localStorage : sessionStorage;
-  storage.setItem("userSession", JSON.stringify(userData));
-  this.$router.push(userData.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat");
-}
-
+      const storage = this.rememberMe ? localStorage : sessionStorage;
+      storage.setItem("userSession", JSON.stringify(userData));
+      this.$router.push(userData.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat");
+    }
   },
   mounted() {
-  // Vérifier si l'utilisateur vient d'une autre page (pas après une inscription)
-  if (document.referrer === "") { // Si document.referrer est vide, c'est un accès direct
     const session = localStorage.getItem("userSession") || sessionStorage.getItem("userSession");
-
-    if (session) {
+    if (session && document.referrer === "") {
       const user = JSON.parse(session);
       this.email = user.email;
       this.isRecruteur = user.type === "recruteur";
       this.$router.push(user.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat");
     }
   }
-}
-,
 };
 </script>
 

@@ -52,6 +52,8 @@ class EntrepriseController extends Controller
             'email'    => 'required|string|max:255',
             'department'    => 'required|string|max:255',
             'phone'    => 'required|string|max:255',
+            'description'=>'required|string|max:255',
+            'siteweb'=>'required|string|max:255',
         ]);
         
         $entreprise->update($validatedData);

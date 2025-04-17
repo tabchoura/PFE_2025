@@ -19,6 +19,8 @@ class EntrepriseSeeder extends Seeder
             'email'      => 'elyos@gmail.com',
             'department' => 'IT',
             'phone'      => "73000000",
+            'description'=>'une entreprise qui cherche des talents dans le domaine IT',
+            'siteweb'=>"elyos.com",
         ]);
     }
 }
