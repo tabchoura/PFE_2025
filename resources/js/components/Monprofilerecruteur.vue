@@ -80,8 +80,10 @@
 </template>
 
 <script>
+import api from '@/axios';
+
 export default {
-  name: "Monprofile",
+  name: "Monprofilerecruteur",
   data() {
     return {
       profile: {
@@ -104,33 +106,33 @@ export default {
     this.loadProfileData();
   },
   methods: {
-    loadProfileData() {
-      try {
-        const userSession = JSON.parse(
-          sessionStorage.getItem("userSession") ||
-          localStorage.getItem("userSession") ||
-          '{}'
-        );
+    async loadProfileData() {
+  try {
+    await api.get('/sanctum/csrf-cookie'); // 👈 nécessaire AVANT tout appel protégé
 
-        if (userSession) {
-          this.profile = {
-  nom: userSession.nom || "",
-  prenom: userSession.prenom || "",
-  email: userSession.email || "",
-  lieu: userSession.lieu || userSession.lieuNaissance || "",
-  cin: userSession.cin || "",
-  numtel: userSession.numtel || "",
-  nomsociete: userSession.nomsociete || userSession.nomentreprise || "",
-  numsociete: userSession.numsociete || "",
-  departement: userSession.departement || "",
-};
+    const me = await api.get("/api/me");
+console.log("✅ Utilisateur connecté :", me.data);
+    const user = me.data;
 
-          this.form = { ...this.profile };
-        }
-      } catch (error) {
-        console.error("Erreur lors du chargement des données du profil:", error);
-      }
-    },
+    this.profile = {
+      nom: user.nom || "",
+      prenom: user.prenom || "",
+      email: user.email || "",
+      lieu: user.lieu || user.lieuNaissance || "",
+      cin: user.cin || "",
+      numtel: user.numtel || "",
+      nomsociete: user.nomsociete || user.nomentreprise || "",
+      numsociete: user.numsociete || "",
+      departement: user.departement || "",
+    };
+
+    this.form = { ...this.profile };
+
+  } catch (error) {
+    console.error("Erreur lors du chargement des données du profil:", error);
+  }
+}
+,
 
     toggleEditMode() {
       if (this.editMode) {

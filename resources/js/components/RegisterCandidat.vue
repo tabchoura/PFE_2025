@@ -419,7 +419,9 @@ async function register() {
     sessionStorage.setItem('userSession', JSON.stringify({
       token,
       ...user
+
     }));
+    console.log('userSession :', sessionStorage.getItem('userSession'));
 
     isSubmitted.value = true;
   } catch (error) {

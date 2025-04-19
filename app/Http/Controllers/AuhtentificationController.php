@@ -26,6 +26,7 @@ class AuhtentificationController extends Controller
         return response()->json([
             'token' => $token,
             'user' => $user,
+            'type' => $user->role
         ]);
 
     }

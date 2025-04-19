@@ -83,15 +83,28 @@ onMounted(() => {
 // Déconnexion
 async function logout() {
   try {
-    await api.post("/api/logout");
+    const session = JSON.parse(
+      sessionStorage.getItem('userSession') || localStorage.getItem('userSession') || '{}'
+    );
+
+    const token = session.token;
+    if (token) {
+      // Ajoute le token dans l'en-tête Authorization pour que Laravel reconnaisse l'utilisateur
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+
+    await api.post("/api/logout"); // Laravel va supprimer les tokens ici
   } catch (error) {
     console.error("Erreur lors de la déconnexion :", error.response?.data || error.message);
   } finally {
+    // Supprimer la session même s'il y a une erreur
     localStorage.removeItem("userSession");
     sessionStorage.removeItem("userSession");
-    router.push("/authentification");  // Redirection vers la page d'authentification après déconnexion
+    // Redirige vers la page de connexion
+    router.push("/authentification");
   }
 }
+
 </script>
 
 <style scoped>

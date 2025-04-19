@@ -52,11 +52,12 @@ class AuthController extends Controller
         
         ]);
 
-        $token = $user->createToken($user->role . '_token')->plainTextToken;
-        return response()->json([
-            'token' => $token,
-            'user' => $user,
-        ]);
+     return response()->json([
+    'message' => 'Inscription réussie ✅',
+    'user' => $user,
+    'type' => $user->role,
+]);
+
         
 
         
@@ -66,40 +67,36 @@ class AuthController extends Controller
     // Connexion d'un utilisateur
     public function login(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email',
+        $credentials = $request->validate([
+            'email'    => 'required|email',
             'password' => 'required',
         ]);
-
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['error' => 'Identifiants invalides'], 401);
+    
+        if (!Auth::attempt($credentials)) {
+            return response()->json(['message' => 'Bad credentials'], 401);
         }
-
-        $token = $user->createToken($user->role . '_token')->plainTextToken;
-
+    
+        $user  = Auth::user();             // connecté
+        $token = $user->createToken('spa')->plainTextToken;   // <-- token Sanctum
+    
         return response()->json([
-            'token' => $token,
-            'user' => $user,
+            'user'  => $user,
+            'token' => $token,              // on l’envoie au front
+            'type'  => $user->role,
         ]);
     }
+    
 
     // Déconnexion de l'utilisateur
     public function logout(Request $request)
     {
-        // Récupérer l'utilisateur actuel
-        $user = $request->user();
+        Auth::logout();
     
-        // Vérifier si l'utilisateur est authentifié
-        if (!$user) {
-            return response()->json(['message' => 'Non authentifié'], 401);
-        }
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
     
-        // Supprimer les tokens de l'utilisateur pour le déconnecter
-        $user->tokens()->delete();
-    
-        return response()->json(['message' => 'Déconnexion réussie']);
+        return response()->json(['message' => 'Déconnecté avec succès']);
     }
+    
     
 }    

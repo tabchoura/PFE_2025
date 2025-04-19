@@ -318,7 +318,7 @@ watch(formData, (newVal) => {
 
 const isFormValid = computed(() => {
   return Object.values(validFields).every(valid => valid) && 
-         Object.keys(formData).every(field => !!formData[field]);
+        Object.keys(formData).every(field => !!formData[field]);
 });
 
 const passwordStrengthClass = computed(() => {
@@ -431,8 +431,8 @@ function validateField(field) {
       }
       break;
       
- 
-         
+
+        
     case 'departement':
       validFields.departement = !!formData.departement && nameRegex.test(formData.departement);
       if (!validFields.departement && formData.departement) {
@@ -515,6 +515,8 @@ async function register() {
       ...user
     }));
 
+
+
     isSubmitted.value = true;  // Mettre à jour l'état de soumission
   } catch (error) {
     console.error(error);  // Vérifier si une erreur se produit
@@ -534,7 +536,7 @@ async function register() {
 
 
 function goToCompteRecruteur() {
-  router.push('/CompteRecruteur');
+  router.push('/monprofilerecruteur'); // ✅ maintenant elle existe
 }
 </script>
 

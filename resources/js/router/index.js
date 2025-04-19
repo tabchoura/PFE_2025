@@ -1,4 +1,3 @@
-// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
 import Home from '@/components/Home.vue';
 import Offres from '@/components/Offres.vue';
@@ -26,172 +25,54 @@ const routes = [
   { path: '/registerrecruteur', name: 'RegisterRecruteur', component: RegisterRecruteur },
   { path: '/apropos', name: 'Apropos', component: Apropos },
 
-  // Nouvelle structure pour les routes du candidat avec le layout MonEspace
+  // Candidat
   { 
     path: '/CompteCandidat', 
     component: CompteCandidat,
     meta: { requiresAuth: true },
     children: [
-      {
-        path: '',
-        name: 'CompteCandidat',
-        component: CompteCandidat
-      }
+      { path: '', name: 'CompteCandidat', component: CompteCandidat }
     ]
   },
-  
-  // Routes avec le layout MonEspace
-  {
-    path: '/monprofile',
-    component: CompteCandidat,
-    meta: { requiresAuth: true },
-    children: [
-      {
-        path: '',
-        name: 'Monprofile',
-        component: Monprofile
-      }
-    ]
-  },
-  {
-    path: '/candidature',
-    component: CompteCandidat,
-    meta: { requiresAuth: true },
-    children: [
-      {
-        path: '',
-        name: 'Candidature',
-        component: Candidature
-      }
-    ]
-  },
-  {
-    path: '/entretiens',
-    component: CompteCandidat,
-    meta: { requiresAuth: true },
-    children: [
-      {
-        path: '',
-        name: 'Entretiens',
-        component: Entretiens
-      }
-    ]
-  },
-  {
-    path: '/CreateCv',
-    component: CompteCandidat,
-    meta: { requiresAuth: true },
-    children: [
-      {
-        path: '',
-        name: 'CreateCv',
-        component: CreateCv
-      }
-    ]
-  },
-  {
-    path: '/CreateLettre',
-    component: CompteCandidat,
-    meta: { requiresAuth: true },
-    children: [
-      {
-        path: '',
-        name: 'CreateLettre',
-        component: CreateLettre
-      }
-    ]
-  },
-  {
-    path: '/Test',
-    component: CompteCandidat,
-    meta: { requiresAuth: true },
-    children: [
-      {
-        path: '',
-        name: 'Test',
-        component: Test
-      }
-    ]
-  },
-  {
-    path: '/Mesnotifications',
-    component: CompteCandidat,
-    meta: { requiresAuth: true },
-    children: [
-      {
-        path: '',
-        name: 'Mesnotifications',
-        component: Mesnotifications
-      }
-    ]
-  },
-  
-  // Routes pour le recruteur (inchangées)
-  { 
-    path: '/CompteRecruteur', 
-    name: 'CompteRecruteur', 
-    component: CompteRecruteur,
-    meta: { requiresAuth: true } 
-  },
-  {
-    path: '',
-    component: CompteRecruteur,
-    meta: { requiresAuth: true },
-    children: [
-      {
-        path: '',
-        name: 'monprofilerecruteur',
-        component: Monprofilerecruteur
-      }
-    ]
-  },
-  
-  // Page de détail dynamique d'une offre
+  { path: '/monprofile', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Monprofile', component: Monprofile }
+  ]},
+  { path: '/candidature', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Candidature', component: Candidature }
+  ]},
+  { path: '/entretiens', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Entretiens', component: Entretiens }
+  ]},
+  { path: '/CreateCv', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'CreateCv', component: CreateCv }
+  ]},
+  { path: '/CreateLettre', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'CreateLettre', component: CreateLettre }
+  ]},
+  { path: '/Test', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Test', component: Test }
+  ]},
+  { path: '/Mesnotifications', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Mesnotifications', component: Mesnotifications }
+  ]},
 
-  {
-    path: '/offres/:id',
-    component: CompteRecruteur,
-    meta: { requiresAuth: true },
-    children: [
-      {
-        path: '',
-        name: 'offres',
-        component: Offres
-      }
-    ]
-  },
- 
-  {
-    path: '/Candidaturesrecruteur',
-    component: CompteRecruteur,
-    meta: { requiresAuth: true },
-    children: [
-      {
-        path: '',
-        name: 'Candidaturesrecruteur',
-        component: Candidaturesrecruteur
-      }
-    ]
-  },
-  {
-    
-      path: '/entretiens',
-      component: CompteRecruteur,
-      meta: { requiresAuth: true },
-      children: [
-        {
-          path: '',
-          name: 'Entretiens',
-          component: Entretiens
-        }
-      ]
-    },
- 
-  // Route catch-all pour les URL non définies
-  {
-    path: '/:pathMatch(.*)*',
-    redirect: '/'
-  }
+  // Recruteur
+  { path: '/CompteRecruteur', name: 'CompteRecruteur', component: CompteRecruteur, meta: { requiresAuth: true } },
+  { path: '/monprofilerecruteur', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Monprofilerecruteur', component: Monprofilerecruteur }
+  ]},
+  { path: '/offres/:id', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'offres', component: Offres }
+  ]},
+  { path: '/Candidaturesrecruteur', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Candidaturesrecruteur', component: Candidaturesrecruteur }
+  ]},
+  { path: '/Entretiensrecruteurs', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Entretiensrecruteurs', component: Entretiens }
+  ]},
+
+  // Catch-all
+  { path: '/:pathMatch(.*)*', redirect: '/' }
 ];
 
 const router = createRouter({
@@ -199,22 +80,18 @@ const router = createRouter({
   routes,
 });
 
-// Navigation guard
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.meta.requiresAuth;
-  const isAuthenticated = localStorage.getItem('userSession') !== null || 
-                          sessionStorage.getItem('userSession') !== null;
-  
+  const sessionData = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
+  const isAuthenticated = !!sessionData;
+
   if (requiresAuth && !isAuthenticated) {
-    // Si l'authentification est requise mais l'utilisateur n'est pas authentifié
     next('/authentification');
   } else if (to.path === '/authentification' && isAuthenticated) {
-    const sessionData = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
     const session = JSON.parse(sessionData);
-    next(session.role === 'recruteur' ? '/CompteRecruteur' : '/CompteCandidat'); // ✅ Correct
-  
+    const role = session.role || session.type || session.user?.role;
+    next(role === 'recruteur' ? '/monprofilerecruteur' : '/monprofile');
   } else {
-    // Sinon, autoriser la navigation
     next();
   }
 });
