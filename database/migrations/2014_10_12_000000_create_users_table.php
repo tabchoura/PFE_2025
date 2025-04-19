@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('last_name')->nullable();
-            $table->integer('age')->nullable();     
+            $table->string('nom');
+            $table->string('prenom');
+            
+            $table->date('date_naissance')->nullable(); // au lieu de 'age'
             $table->string('phone')->nullable();
             $table->string('cv')->nullable();
             $table->string('password');
@@ -30,6 +31,14 @@ return new class extends Migration
             $table->integer('nb_offres')->nullable();
             $table->integer('nbvalidation')->nullable();
             $table->string('email')->unique()->nullable();
+            $table->string('siteweb')->nullable();
+            $table->string('departement')->nullable();
+
+            $table->string('description')->nullable();
+
+            $table->string('localisation')->nullable();
+
+
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->enum('role', ['candidat', 'recruteur', 'admin'])->default('candidat');

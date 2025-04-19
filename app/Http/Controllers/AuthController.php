@@ -19,18 +19,37 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6',
             'role' => 'required|in:candidat,recruteur,admin',
+            'date_naissance'=>'date',
+            'nomentreprise'=>'string',
+            'lieu'=>'string',  // Correction ici
+            'siteweb'=>'string',   // Correction ici
+            'cin' =>'required|string',   // Correction ici
+            'phone' => 'string',   // Correction ici
+            'departement'=>'string',
+            'description'=>'string',
+            
+
+
         ]);
         $user = User::create([
 
-            'name' => $request->prenom . ' ' . $request->nom,
+
+
+            'siteweb'=>$request->siteweb,
+            'departement'=>$request->departement,
+            'description'=>$request->description,
+            'nom' => $request->nom,
+            'prenom' => $request->prenom,
+
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
             'cin' => $request->cin,
             'phone' => $request->numtel,
             'datedepot' => now(),
-            'age' => $request->date, // ✅ champ cohérent
-            'lieudenaissance' => $request->lieu  // ✅ champ cohérent
+            'date_naissance' => $request->date_naissance,
+            'lieudenaissance' => $request->lieu ,// ✅ champ cohérent
+        
         ]);
 
         $token = $user->createToken($user->role . '_token')->plainTextToken;
@@ -38,6 +57,8 @@ class AuthController extends Controller
             'token' => $token,
             'user' => $user,
         ]);
+        
+
         
     }
 

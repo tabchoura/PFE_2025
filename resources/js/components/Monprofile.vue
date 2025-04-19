@@ -3,10 +3,10 @@
     <h2 class="title">👤 Bienvenue {{ profile.prenom }} {{ profile.nom }}</h2>
 
     <ul class="profil-details" v-if="!editMode">
-      <li><strong>Date de naissance :</strong> {{ formatDate(profile.date) }}</li>
+      <li><strong>Date de naissance :</strong> {{ formatDate(profile.date_naissance) }}</li>
       <li><strong>Numéro de téléphone :</strong> {{ profile.numtel }}</li>
       <li><strong>CIN :</strong> {{ profile.cin }}</li>
-      <li><strong>Lieu de naissance :</strong> {{ profile.lieu }}</li>
+      <li><strong>Lieu de naissance :</strong> {{ profile.lieudenaissance }}</li>
       <li><strong>Email :</strong> {{ profile.email }}</li>
     </ul>
 
@@ -43,12 +43,12 @@
         />
       </div>
       <div class="form-group">
-        <label for="date">Date de naissance</label>
-        <input type="date" id="date" v-model="form.date" required />
+        <label for="date_naissance">Date de naissance</label>
+        <input type="date" id="date_naissance" v-model="form.date_naissance" required />
       </div>
       <div class="form-group">
-        <label for="lieu">Lieu de naissance</label>
-        <input type="text" id="lieu" v-model="form.lieu" required />
+        <label for="lieudenaissance">Lieu de naissance</label>
+        <input type="text" id="lieudenaissance" v-model="form.lieudenaissance" required />
       </div>
       <div class="form-group">
         <label for="cin">CIN</label>
@@ -63,9 +63,7 @@
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn-cancel" @click="toggleEditMode">
-          ❌ Annuler
-        </button>
+        <button type="button" class="btn-cancel" @click="toggleEditMode">❌ Annuler</button>
         <button type="submit" class="btn-save">💾 Enregistrer</button>
       </div>
     </form>
@@ -73,6 +71,8 @@
 </template>
 
 <script>
+import api from "@/axios"; // adapte le chemin si besoin
+
 export default {
   name: "Monprofile",
   data() {
@@ -81,12 +81,12 @@ export default {
         nom: "",
         prenom: "",
         email: "",
-        date: "",
-        lieu: "",
+        date_naissance: "",
+        lieudenaissance: "",
         cin: "",
         numtel: "",
       },
-      form: {}, // Pour le formulaire d'édition
+      form: {},
       editMode: false,
     };
   },
@@ -94,45 +94,58 @@ export default {
     this.loadProfileData();
   },
   methods: {
-    loadProfileData() {
+    async loadProfileData() {
       try {
-        // Rechercher les données dans sessionStorage d'abord, puis dans localStorage
-        const userSession = JSON.parse(
-          sessionStorage.getItem("userSession") || 
-          localStorage.getItem("userSession") || '{}'
+        const session = JSON.parse(
+          sessionStorage.getItem("userSession") || localStorage.getItem("userSession") || "{}"
         );
-        
-        if (userSession) {
-          this.profile = { 
-            nom: userSession.nom || "",
-            prenom: userSession.prenom || "",
-            email: userSession.email || "",
-            date: userSession.dateNaissance || "",
-            lieu: userSession.lieuNaissance || "",
-            cin: userSession.cin || "",
-            numtel: userSession.numtel || ""
-          };
-          this.form = { ...this.profile }; // Initialiser le formulaire avec les mêmes données
+        const token = session.token;
+
+        if (!token) {
+          console.warn("Aucun token trouvé");
+          return;
         }
-      } catch (error) {
-        console.error("Erreur lors du chargement des données du profil:", error);
-      }
-    },
-    toggleEditMode() {
-      if (this.editMode) {
-        // Réinitialiser le formulaire si on annule
+
+        const response = await api.get("/api/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const user = response.data;
+
+        // Mise à jour du profil avec les données récupérées de l'API
+        this.profile = {
+          nom: user.nom || "",
+          prenom: user.prenom || "",
+          email: user.email || "",
+          date_naissance: user.date_naissance || "",
+          lieudenaissance: user.lieudenaissance || "",
+          cin: user.cin || "",
+          numtel: user.numtel || "",
+        };
+
+        // Préparation du formulaire pour la modification
         this.form = { ...this.profile };
+
+      } catch (error) {
+        console.error("❌ Erreur lors du chargement de l'utilisateur via l'API /me :", error);
       }
-      this.editMode = !this.editMode;
     },
+
+    toggleEditMode() {
+      this.editMode = !this.editMode;
+      if (!this.editMode) {
+        this.form = { ...this.profile }; // Réinitialise les données du formulaire si l'édition est annulée
+      }
+    },
+
     updateProfile() {
-      // Validation de base
       if (!this.form.email || !this.form.nom || !this.form.prenom) {
         alert("❌ Veuillez remplir tous les champs obligatoires");
         return;
       }
 
-      // Validation de l'email
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(this.form.email)) {
         alert("❌ Veuillez entrer un email valide");
@@ -144,36 +157,31 @@ export default {
 
       try {
         const session = JSON.parse(sessionStorage.getItem("userSession") || "{}");
-const updatedSession = {
-  ...session,  // ✅ on utilise bien la variable déjà lue
-  nom: this.form.nom,
-  prenom: this.form.prenom,
-  email: this.form.email,
-  numtel: this.form.numtel,
-  date: this.form.date,
-  lieu: this.form.lieu,
-  cin: this.form.cin
-};
 
-        
-        // Sauvegarder dans sessionStorage (ou localStorage si c'est là que la session existe)
-        if (sessionStorage.getItem("userSession")) {
-          sessionStorage.setItem("userSession", JSON.stringify(updatedSession));
-        }
-        if (localStorage.getItem("userSession")) {
-          localStorage.setItem("userSession", JSON.stringify(updatedSession));
-        }
-        
+        const updatedSession = {
+          ...session,
+          nom: this.form.nom,
+          prenom: this.form.prenom,
+          email: this.form.email,
+          numtel: this.form.numtel,
+          date_naissance: this.form.date_naissance,
+          lieudenaissance: this.form.lieudenaissance,
+          cin: this.form.cin,
+        };
+
+        sessionStorage.setItem("userSession", JSON.stringify(updatedSession));
+        localStorage.setItem("userSession", JSON.stringify(updatedSession));
+
         this.editMode = false;
         this.showSuccessMessage("Profil mis à jour avec succès !");
       } catch (error) {
-        console.error("Erreur lors de la sauvegarde du profil:", error);
-        alert("❌ Une erreur est survenue lors de la sauvegarde du profil.");
+        console.error("Erreur lors de la sauvegarde du profil :", error);
+        alert("❌ Une erreur est survenue lors de la sauvegarde.");
       }
     },
+
     formatDate(dateString) {
       if (!dateString) return "Non renseigné";
-
       try {
         const date = new Date(dateString);
         return new Intl.DateTimeFormat("fr-FR", {
@@ -185,6 +193,7 @@ const updatedSession = {
         return dateString;
       }
     },
+
     showSuccessMessage(message) {
       const notification = document.createElement("div");
       notification.className = "success-notification";

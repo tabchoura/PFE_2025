@@ -4,107 +4,95 @@
     <aside class="sidebar">
       <h2>Mon Espace Recruteur</h2>
       <ul>
-        <li @click="navigateTo('profil')" :class="{ active: current === 'profil' }">
+        <li @click="navigateTo('/monprofilerecruteur')" :class="{ active: isActive('/monprofilerecruteur') }" role="button" tabindex="0">
           Mon profil
         </li>
-        <li @click="navigateTo('offres')" :class="{ active: current === 'offres' }">
-          Gérer les offres
-        </li>
-        <li
-          @click="navigateTo('candidatures')"
-          :class="{ active: current === 'candidatures' }"
-        >
+        <li @click="navigateTo('/candidaturesrecurteur')" :class="{ active: isActive('/candidaturesrecurteur') }" role="button" tabindex="0">
           Candidatures reçues
         </li>
-        <li
-          @click="navigateTo('entretiens')"
-          :class="{ active: current === 'entretiens' }"
-        >
+        <li @click="navigateTo('/entretiens')" :class="{ active: isActive('/entretiens') }" role="button" tabindex="0">
           Mes entretiens
         </li>
-        <li @click="logout" class="logout-item">Déconnexion</li>
+        <li @click="navigateTo('/Offres')" :class="{ active: isActive('/offres') }" role="button" tabindex="0">
+          Gérer les offres
+        </li>
+        <li @click="logout" class="logout-item" role="button" tabindex="0">
+          Déconnexion
+        </li>
       </ul>
     </aside>
 
     <!-- Contenu principal -->
     <main class="content">
-      <!-- Composant dynamique -->
-      <component :is="currentComponent" />
+      <!-- Affichage dynamique du composant -->
+      <router-view></router-view> <!-- Ce composant affichera dynamiquement le composant associé à la route -->
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import api from "@/axios";
 
-// Initialiser le router au niveau supérieur du script setup
+// Initialiser le router et la route
 const router = useRouter();
-
-// Importation des composants nécessaires
-import Monprofilerecruteur from "@/components/Monprofilerecruteur.vue"; // Assurez-vous d'utiliser un chemin valide
-import Offres from "@/components/Offres.vue";
-import Candidature from "@/components/Candidature.vue";
-import Entretiens from "@/components/Entretiens.vue";
-
-// Déclaration des variables réactives
-const current = ref("profil");
+const route = useRoute();
 const userData = ref(null);
 
-// Définir le composant dynamique en fonction de la page sélectionnée
-const currentComponent = computed(() => {
-  return (
-    {
-      profil: Monprofilerecruteur,
-      offres: Offres,
-      candidatures: Candidature,
-      entretiens: Entretiens,
-    }[current.value] || Monprofilerecruteur
-  );
-});
+// Vérifier si une route est active
+function isActive(path) {
+  return route.path === path;
+}
 
 // Fonction de navigation vers une page
-function navigateTo(page) {
-  current.value = page;
+function navigateTo(path) {
+  if (route.path !== path) {
+    router.push(path);
+  }
 }
 
 // Vérifier la session utilisateur à l'initialisation
 onMounted(() => {
   const session = JSON.parse(
-    localStorage.getItem("userSession") || sessionStorage.getItem("userSession") || "null"
+    sessionStorage.getItem("userSession") || localStorage.getItem("userSession") || "null"
   );
-  if (session && session.type === "recruteur") {
+  
+  if (session) {
     userData.value = session;
   } else {
-    router.push("/authentification");
+    router.push("/authentification");  // Redirige vers la page d'authentification si non connecté
   }
 });
 
-import api from "@/axios";
-
+// Déconnexion
 async function logout() {
   try {
-    await api.post("/api/logout"); // Laravel va supprimer la session côté serveur
+    await api.post("/api/logout");
   } catch (error) {
-    console.error("Erreur lors de la déconnexion :", error);
+    console.error("Erreur lors de la déconnexion :", error.response?.data || error.message);
   } finally {
     localStorage.removeItem("userSession");
     sessionStorage.removeItem("userSession");
-    router.push("/authentification");
+    router.push("/authentification");  // Redirection vers la page d'authentification après déconnexion
   }
 }
-
 </script>
 
 <style scoped>
-/* Ajoutez ici vos styles CSS pour le composant */
+/* Styles pour l'ensemble du composant */
 .mon-espace {
   min-height: 100vh;
   font-family: "Roboto", sans-serif;
   background-color: #f4f6f9;
   padding: 20px;
   margin: 30px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
 }
+
+/* Barre Latérale */
 .sidebar {
   width: 250px;
   background-color: #fff;
@@ -114,7 +102,7 @@ async function logout() {
   position: fixed;
   top: 55px;
   left: 0;
-  height: calc(100vh - 55px);
+  height: calc(100vh - 55px); /* Fixer la barre latérale */
   z-index: 10;
 }
 
@@ -139,19 +127,33 @@ async function logout() {
   margin-bottom: 12px;
   color: #333;
   font-size: 1rem;
+  transition: background-color 0.3s, color 0.3s;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .sidebar li.active,
 .sidebar li:hover {
   background-color: #cce0ff;
   color: #0055a5;
+  transform: translateX(5px);
 }
 
 .logout-item {
   margin-top: 30px;
+  border-top: 1px solid #e1e1e1;
+  padding-top: 18px;
   color: #e74c3c;
   font-weight: 600;
   text-align: center;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.logout-item:hover {
+  background-color: #f9e6e6;
+  color: #c0392b;
 }
 
 .content {
@@ -161,6 +163,7 @@ async function logout() {
   overflow-y: auto;
   margin-left: 250px;
   transition: margin-left 0.3s ease;
+  border-radius: 9px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
@@ -171,12 +174,33 @@ async function logout() {
 
   .sidebar {
     width: 100%;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
     padding: 15px;
+    background-color: #fff;
+    height: auto;
   }
 
   .content {
     margin-left: 0;
+    margin-top: 300px;
     padding: 20px;
+  }
+
+  .sidebar h2 {
+    font-size: 1.4rem;
+    text-align: left;
+  }
+
+  .sidebar ul {
+    padding-left: 10px;
+  }
+
+  .sidebar li {
+    padding: 12px;
   }
 }
 </style>

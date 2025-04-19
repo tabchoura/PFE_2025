@@ -1,60 +1,66 @@
 <template>
   <div class="auth-container">
     <div class="auth-content">
-      <!-- Section pour les images avec meilleure disposition -->
       <div class="image-section">
         <img :src="hiringImage" alt="Recrutement" class="hiring-image" />
       </div>
-
-      <!-- Section pour le formulaire -->
       <div class="form-section">
         <div v-if="!isSubmitted" class="auth-box login-box">
           <h2 class="auth-title">Inscription Candidat</h2>
           <form @submit.prevent="register" class="auth-form" novalidate>
             <div class="form-grid">
-              <div class="input-group">
+              <div class="input-group" @mouseenter="showHint('nom')" @mouseleave="hideHint('nom')">
                 <label for="nom">Nom</label>
                 <input
                   type="text"
                   v-model.trim="formData.nom"
                   id="nom"
                   placeholder="Entrez votre nom"
-                  :class="{ 'input-error': errors.nom }"
+                  :class="{ 'input-error': errors.nom, 'input-valid': formData.nom && isValidField('nom') }"
                   required
                   autocomplete="family-name"
+                  @input="validateField('nom')"
                 />
                 <span class="error-message" v-if="errors.nom">{{ errors.nom }}</span>
+                <span class="hint-message" v-if="hints.nom">Lettres, espaces, apostrophes et tirets uniquement</span>
+                <span class="valid-icon" v-if="formData.nom && isValidField('nom')">✓</span>
               </div>
-              <div class="input-group">
+              <div class="input-group" @mouseenter="showHint('prenom')" @mouseleave="hideHint('prenom')">
                 <label for="prenom">Prénom</label>
                 <input
                   type="text"
                   v-model.trim="formData.prenom"
                   id="prenom"
                   placeholder="Entrez votre prénom"
-                  :class="{ 'input-error': errors.prenom }"
+                  :class="{ 'input-error': errors.prenom, 'input-valid': formData.prenom && isValidField('prenom') }"
                   required
                   autocomplete="given-name"
+                  @input="validateField('prenom')"
                 />
                 <span class="error-message" v-if="errors.prenom">{{ errors.prenom }}</span>
+                <span class="hint-message" v-if="hints.prenom">Lettres, espaces, apostrophes et tirets uniquement</span>
+                <span class="valid-icon" v-if="formData.prenom && isValidField('prenom')">✓</span>
               </div>
             </div>
 
-            <div class="input-group">
+            <div class="input-group" @mouseenter="showHint('email')" @mouseleave="hideHint('email')">
               <label for="email">Email</label>
               <input
                 type="email"
                 v-model.trim="formData.email"
                 id="email"
                 placeholder="Entrez votre email"
-                :class="{ 'input-error': errors.email }"
+                :class="{ 'input-error': errors.email, 'input-valid': formData.email && isValidField('email') }"
                 required
                 autocomplete="email"
+                @input="validateField('email')"
               />
               <span class="error-message" v-if="errors.email">{{ errors.email }}</span>
+              <span class="hint-message" v-if="hints.email">Format attendu: exemple@domaine.com</span>
+              <span class="valid-icon" v-if="formData.email && isValidField('email')">✓</span>
             </div>
 
-            <div class="input-group">
+            <div class="input-group" @mouseenter="showHint('password')" @mouseleave="hideHint('password')">
               <label for="password">Mot de passe</label>
               <div class="password-input-container">
                 <input
@@ -62,9 +68,10 @@
                   v-model.trim="formData.password"
                   id="password"
                   placeholder="Entrez votre mot de passe"
-                  :class="{ 'input-error': errors.password }"
+                  :class="{ 'input-error': errors.password, 'input-valid': formData.password && isValidField('password') }"
                   required
                   autocomplete="new-password"
+                  @input="validateField('password')"
                 />
                 <button
                   type="button"
@@ -74,80 +81,95 @@
                 >
                   <span aria-hidden="true">{{ showPassword ? '🔒' : '👁️' }}</span>
                 </button>
+                <span class="valid-icon" v-if="formData.password && isValidField('password')">✓</span>
               </div>
               <span class="error-message" v-if="errors.password">{{ errors.password }}</span>
               <div class="password-strength" v-if="formData.password">
                 <div class="strength-bar" :class="passwordStrengthClass"></div>
                 <span>{{ passwordStrengthText }}</span>
               </div>
-              <p class="password-requirements" v-if="formData.password">
+              <span class="hint-message" v-if="hints.password">
                 Le mot de passe doit contenir au moins 8 caractères, incluant majuscules, minuscules,
                 chiffres et caractères spéciaux.
-              </p>
+              </span>
             </div>
 
             <div class="form-grid">
-              <div class="input-group">
+              <div class="input-group" @mouseenter="showHint('cin')" @mouseleave="hideHint('cin')">
                 <label for="cin">CIN</label>
                 <input
                   type="text"
                   v-model.trim="formData.cin"
                   id="cin"
                   placeholder="Entrez votre CIN"
-                  :class="{ 'input-error': errors.cin }"
+                  :class="{ 'input-error': errors.cin, 'input-valid': formData.cin && isValidField('cin') }"
                   required
                   maxlength="8"
                   inputmode="numeric"
+                  @input="validateField('cin')"
                 />
                 <span class="error-message" v-if="errors.cin">{{ errors.cin }}</span>
+                <span class="hint-message" v-if="hints.cin">Le CIN doit contenir exactement 8 chiffres</span>
+                <span class="valid-icon" v-if="formData.cin && isValidField('cin')">✓</span>
               </div>
-              <div class="input-group">
+              
+              <div class="input-group" @mouseenter="showHint('numtel')" @mouseleave="hideHint('numtel')">
                 <label for="numtel">Numéro de téléphone</label>
                 <input
                   type="tel"
                   v-model.trim="formData.numtel"
                   id="numtel"
                   placeholder="Votre numéro de téléphone"
-                  :class="{ 'input-error': errors.numtel }"
+                  :class="{ 'input-error': errors.numtel, 'input-valid': formData.numtel && isValidField('numtel') }"
                   required
                   maxlength="8"
                   inputmode="tel"
                   autocomplete="tel"
+                  @input="validateField('numtel')"
                 />
                 <span class="error-message" v-if="errors.numtel">{{ errors.numtel }}</span>
+                <span class="hint-message" v-if="hints.numtel">Le numéro de téléphone doit contenir exactement 8 chiffres</span>
+                <span class="valid-icon" v-if="formData.numtel && isValidField('numtel')">✓</span>
               </div>
             </div>
 
             <div class="form-grid">
-              <div class="input-group">
+              <div class="input-group" @mouseenter="showHint('date')" @mouseleave="hideHint('date')">
                 <label for="date">Date de naissance</label>
                 <input
                   type="date"
                   v-model="formData.date"
                   id="date"
                   :max="maxDate"
-                  :class="{ 'input-error': errors.date }"
+                  :class="{ 'input-error': errors.date, 'input-valid': formData.date && isValidField('date') }"
                   required
                   autocomplete="bday"
+                  @change="validateField('date')"
                 />
                 <span class="error-message" v-if="errors.date">{{ errors.date }}</span>
+                <span class="hint-message" v-if="hints.date">Vous devez avoir au moins 18 ans</span>
+                <span class="valid-icon" v-if="formData.date && isValidField('date')">✓</span>
               </div>
-              <div class="input-group">
+              
+              <div class="input-group" @mouseenter="showHint('lieu')" @mouseleave="hideHint('lieu')">
                 <label for="lieu">Lieu de naissance</label>
                 <input
                   type="text"
                   v-model.trim="formData.lieu"
                   id="lieu"
                   placeholder="Ville / Commune"
-                  :class="{ 'input-error': errors.lieu }"
+                  :class="{ 'input-error': errors.lieu, 'input-valid': formData.lieu && isValidField('lieu') }"
                   required
                   autocomplete="address-level2"
+                  @input="validateField('lieu')"
                 />
                 <span class="error-message" v-if="errors.lieu">{{ errors.lieu }}</span>
+                <span class="hint-message" v-if="hints.lieu">Entrez une ville ou commune valide</span>
+                <span class="valid-icon" v-if="formData.lieu && isValidField('lieu')">✓</span>
               </div>
             </div>
 
-            <button type="submit" class="btn-submit" :disabled="loading">
+            <button type="submit" class="btn-submit" :disabled="loading || !isFormValid">
               <span v-if="loading" class="loading-spinner"></span>
               <span>{{ loading ? 'Traitement en cours...' : 'S\'inscrire' }}</span>
             </button>
@@ -166,8 +188,9 @@
     </div>
   </div>
 </template>
+
 <script setup>
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/axios';
 import hiringImage from '../../assets/Rejoignez-nous.png';
@@ -176,6 +199,16 @@ const router = useRouter();
 const isSubmitted = ref(false);
 const loading = ref(false);
 const showPassword = ref(false);
+const validFields = reactive({
+  nom: false,
+  prenom: false,
+  email: false,
+  password: false,
+  cin: false,
+  numtel: false,
+  date: false,
+  lieu: false
+});
 
 const formData = reactive({
   nom: '',
@@ -189,20 +222,61 @@ const formData = reactive({
 });
 
 const errors = reactive({});
+const hints = reactive({
+  nom: false,
+  prenom: false,
+  email: false,
+  password: false,
+  cin: false,
+  numtel: false,
+  date: false,
+  lieu: false
+});
+
+// Validation en temps réel de tous les champs lors de la saisie
+watch(formData, (newVal) => {
+  Object.keys(newVal).forEach(field => {
+    if (newVal[field]) {
+      validateField(field);
+    }
+  });
+}, { deep: true });
+
+const isFormValid = computed(() => {
+  return Object.values(validFields).every(valid => valid) && 
+         Object.keys(formData).every(field => !!formData[field]);
+});
+
+function isValidField(field) {
+  return validFields[field];
+}
+
 const passwordStrengthClass = computed(() => {
-  if (formData.password.length < 8) return 'weak';
-  if (/[A-Z]/.test(formData.password) && /[0-9]/.test(formData.password)) return 'medium';
-  if (/[A-Z]/.test(formData.password) && /[0-9]/.test(formData.password) && /[^A-Za-z0-9]/.test(formData.password)) return 'strong';
-  return '';
+  if (!formData.password) return '';
+  if (formData.password.length < 8) return 'faible';
+  
+  const hasUpperCase = /[A-Z]/.test(formData.password);
+  const hasLowerCase = /[a-z]/.test(formData.password);
+  const hasNumbers = /[0-9]/.test(formData.password);
+  const hasSpecialChars = /[^A-Za-z0-9\s]/.test(formData.password);
+  
+  if (hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChars) {
+    return 'fort';
+  } else if ((hasUpperCase || hasLowerCase) && hasNumbers) {
+    return 'moyen';
+  }
+  return 'faible';
 });
 
 const passwordStrengthText = computed(() => {
-  const length = formData.password.length;
-  if (length < 8) return 'Faible';
-  if (length < 12) return 'Moyen';
-  return 'Fort';
+  if (!formData.password) return '';
+  switch (passwordStrengthClass.value) {
+    case 'faible': return 'Faible';
+    case 'moyen': return 'Moyen';
+    case 'fort': return 'Fort';
+    default: return '';
+  }
 });
-
 
 const maxDate = computed(() => {
   const today = new Date();
@@ -210,41 +284,115 @@ const maxDate = computed(() => {
   return today.toISOString().split('T')[0];
 });
 
+function showHint(field) {
+  hints[field] = true;
+}
+
+function hideHint(field) {
+  hints[field] = false;
+}
+
 function togglePassword() {
   showPassword.value = !showPassword.value;
 }
 
-function validateForm() {
-  Object.keys(errors).forEach(k => delete errors[k]);
-  let valid = true;
-  const nameRegex = /^[a-zA-ZÀ-ÿ\s'-]+$/;
+function validateField(field) {
+  // Effacer l'erreur spécifique du champ
+  if (errors[field]) {
+    delete errors[field];
+  }
+  
+  const nameRegex = /^[a-zA-ZÀ-ſ\s'-]+$/;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  
+  switch (field) {
+    case 'nom':
+      validFields.nom = !!formData.nom && nameRegex.test(formData.nom);
+      if (!validFields.nom && formData.nom) {
+        errors.nom = 'Nom invalide';
+      }
+      break;
+      
+    case 'prenom':
+      validFields.prenom = !!formData.prenom && nameRegex.test(formData.prenom);
+      if (!validFields.prenom && formData.prenom) {
+        errors.prenom = 'Prénom invalide';
+      }
+      break;
+      
+    case 'email':
+      validFields.email = !!formData.email && emailRegex.test(formData.email);
+      if (!validFields.email && formData.email) {
+        errors.email = 'Email invalide';
+      }
+      break;
+      
+    case 'password':
+      const hasUpperCase = /[A-Z]/.test(formData.password);
+      const hasLowerCase = /[a-z]/.test(formData.password);
+      const hasNumbers = /[0-9]/.test(formData.password);
+      const hasSpecialChars = /[^A-Za-z0-9\s]/.test(formData.password);
+      
+      validFields.password = formData.password.length >= 8 && 
+                            hasUpperCase && hasLowerCase && 
+                            hasNumbers && hasSpecialChars;
+                            
+      if (!validFields.password && formData.password) {
+        if (formData.password.length < 8) {
+          errors.password = 'Mot de passe trop court';
+        } else {
+          errors.password = 'Le mot de passe doit contenir majuscules, minuscules, chiffres et caractères spéciaux';
+        }
+      }
+      break;
+      
+    case 'cin':
+      validFields.cin = /^\d{8}$/.test(formData.cin);
+      if (!validFields.cin && formData.cin) {
+        errors.cin = 'CIN invalide (8 chiffres requis)';
+      }
+      break;
+      
+    case 'numtel':
+      validFields.numtel = /^\d{8}$/.test(formData.numtel);
+      if (!validFields.numtel && formData.numtel) {
+        errors.numtel = 'Téléphone invalide (8 chiffres requis)';
+      }
+      break;
+      
+    case 'date':
+      if (formData.date) {
+        const birthDate = new Date(formData.date);
+        const today = new Date();
+        const age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        validFields.date = age > 18 || (age === 18 && (monthDiff > 0 || 
+           (monthDiff === 0 && today.getDate() >= birthDate.getDate())));
+           
+        if (!validFields.date) {
+          errors.date = 'Vous devez avoir au moins 18 ans';
+        }
+      } else {
+        validFields.date = false;
+      }
+      break;
+      
+    case 'lieu':
+      validFields.lieu = !!formData.lieu && nameRegex.test(formData.lieu);
+      if (!validFields.lieu && formData.lieu) {
+        errors.lieu = 'Lieu invalide';
+      }
+      break;
+  }
+}
 
-  if (!formData.nom || !nameRegex.test(formData.nom)) {
-    errors.nom = 'Nom invalide'; valid = false;
-  }
-  if (!formData.prenom || !nameRegex.test(formData.prenom)) {
-    errors.prenom = 'Prénom invalide'; valid = false;
-  }
-  if (!formData.email || !emailRegex.test(formData.email)) {
-    errors.email = 'Email invalide'; valid = false;
-  }
-  if (formData.password.length < 8) {
-    errors.password = 'Mot de passe trop court'; valid = false;
-  }
-  if (!/^\d{8}$/.test(formData.cin)) {
-    errors.cin = 'CIN invalide'; valid = false;
-  }
-  if (!/^\d{8}$/.test(formData.numtel)) {
-    errors.numtel = 'Téléphone invalide'; valid = false;
-  }
-  if (!formData.date) {
-    errors.date = 'Date requise'; valid = false;
-  }
-  if (!formData.lieu || !nameRegex.test(formData.lieu)) {
-    errors.lieu = 'Lieu invalide'; valid = false;
-  }
-  return valid;
+function validateForm() {
+  Object.keys(formData).forEach(field => {
+    validateField(field);
+  });
+  
+  return Object.values(validFields).every(valid => valid);
 }
 
 async function register() {
@@ -253,23 +401,39 @@ async function register() {
   try {
     await api.get('/sanctum/csrf-cookie');
     const payload = {
-      prenom: formData.prenom,
       nom: formData.nom,
+      prenom: formData.prenom,
       email: formData.email,
       password: formData.password,
       role: 'candidat',
       cin: formData.cin,
       numtel: formData.numtel,
-      date: formData.date,
+      date_naissance: formData.date,
       lieu: formData.lieu
     };
+    console.log('payload : ', payload)
     const response = await api.post('/api/register', payload);
-    const { user } = response.data;
-    sessionStorage.setItem('userSession', JSON.stringify(user));
+    console.log('response : ', response)
+    const { user, token } = response.data;
+
+    sessionStorage.setItem('userSession', JSON.stringify({
+      token,
+      ...user
+    }));
+
     isSubmitted.value = true;
   } catch (error) {
     console.error(error);
-    alert("Erreur serveur lors de l'inscription");
+    if (error.response && error.response.data && error.response.data.errors) {
+      // Gestion des erreurs de validation du serveur
+      const serverErrors = error.response.data.errors;
+      Object.keys(serverErrors).forEach(key => {
+        errors[key] = serverErrors[key][0];
+        validFields[key] = false;
+      });
+    } else {
+      alert("Erreur serveur lors de l'inscription");
+    }
   } finally {
     loading.value = false;
   }
@@ -301,6 +465,7 @@ function goToCompteCandidat() {
   overflow: hidden;
   transition: transform 0.3s ease;
 }
+
 .image-section {
   flex: 1;
   display: flex;
@@ -311,7 +476,6 @@ function goToCompteCandidat() {
   background: linear-gradient(135deg, #f0f8ff, #dceeff);
   border-right: 1px solid #e0e0e0;
 }
-
 
 .hiring-image {
   width: 100%;
@@ -336,6 +500,8 @@ function goToCompteCandidat() {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  margin-top: 40px;
+
 }
 
 .auth-title {
@@ -356,6 +522,8 @@ function goToCompteCandidat() {
 .input-group {
   display: flex;
   flex-direction: column;
+  position: relative;
+  margin-bottom: 0.5rem;
 }
 
 .input-group label {
@@ -387,10 +555,41 @@ function goToCompteCandidat() {
   box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.2) !important;
 }
 
+.input-valid {
+  border-color: #28a745 !important;
+}
+
+.input-valid:focus {
+  box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.2) !important;
+}
+
 .error-message {
   color: #dc3545;
   font-size: 12px;
   margin-top: 5px;
+  animation: fadeIn 0.3s ease;
+}
+
+.hint-message {
+  color: #0056d2;
+  font-size: 12px;
+  margin-top: 5px;
+  font-style: italic;
+  animation: fadeIn 0.3s ease;
+}
+
+.valid-icon {
+  position: absolute;
+  right: 10px;
+  top: 40px;
+  color: #28a745;
+  font-weight: bold;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .password-input-container {
@@ -408,7 +607,7 @@ function goToCompteCandidat() {
 .toggle-password {
   position: absolute;
   top: 50%;
-  right: 10px;
+  right: 30px;
   transform: translateY(-50%);
   background: none;
   border: none;
@@ -420,7 +619,6 @@ function goToCompteCandidat() {
   display: flex;
   align-items: center;
 }
-
 
 .btn-submit {
   margin-top: 20px;
@@ -475,26 +673,23 @@ function goToCompteCandidat() {
   border-radius: 5px;
   background: #e0e0e0;
   margin-top: 5px;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, width 0.3s ease;
+  position: relative;
 }
 
-.strength-bar.weak {
+.strength-bar.faible {
   background-color: #dc3545;
+  width: 33%;
 }
 
-.strength-bar.medium {
+.strength-bar.moyen {
   background-color: #ffc107;
+  width: 66%;
 }
 
-.strength-bar.strong {
+.strength-bar.fort {
   background-color: #28a745;
-}
-
-.password-requirements {
-  font-size: 12px;
-  color: #666;
-  margin-top: 5px;
-  line-height: 1.4;
+  width: 100%;
 }
 
 /* Succès */

@@ -4,63 +4,28 @@
     <aside class="sidebar">
       <h2>Mon Espace</h2>
       <ul>
-        <li
-          @click="navigateTo('profil')"
-          :class="{ active: current === 'profil' }"
-          role="button"
-          tabindex="0"
-        >
+        <li @click="navigateTo('/monprofile')" :class="{ active: isActive('/monprofile') }" role="button" tabindex="0">
           Mon profil
         </li>
-        <li
-          @click="navigateTo('candidatures')"
-          :class="{ active: current === 'candidatures' }"
-          role="button"
-          tabindex="0"
-        >
+        <li @click="navigateTo('/candidature')" :class="{ active: isActive('/candidature') }" role="button" tabindex="0">
           Mes candidatures
         </li>
-        <li
-          @click="navigateTo('entretiens')"
-          :class="{ active: current === 'entretiens' }"
-          role="button"
-          tabindex="0"
-        >
+        <li @click="navigateTo('/entretiens')" :class="{ active: isActive('/entretiens') }" role="button" tabindex="0">
           Mes entretiens
         </li>
-        <li
-          @click="navigateTo('offres')"
-          :class="{ active: current === 'offres' }"
-          role="button"
-          tabindex="0"
-        >
-          Mes offres Enregistrées
-        </li>
-        <li
-          @click="navigateTo('documents')"
-          :class="{ active: current === 'documents' }"
-          role="button"
-          tabindex="0"
-        >
+        <li @click="navigateTo('/Offres')" :class="{ active: isActive('/offres') }" role="button" tabindex="0">
+  Mes offres Enregistrées
+</li>
+
+        <li @click="navigateTo('/CreateCv')" :class="{ active: isActive('/CreateCv') || isActive('/CreateLettre') }" role="button" tabindex="0">
           Mes CV & Lettres
         </li>
-        <li
-          @click="navigateTo('tests')"
-          :class="{ active: current === 'tests' }"
-          role="button"
-          tabindex="0"
-        >
+        <li @click="navigateTo('/Test')" :class="{ active: isActive('/Test') }" role="button" tabindex="0">
           Mes Tests
         </li>
-        <li
-          @click="navigateTo('notifications')"
-          :class="{ active: current === 'notifications' }"
-          role="button"
-          tabindex="0"
-        >
+        <li @click="navigateTo('/Mesnotifications')" :class="{ active: isActive('/Mesnotifications') }" role="button" tabindex="0">
           Mes Notifications
         </li>
-        <!-- Déconnexion -->
         <li @click="logout" class="logout-item" role="button" tabindex="0">
           Déconnexion
         </li>
@@ -69,71 +34,53 @@
 
     <!-- Contenu principal -->
     <main class="content">
-      <!-- Composant dynamique -->
-      <component :is="currentComponent" />
+      <!-- Affichage dynamique du composant -->
+      <router-view></router-view> <!-- Ce composant affichera dynamiquement le composant associé à la route -->
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import Monprofile from "../components/Monprofile.vue";
-import Candidature from "../components/Candidature.vue";
-import Entretiens from "../components/Entretiens.vue";
-import Mesoffres from "../components/Mesoffres.vue";
-import MesCvEtLettres from "../components/MesCvEtLettres.vue";
-import MesTests from "../components/MesTests.vue";
-import MesNotifications from "../components/MesNotifications.vue";
+import { ref, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import api from "@/axios";
 
-// Initialiser le router au niveau supérieur du script setup
+// Initialiser le router et la route
 const router = useRouter();
-
-// Déclaration des variables réactives
-const current = ref("profil");
+const route = useRoute();
 const userData = ref(null);
 
-// Définir le composant en fonction de la page sélectionnée
-const currentComponent = computed(() => {
-  return (
-    {
-      profil: Monprofile,
-      candidatures: Candidature,
-      entretiens: Entretiens,
-      offres: Mesoffres,
-      documents: MesCvEtLettres,
-      tests: MesTests,
-      notifications: MesNotifications,
-    }[current.value] || Monprofile
-  );
-});
+// Vérifier si une route est active
+function isActive(path) {
+  return route.path === path;
+}
 
 // Fonction de navigation vers une page
-function navigateTo(page) {
-  current.value = page;
+function navigateTo(path) {
+  if (route.path !== path) {
+    router.push(path);
+  }
 }
 
 // Vérifier la session utilisateur à l'initialisation
-// Dans la partie <script setup> et la fonction onMounted()
-
 onMounted(() => {
-  // Lire d'abord dans sessionStorage, puis dans localStorage
   const session = JSON.parse(
     sessionStorage.getItem("userSession") || localStorage.getItem("userSession") || "null"
   );
+  
   if (session) {
     userData.value = session;
+
+    // Si l'utilisateur accède directement à /CompteCandidat sans section spécifique
+    if (route.path === '/CompteCandidat') {
+      router.push('/monprofile');  // Redirige automatiquement vers la page par défaut (par exemple 'Monprofile')
+    }
   } else {
-    // Si l'utilisateur n'est pas connecté, redirige vers l'authentification
-    router.push("/authentification");
+    router.push("/authentification");  // Redirige vers la page d'authentification si non connecté
   }
 });
 
-
 // Déconnexion
-import api from "@/axios";
-
-
 async function logout() {
   try {
     await api.post("/api/logout");
@@ -142,10 +89,9 @@ async function logout() {
   } finally {
     localStorage.removeItem("userSession");
     sessionStorage.removeItem("userSession");
-    router.push("/authentification");
+    router.push("/authentification");  // Redirection vers la page d'authentification après déconnexion
   }
 }
-
 </script>
 
 <style scoped>
@@ -156,6 +102,9 @@ async function logout() {
   background-color: #f4f6f9;
   padding: 20px;
   margin: 30px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
 }
 
 /* Barre Latérale */
@@ -168,7 +117,7 @@ async function logout() {
   position: fixed;
   top: 55px;
   left: 0;
-  height: calc(100vh - 55px); /* Pour que la sidebar prenne toute la hauteur de la page */
+  height: calc(100vh - 55px); /* Fixer la barre latérale */
   z-index: 10;
 }
 
@@ -177,7 +126,7 @@ async function logout() {
   font-size: 1.6rem;
   color: #0055a5;
   font-weight: 700;
-  text-align: center; /* Centrer le titre de la sidebar */
+  text-align: center;
 }
 
 .sidebar ul {
@@ -189,24 +138,22 @@ async function logout() {
 .sidebar li {
   padding: 15px;
   cursor: pointer;
-  border-radius: 8px; /* Coins plus arrondis */
+  border-radius: 8px;
   margin-bottom: 12px;
   color: #333;
   font-size: 1rem;
-  transition: background-color 0.3s, color 0.3s; /* Transitions douces pour hover */
-  text-align: center; /* Aligner le texte au centre */
+  transition: background-color 0.3s, color 0.3s;
+  text-align: center;
   display: flex;
-  align-items: center; /* Centrer verticalement les éléments */
-  justify-content: center; /* Centrer horizontalement */
+  align-items: center;
+  justify-content: center;
 }
 
 .sidebar li.active,
 .sidebar li:hover {
-  background-color: #cce0ff; /* Couleur de fond au survol plus douce */
+  background-color: #cce0ff;
   color: #0055a5;
-  transform: translateX(
-    5px
-  ); /* Ajouter un petit effet de translation pour l'interaction */
+  transform: translateX(5px);
 }
 
 .logout-item {
@@ -229,10 +176,10 @@ async function logout() {
   padding: 60px;
   background: #ffffff;
   overflow-y: auto;
-  margin-left: 250px; /* Décalage pour le contenu après la sidebar */
+  margin-left: 250px;
   transition: margin-left 0.3s ease;
-  border-radius: 9px; /* Ajouter une légère bordure arrondie */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Ombre discrète autour du contenu */
+  border-radius: 9px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
 @media (max-width: 768px) {
@@ -249,10 +196,12 @@ async function logout() {
     z-index: 10;
     padding: 15px;
     background-color: #fff;
+    height: auto;
   }
 
   .content {
     margin-left: 0;
+    margin-top: 300px;
     padding: 20px;
   }
 

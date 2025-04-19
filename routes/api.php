@@ -1,5 +1,6 @@
 <?php
 use App\Http\Controllers\AuhtentificationController;
+use App\Http\Controllers\TestController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -15,22 +16,22 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 // 🔐 Auth commun
 Route::post('/login', [AuhtentificationController::class, 'login']);
-
-
 Route::post('/register', [AuthController::class, 'register']);
 
 // 🔐 Auth par rôle (optionnel si besoin d’une route séparée par rôl
 
 
-
-Route::middleware('auth:sanctum')->group(
-    function () {
-        Route::post('/logout', [AuthController::class, 'logout']);    }
-);
+ 
+Route::middleware('auth:sanctum')->group(function () 
+{
+    Route::get('/me', [UserController::class, 'myProfile']); 
+        Route::post('/logout', [AuthController::class, 'logout']); 
+       // Route::get('/me', [UserController::class, 'me']);  
+});
 // 📦 Users
 Route::get('/users', [UserController::class, 'index']);
 Route::post('/users', [UserController::class, 'store']);
-Route::put('/users/{id}', [UserController::class, 'update']);
+Route::put('/users/{user}', [UserController::class, 'update']);
 Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
 // 📅 Entretiens

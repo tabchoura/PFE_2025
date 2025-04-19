@@ -15,10 +15,10 @@ return new class extends Migration
         if (!Schema::hasTable('entreprises')) {
             Schema::create('entreprises', function (Blueprint $table) {
                 $table->id();
-                $table->string('name')->nullable();
-                $table->string('location');
+                $table->string('nomentreprise')->nullable();
+                $table->string('lieu');
                 $table->string('email')->nullable();
-                $table->string('department');
+                $table->string('departement');
                 $table->string('phone');
                 $table->string('description');  // Correction ici, suppression de "column:"
                 $table->string('siteweb');  // Correction ici, suppression de "column:"
