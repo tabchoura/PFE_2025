@@ -20,7 +20,7 @@ class AuthController extends Controller
             'password' => 'required|min:6',
             'role' => 'required|in:candidat,recruteur,admin',
             'date_naissance'=>'date',
-            'nomentreprise'=>'string',
+            'nomsociete'=>'string',
             'lieu'=>'string',  // Correction ici
             'siteweb'=>'string',   // Correction ici
             'cin' =>'required|string',   // Correction ici
@@ -40,7 +40,7 @@ class AuthController extends Controller
             'description'=>$request->description,
             'nom' => $request->nom,
             'prenom' => $request->prenom,
-
+            'nomsociete'=>$request->nomsociete,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,

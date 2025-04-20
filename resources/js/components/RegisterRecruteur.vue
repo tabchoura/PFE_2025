@@ -136,20 +136,20 @@
             </div>
 
             <div class="form-grid">
-              <div class="input-group" @mouseenter="showHint('nomentreprise')" @mouseleave="hideHint('nomentreprise')">
-                <label for="nomentreprise">Nom de l'entreprise</label>
+              <div class="input-group" @mouseenter="showHint('nomsociete')" @mouseleave="hideHint('nomsociete')">
+                <label for="nomsociete">Nom de l'entreprise</label>
                 <input
                 placeholder="Écrire votre nom de l'entreprise "
                   type="text"
-                  v-model="formData.nomentreprise"
-                  id="nomentreprise"
-                  :class="{ 'input-error': errors.nomentreprise, 'input-valid': validFields.nomentreprise }"
+                  v-model="formData.nomsociete"
+                  id="nomsociete"
+                  :class="{ 'input-error': errors.nomsociete, 'input-valid': validFields.nomsociete }"
                   required
                   autocomplete="organization"
-                  @input="validateField('nomentreprise')"
+                  @input="validateField('nomsociete')"
                 />
-                <span class="error-message" v-if="errors.nomentreprise">{{ errors.nomentreprise }}</span>
-                <span class="valid-icon" v-if="formData.nomentreprise && validFields.nomentreprise">✓</span>
+                <span class="error-message" v-if="errors.nomsociete">{{ errors.nomsociete }}</span>
+                <span class="valid-icon" v-if="formData.nomsociete && validFields.nomsociete">✓</span>
               </div>
 
               <div class="input-group" @mouseenter="showHint('siteweb')" @mouseleave="hideHint('siteweb')">
@@ -273,7 +273,7 @@ const validFields = reactive({
   lieu: false,
   departement:false,
   description:false,
-  nomentreprise:false,
+  nomsociete:false,
   siteweb:false
 });
 
@@ -287,7 +287,7 @@ const formData = reactive({
   departement: '',
   lieu: '',
   description:'',
-  nomentreprise:'',
+  nomsociete:'',
   siteweb:''
 });
 
@@ -302,7 +302,7 @@ const hints = reactive({
   lieu: false,
   departement:false,
   description:false,
-  nomentreprise:false,
+  nomsociete:false,
   siteweb:false
 });
 
@@ -448,10 +448,10 @@ function validateField(field) {
         errors.lieu = 'Lieu invalide';
       }
       break;
-      case 'nomentreprise':
-      validFields.nomentreprise = !!formData.nomentreprise && nameRegex.test(formData.nomentreprise);
-      if (!validFields.nomentreprise && formData.nomentreprise) {
-        errors.nomentreprise = 'nomentreprise invalide';
+      case 'nomsociete':
+      validFields.nomsociete = !!formData.nomsociete && nameRegex.test(formData.nomsociete);
+      if (!validFields.nomsociete && formData.nomsociete) {
+        errors.nomsociete = 'nomsociete invalide';
       }
       break;
 
@@ -501,8 +501,9 @@ async function register() {
       lieu: formData.lieu,
       departement: formData.departement,
       description: formData.description,
-      nomentreprise: formData.nomentreprise,
-      siteweb: formData.siteweb
+      nomsociete: formData.nomsociete,
+      siteweb: formData.siteweb,
+
     };
     console.log('Payload : ', payload);  // Vérifier les données envoyées
     const response = await api.post('/api/register', payload);

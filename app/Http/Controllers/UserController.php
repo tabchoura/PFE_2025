@@ -60,6 +60,7 @@ class UserController extends Controller
             'nbvalidation'  => $request->nbvalidation,
             'email'         => $request->email,
             'password'      =>Hash::make($request->password),
+            'nomsociete'=>$request->nomsociete,
     
         ]);
         return response()->json($user, 201);
@@ -83,6 +84,7 @@ public function update(User $user,Request $request ){
         'nbvalidation'  => 'integer|min:0',
 'email' => 'required|email|unique:users,email,' . $user->id,
         'password'      => 'required|string|min:6',
+        'nomsociete'=>'string',
     ]);
     $user->update([
         'nom'          => $request->nom,
@@ -102,13 +104,11 @@ public function update(User $user,Request $request ){
         'email'         => $request->email,
         'password'      =>Hash::make($request->password),
         'siteweb'=>$request->siteweb,
+        'nomsociete'=>$request->nomsociete,
+
 
 
     ]);
     return response()->json($user, 201);
 }
 }
-
-
-
-

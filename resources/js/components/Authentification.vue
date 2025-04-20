@@ -6,11 +6,9 @@
       </div>
 
       <div class="form-container">
-        <!-- Boîte de connexion -------------------------------------------------->
         <div class="auth-box" v-if="page === 'login'">
           <h2>Connexion à votre espace</h2>
 
-          <!-- Sélecteur Candidat / Recruteur ----------------------------------->
           <div class="toggle-container">
             <span :class="{ active: !isRecruteur }">Candidat</span>
             <label class="switch">
@@ -20,14 +18,13 @@
             <span :class="{ active: isRecruteur }">Recruteur</span>
           </div>
 
-          <!-- Formulaire de connexion ----------------------------------------->
           <form @submit.prevent="login">
             <div class="input-group">
               <label for="email">Email</label>
               <input
-                id="email"
                 type="email"
-                v-model.trim="email"
+                v-model="email"
+                id="email"
                 required
                 :class="{ error: emailError }"
                 @input="emailError = false"
@@ -39,18 +36,22 @@
               <label for="password">Mot de passe</label>
               <div class="input-with-icon">
                 <input
-                  id="password"
                   :type="showPassword ? 'text' : 'password'"
                   v-model="password"
+                  id="password"
                   required
                   :class="{ error: passwordError }"
                   @input="passwordError = false"
                 />
-                <button type="button" class="toggle-password" @click="showPassword = !showPassword">
-                  <i :class="showPassword ? 'fa fa-eye-slash' : 'fa fa-eye'" />
+                <button
+                  type="button"
+                  class="toggle-password"
+                  @click="showPassword = !showPassword"
+                >
+                  <i :class="showPassword ? 'fa fa-eye-slash' : 'fa fa-eye'"></i>
                 </button>
               </div>
-              <p v-if="passwordError" class="error-message">Le mot de passe est requis (6 car. minimum)</p>
+              <p v-if="passwordError" class="error-message">Le mot de passe est requis</p>
             </div>
 
             <div class="remember-forgot">
@@ -58,42 +59,47 @@
                 <input type="checkbox" v-model="rememberMe" />
                 Se souvenir de moi
               </label>
-              <a href="#" class="forgot-password">Mot de passe oublié ?</a>
+              <a href="#" class="forgot-password">Mot de passe oublié?</a>
             </div>
 
             <button type="submit" class="btn-submit" :disabled="isLoading">
-              <span v-if="isLoading" class="loading-spinner" />
+              <span v-if="isLoading" class="loading-spinner"></span>
               <span v-else>Se connecter</span>
             </button>
 
-            <!-- Lien vers page d'inscription ---------------------------------->
             <h2 class="inscrit-title">
               Vous voulez vous inscrire en tant que
-              <span class="highlight">{{ isRecruteur ? 'Recruteur' : 'Candidat' }}</span> ?
+              <span class="highlight">{{ isRecruteur ? "Recruteur" : "Candidat" }}</span> ?
             </h2>
             <button class="btn-create" @click.prevent="goToSignup">
-              {{ isRecruteur ? 'Créer un compte recruteur' : 'Créer un compte candidat' }}
+              {{ isRecruteur ? "Créer un compte recruteur" : "Créer un compte candidat" }}
             </button>
           </form>
         </div>
       </div>
     </div>
 
-    <!-- Composants d'inscription ---------------------------------------------->
-    <RegisterCandidat v-if="page === 'registerCandidat'" @registration-complete="handleRegistrationComplete" />
-    <RegisterRecruteur v-if="page === 'registerRecruteur'" @registration-complete="handleRegistrationComplete" />
+    <!-- Composants d'inscription -->
+    <div v-if="page === 'registerCandidat'">
+      <RegisterCandidat @registration-complete="handleRegistrationComplete" />
+    </div>
+    <div v-if="page === 'registerRecruteur'">
+      <RegisterRecruteur @registration-complete="handleRegistrationComplete" />
+    </div>
   </div>
 </template>
 
 <script>
 import recrutlogin from "../../assets/authentification.jpg";
-import RegisterCandidat from "@/components/RegisterCandidat.vue";
-import RegisterRecruteur from "@/components/RegisterRecruteur.vue";
-import api from "@/axios";
+import RegisterCandidat from "../components/RegisterCandidat.vue";
+import RegisterRecruteur from "../components/RegisterRecruteur.vue";
+import api from '@/axios';
 
 export default {
-  name: "Authentification",
-  components: { RegisterCandidat, RegisterRecruteur },
+  components: {
+    RegisterCandidat,
+    RegisterRecruteur,
+  },
   data() {
     return {
       recrutlogin,
@@ -109,70 +115,70 @@ export default {
     };
   },
   methods: {
-    /* ----------------------------------------------------------------------- */
     validateForm() {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       this.emailError = !emailRegex.test(this.email);
       this.passwordError = this.password.length < 6;
       return !this.emailError && !this.passwordError;
     },
-
-    /* ------------------------- Connexion utilisateur ----------------------- */
     async login() {
-      if (!this.validateForm()) return;
-      this.isLoading = true;
+  if (!this.validateForm()) return;
+  this.isLoading = true;
 
-      try {
-        /*  IMPORTANT : Mode TOKEN → inutile d'appeler /sanctum/csrf-cookie  */
-        const { data } = await api.post("/api/login", {
-          email: this.email,
-          password: this.password,
-          // On indique le type uniquement pour la redirection front
-        });
+  try {
+    // ⚠️ CSRF-cookie obligatoire pour Sanctum
+    await api.get("/sanctum/csrf-cookie");
 
-        // data = { user, token, type }
-        const storage = this.rememberMe ? localStorage : sessionStorage;
-        storage.setItem("userSession", JSON.stringify(data));
+    // ✅ Appel login avec email & password uniquement
+    const response = await api.post("/api/login", {
+      email: this.email,
+      password: this.password
+    }, {
+      withCredentials: true
+    });
 
-        // Redirection selon le rôle
-        this.$router.push(data.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat");
-      } catch (err) {
-        alert("❌ Identifiants incorrects ou utilisateur non trouvé");
-        console.error("Erreur lors de la connexion:", err);
-      } finally {
-        this.isLoading = false;
-      }
-    },
+    // ✅ Enregistrement de la session (localStorage ou sessionStorage)
+    const userData = response.data;
+    const storage = this.rememberMe ? localStorage : sessionStorage;
+    storage.setItem("userSession", JSON.stringify(userData));
 
-    /* --------------- Aller sur la page d'inscription adéquate ------------- */
+    // ✅ Redirection selon le rôle
+    this.$router.push(
+      userData.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat"
+    );
+  } catch (error) {
+    alert("❌ Identifiants incorrects ou utilisateur non trouvé");
+    console.error("Erreur lors de la connexion:", error);
+  } finally {
+    this.isLoading = false;
+  }
+}
+,
     goToSignup() {
       this.page = this.isRecruteur ? "registerRecruteur" : "registerCandidat";
-      this.$router.push(this.page === "registerRecruteur" ? "/register-recruteur" : "/register-candidat");
+      this.$router.push(this.page === "registerRecruteur" ? "/registerRecruteur" : "/registerCandidat");
     },
-
-    /* -------- Quand l'inscription (enfant) est terminée, on se connecte ---- */
     handleRegistrationComplete(userData) {
       const storage = this.rememberMe ? localStorage : sessionStorage;
       storage.setItem("userSession", JSON.stringify(userData));
       this.$router.push(userData.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat");
-    },
-  },
-
-  /* --------------- Si une session existe, on réutilise l'utilisateur ------- */
-  mounted() {
-    const session = localStorage.getItem("userSession") || sessionStorage.getItem("userSession");
-    if (session) {
-      const userSession = JSON.parse(session);
-      this.email = userSession.user?.email || "";
-      this.isRecruteur = userSession.type === "recruteur";
-      this.$router.push(this.isRecruteur ? "/CompteRecruteur" : "/CompteCandidat");
     }
   },
+  mounted() {
+    const session = localStorage.getItem("userSession") || sessionStorage.getItem("userSession");
+    if (session && document.referrer === "") {
+      const user = JSON.parse(session);
+      this.email = user.email;
+      this.isRecruteur = user.type === "recruteur";
+      this.$router.push(user.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat");
+    }
+  }
 };
 </script>
 
+
 <style scoped>
-/***** Conteneur principal ***************************************************/
+/* Styles de base */
 .auth-container {
   display: flex;
   justify-content: center;
@@ -184,10 +190,12 @@ export default {
   text-align: left;
 }
 
+/* Layout principal */
 .login-layout {
   display: flex;
-  width: 100%;
   max-width: 900px;
+  width: 100%;
+  margin: 20px auto;
   gap: 20px;
 }
 
@@ -201,70 +209,121 @@ export default {
 
 .image-container img {
   max-width: 100%;
+  height: auto;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/***** Boîte de formulaire ***************************************************/
+/* Boîte de formulaire */
 .auth-box {
-  width: 100%;
   background: #fff;
   border-radius: 8px;
+  width: 100%;
   padding: 25px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
 .auth-box h2 {
-  text-align: center;
   font-size: 1.6rem;
   margin-bottom: 15px;
-  font-weight: 600;
   color: #333;
+  font-weight: 600;
+  text-align: center;
 }
 
-/***** Toggle candidat / recruteur *******************************************/
+/* Toggle Candidat / Recruteur */
 .toggle-container {
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   margin-bottom: 15px;
-  background: #f8f9fa;
+  background-color: #f8f9fa;
   border-radius: 25px;
   padding: 4px;
 }
 
-.switch { position: relative; width: 45px; height: 23px; }
-.switch input { opacity: 0; width: 0; height: 0; }
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 45px;
+  height: 23px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
 
 .slider {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: #ccc;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.3s;
   border-radius: 23px;
-  transition: background 0.3s;
 }
+
 .slider:before {
-  content: "";
   position: absolute;
-  height: 17px; width: 17px;
-  left: 3px; bottom: 3px;
-  background: #fff;
+  content: "";
+  height: 17px;
+  width: 17px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
   border-radius: 50%;
-  transition: transform 0.3s;
 }
-input:checked + .slider { background: #2980b9; }
-input:checked + .slider:before { transform: translateX(22px); }
 
-.toggle-container span { font-size: 0.9rem; color: #777; font-weight: 500; }
-.toggle-container span.active { color: #2980b9; font-weight: 600; }
+input:checked + .slider {
+  background-color: #2980b9;
+}
 
-/***** Champs de saisie ******************************************************/
-.input-group { margin-bottom: 12px; }
-.input-group label { display: block; margin-bottom: 6px; font-weight: 500; color: #333; }
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
 
-.input-with-icon { position: relative; }
-.toggle-password { position: absolute; top: 50%; right: 8px; transform: translateY(-50%); background: none; border: none; cursor: pointer; }
+.toggle-container span {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #777;
+  transition: color 0.3s;
+}
+
+.toggle-container span.active {
+  color: #2980b9;
+  font-weight: 600;
+}
+
+/* Formulaire */
+.input-group {
+  margin-bottom: 12px;
+  text-align: left;
+}
+
+.input-group label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+.input-with-icon {
+  position: relative;
+}
+
+.input-with-icon i {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 10px;
+  color: #ccc;
+}
 
 input[type="email"],
 input[type="password"],
@@ -276,34 +335,90 @@ input[type="text"] {
   font-size: 1rem;
   transition: border-color 0.3s;
 }
-input:focus { outline: none; border-color: #2980b9; }
 
-.error-message { color: #e74c3c; font-size: 0.85rem; margin-top: 4px; }
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="text"]:focus {
+  outline: none;
+  border-color: #2980b9;
+}
 
-/***** Boutons ***************************************************************/
-.btn-submit,
+.error-message {
+  margin-top: 4px;
+  color: #e74c3c;
+  font-size: 0.85rem;
+}
+
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.remember-forgot {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.forgot-password {
+  font-size: 0.85rem;
+  color: #2980b9;
+  cursor: pointer;
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 12px;
+  background-color: #2980b9;
+  color: #fff;
+  font-size: 1.1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-submit:disabled {
+  background-color: #ccc;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background-color: #21618c;
+}
+
 .btn-create {
   width: 100%;
   padding: 12px;
+  background-color:#29a4b9;
   color: #fff;
+  font-size: 1.1rem;
   border: none;
   border-radius: 4px;
-  font-size: 1.1rem;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background-color 0.3s;
 }
-.btn-submit { background: #2980b9; }
-.btn-submit:hover:not(:disabled) { background: #21618c; }
-.btn-submit:disabled { background: #ccc; }
 
-.btn-create { background: #29a4b9; margin-top: 10px; }
-.btn-create:hover { background: #2491a4; }
+.btn-create:hover {
+  background-color: #2491a4;
+}
 
-/***** Autres ****************************************************************/
-.remember-forgot { display: flex; justify-content: space-between; margin-bottom: 20px; }
-.forgot-password { font-size: 0.85rem; color: #2980b9; }
-.forgot-password:hover { text-decoration: underline; }
+.inscrit-title {
+  text-align: center;
+  font-size: 1.1rem;
+  margin: 12px 0;
+}
 
-.inscrit-title { text-align: center; font-size: 1.1rem; margin: 12px 0; }
-.highlight { color: #2980b9; font-weight: bold; }
+.highlight {
+  font-weight: bold;
+  color: #2980b9;
+}
 </style>

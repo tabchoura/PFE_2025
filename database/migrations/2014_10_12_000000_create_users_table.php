@@ -33,6 +33,7 @@ return new class extends Migration
             $table->string('email')->unique()->nullable();
             $table->string('siteweb')->nullable();
             $table->string('departement')->nullable();
+            $table->string('nomsociete');
 
             $table->string('description')->nullable();
 
