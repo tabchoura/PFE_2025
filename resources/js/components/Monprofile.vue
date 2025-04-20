@@ -4,7 +4,7 @@
 
     <ul class="profil-details" v-if="!editMode">
       <li><strong>Date de naissance :</strong> {{ formatDate(profile.date_naissance) }}</li>
-      <li><strong>Numéro de téléphone :</strong> {{ profile.numtel }}</li>
+      <li><strong>Numéro de téléphone :</strong> {{ profile.phone }}</li>
       <li><strong>CIN :</strong> {{ profile.cin }}</li>
       <li><strong>Lieu de naissance :</strong> {{ profile.lieudenaissance }}</li>
       <li><strong>Email :</strong> {{ profile.email }}</li>
@@ -32,11 +32,11 @@
         <input type="email" id="email" v-model="form.email" required />
       </div>
       <div class="form-group">
-        <label for="numtel">Téléphone</label>
+        <label for="phone">Téléphone</label>
         <input
           type="tel"
-          id="numtel"
-          v-model="form.numtel"
+          id="phone"
+          v-model="form.phone"
           required
           pattern="[0-9]{8,}"
           title="Numéro de téléphone valide (minimum 8 chiffres)"
@@ -84,7 +84,7 @@ export default {
         date_naissance: "",
         lieudenaissance: "",
         cin: "",
-        numtel: "",
+        phone: "",
       },
       form: {},
       editMode: false,
@@ -95,50 +95,38 @@ export default {
   },
   methods: {
     async loadProfileData() {
-      try {
-        const session = JSON.parse(
-          sessionStorage.getItem("userSession") || localStorage.getItem("userSession") || "{}"
-        );
-        const token = session.token;
+  try {
+    await api.get('/sanctum/csrf-cookie'); // Assurez-vous d'obtenir le cookie CSRF
 
-        if (!token) {
-          console.warn("Aucun token trouvé");
-          return;
-        }
+    const me = await api.get("/api/me"); // Requête pour charger les données du profil utilisateur
 
-        const response = await api.get("/api/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+    const user = me.data;
+    this.profile = {
+      nom: user.nom || "",
+      prenom: user.prenom || "",
+      email: user.email || "",
+      date_naissance: user.date_naissance || "",
+      lieudenaissance: user.lieudenaissance || "",
+      cin: user.cin || "",
+      phone: user.phone || "",
+    };
 
-        const user = response.data;
+    this.form = { ...this.profile };
 
-        // Mise à jour du profil avec les données récupérées de l'API
-        this.profile = {
-          nom: user.nom || "",
-          prenom: user.prenom || "",
-          email: user.email || "",
-          date_naissance: user.date_naissance || "",
-          lieudenaissance: user.lieudenaissance || "",
-          cin: user.cin || "",
-          numtel: user.numtel || "",
-        };
+  } catch (error) {
+    console.error("Erreur lors du chargement des données du profil:", error);
 
-        // Préparation du formulaire pour la modification
-        this.form = { ...this.profile };
+    if (error.response && error.response.status === 401) {
+      // Gestion spécifique des erreurs 401 (Unauthorized)
+      alert("Votre session a expiré. Veuillez vous reconnecter.");
+      // Redirigez l'utilisateur vers la page de connexion ou effectuez une autre action appropriée
+    } else {
+      // Gestion des autres erreurs
+      alert("Une erreur est survenue lors du chargement des données du profil.");
+    }
+  }
+},
 
-      } catch (error) {
-        console.error("❌ Erreur lors du chargement de l'utilisateur via l'API /me :", error);
-      }
-    },
-
-    toggleEditMode() {
-      this.editMode = !this.editMode;
-      if (!this.editMode) {
-        this.form = { ...this.profile }; // Réinitialise les données du formulaire si l'édition est annulée
-      }
-    },
 
     updateProfile() {
       if (!this.form.email || !this.form.nom || !this.form.prenom) {
@@ -152,31 +140,38 @@ export default {
         return;
       }
 
-      // Mise à jour du profil
       this.profile = { ...this.form };
 
       try {
-        const session = JSON.parse(sessionStorage.getItem("userSession") || "{}");
+        const userSession = JSON.parse(
+          sessionStorage.getItem("userSession") ||
+          localStorage.getItem("userSession") ||
+          '{}'
+        );
 
         const updatedSession = {
-          ...session,
-          nom: this.form.nom,
-          prenom: this.form.prenom,
-          email: this.form.email,
-          numtel: this.form.numtel,
-          date_naissance: this.form.date_naissance,
-          lieudenaissance: this.form.lieudenaissance,
-          cin: this.form.cin,
-        };
+  ...userSession,
+  nom: this.form.nom,
+  prenom: this.form.prenom,
+  email: this.form.email,
+  phone: this.form.phone,
+  lieudenaissance: this.form.lieudenaissance,
+  cin: this.form.cin,
+  date_naissance: this.form.date_naissance,
+};
 
-        sessionStorage.setItem("userSession", JSON.stringify(updatedSession));
-        localStorage.setItem("userSession", JSON.stringify(updatedSession));
+        if (sessionStorage.getItem("userSession")) {
+          sessionStorage.setItem("userSession", JSON.stringify(updatedSession));
+        }
+        if (localStorage.getItem("userSession")) {
+          localStorage.setItem("userSession", JSON.stringify(updatedSession));
+        }
 
         this.editMode = false;
         this.showSuccessMessage("Profil mis à jour avec succès !");
       } catch (error) {
-        console.error("Erreur lors de la sauvegarde du profil :", error);
-        alert("❌ Une erreur est survenue lors de la sauvegarde.");
+        console.error("Erreur lors de la sauvegarde du profil:", error);
+        alert("❌ Une erreur est survenue lors de la sauvegarde du profil.");
       }
     },
 

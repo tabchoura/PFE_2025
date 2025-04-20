@@ -9,10 +9,9 @@
       <li><strong>Email :</strong> {{ profile.email }}</li>
 
       <li><strong>CIN :</strong> {{ profile.cin }}</li>
-      <li><strong>Numéro de téléphone :</strong> {{ profile.numtel }}</li>
+      <li><strong>Numéro de téléphone :</strong> {{ profile.phone }}</li>
 
-      <li><strong>Num Société :</strong> {{ profile.numsociete }}</li>
-      <li><strong>Lieu de la Société :</strong> {{ profile.lieu }}</li>
+      <li><strong>localisation de la Société :</strong> {{ profile.localisation }}</li>
     </ul>
 
     <button
@@ -43,10 +42,13 @@
       <div class="form-group">
         <label for="departement">Département de la Société</label>
         <input type="text" id="departement" v-model="form.departement" required />
+      </div>  <div class="form-group">
+        <label for="phone">Numéro de téléphone</label>
+        <input type="text" id="phone" v-model="form.phone" required />
       </div>
       <div class="form-group">
-        <label for="lieu">Localisation de la Société</label>
-        <input type="text" id="lieu" v-model="form.lieu" required />
+        <label for="localisation">Localisation de la Société</label>
+        <input type="text" id="localisation" v-model="form.localisation" required />
       </div>
       <div class="form-group">
         <label for="cin">CIN</label>
@@ -59,17 +61,7 @@
           title="CIN doit contenir uniquement des chiffres"
         />
       </div>
-      <div class="form-group">
-        <label for="numsociete">Numéro de la Société</label>
-        <input
-          type="tel"
-          id="numsociete"
-          v-model="form.numsociete"
-          required
-          pattern="[0-9]{8,}"
-          title="Numéro de téléphone valide (minimum 8 chiffres)"
-        />
-      </div>
+     
 
       <div class="form-actions">
         <button type="button" class="btn-cancel" @click="toggleEditMode">❌ Annuler</button>
@@ -90,11 +82,10 @@ export default {
         nom: "",
         prenom: "",
         email: "",
-        lieu: "",
+        localisation: "",
         cin: "",
-        numtel: "",
+        phone: "",
         nomsociete: "",
-        numsociete: "",
         departement:"",
       },
     
@@ -118,11 +109,10 @@ console.log("✅ Utilisateur connecté :", me.data);
       nom: user.nom || "",
       prenom: user.prenom || "",
       email: user.email || "",
-      lieu: user.lieu || user.lieuNaissance || "",
+      localisation: user.localisation ||  "",
       cin: user.cin || "",
-      numtel: user.numtel || "",
+      phone: user.phone || "",
       nomsociete: user.nomsociete || user.nomentreprise || "",
-      numsociete: user.numsociete || "",
       departement: user.departement || "",
     };
 
@@ -167,11 +157,10 @@ console.log("✅ Utilisateur connecté :", me.data);
   nom: this.form.nom,
   prenom: this.form.prenom,
   email: this.form.email,
-  numtel: this.form.numtel,
-  lieu: this.form.lieu,
+  phone: this.form.phone,
+  localisation: this.form.localisation,
   cin: this.form.cin,
   nomsociete: this.form.nomsociete,
-  numsociete: this.form.numsociete,
   departement: this.form.departement,
 };
 

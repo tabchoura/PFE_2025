@@ -134,38 +134,38 @@
             </div>
 
             <div class="form-grid">
-              <div class="input-group" @mouseenter="showHint('date')" @mouseleave="hideHint('date')">
-                <label for="date">Date de naissance</label>
+              <div class="input-group" @mouseenter="showHint('date_naissance')" @mouseleave="hideHint('date_naissance')">
+                <label for="date_naissance">Date de naissance</label>
                 <input
                   type="date"
-                  v-model="formData.date"
-                  id="date"
+                  v-model="formData.date_naissance"
+                  id="date_naissance"
                   :max="maxDate"
-                  :class="{ 'input-error': errors.date, 'input-valid': formData.date && isValidField('date') }"
+                  :class="{ 'input-error': errors.date_naissance, 'input-valid': formData.date_naissance && isValidField('date_naissance') }"
                   required
                   autocomplete="bday"
-                  @change="validateField('date')"
+                  @change="validateField('date_naissance')"
                 />
-                <span class="error-message" v-if="errors.date">{{ errors.date }}</span>
-                <span class="hint-message" v-if="hints.date">Vous devez avoir au moins 18 ans</span>
-                <span class="valid-icon" v-if="formData.date && isValidField('date')">✓</span>
+                <span class="error-message" v-if="errors.date_naissance">{{ errors.date_naissance }}</span>
+                <span class="hint-message" v-if="hints.date_naissance">Vous devez avoir au moins 18 ans</span>
+                <span class="valid-icon" v-if="formData.date_naissance && isValidField('date_naissance')">✓</span>
               </div>
               
-              <div class="input-group" @mouseenter="showHint('lieu')" @mouseleave="hideHint('lieu')">
-                <label for="lieu">Lieu de naissance</label>
+              <div class="input-group" @mouseenter="showHint('lieudenaissance')" @mouseleave="hideHint('lieudenaissance')">
+                <label for="lieudenaissance">Lieu de naissance</label>
                 <input
                   type="text"
-                  v-model.trim="formData.lieu"
-                  id="lieu"
+                  v-model.trim="formData.lieudenaissance"
+                  id="lieudenaissance"
                   placeholder="Ville / Commune"
-                  :class="{ 'input-error': errors.lieu, 'input-valid': formData.lieu && isValidField('lieu') }"
+                  :class="{ 'input-error': errors.lieudenaissance, 'input-valid': formData.lieudenaissance && isValidField('lieudenaissance') }"
                   required
                   autocomplete="address-level2"
-                  @input="validateField('lieu')"
+                  @input="validateField('lieudenaissance')"
                 />
-                <span class="error-message" v-if="errors.lieu">{{ errors.lieu }}</span>
-                <span class="hint-message" v-if="hints.lieu">Entrez une ville ou commune valide</span>
-                <span class="valid-icon" v-if="formData.lieu && isValidField('lieu')">✓</span>
+                <span class="error-message" v-if="errors.lieudenaissance">{{ errors.lieudenaissance }}</span>
+                <span class="hint-message" v-if="hints.lieudenaissance">Entrez une ville ou commune valide</span>
+                <span class="valid-icon" v-if="formData.lieudenaissance && isValidField('lieudenaissance')">✓</span>
               </div>
             </div>
 
@@ -207,7 +207,7 @@ const validFields = reactive({
   cin: false,
   numtel: false,
   date: false,
-  lieu: false
+  lieudenaissance: false
 });
 
 const formData = reactive({
@@ -218,7 +218,7 @@ const formData = reactive({
   cin: '',
   numtel: '',
   date: '',
-  lieu: ''
+  lieudenaissance: ''
 });
 
 const errors = reactive({});
@@ -230,7 +230,7 @@ const hints = reactive({
   cin: false,
   numtel: false,
   date: false,
-  lieu: false
+  lieudenaissance: false
 });
 
 // Validation en temps réel de tous les champs lors de la saisie
@@ -360,7 +360,7 @@ function validateField(field) {
       }
       break;
       
-    case 'date':
+    case 'date_naissance':
       if (formData.date) {
         const birthDate = new Date(formData.date);
         const today = new Date();
@@ -378,10 +378,10 @@ function validateField(field) {
       }
       break;
       
-    case 'lieu':
-      validFields.lieu = !!formData.lieu && nameRegex.test(formData.lieu);
-      if (!validFields.lieu && formData.lieu) {
-        errors.lieu = 'Lieu invalide';
+    case 'lieudenaissance':
+      validFields.lieudenaissance = !!formData.lieudenaissance && nameRegex.test(formData.lieudenaissance);
+      if (!validFields.lieudenaissance && formData.lieudenaissance) {
+        errors.lieudenaissance = 'Lieu de naissance invalide';
       }
       break;
   }
@@ -396,6 +396,7 @@ function validateForm() {
 }
 
 async function register() {
+  console.log("Formulaire soumis", formData);  // Vérifier si la méthode est bien appelée
   if (!validateForm()) return;
   loading.value = true;
   try {
@@ -409,37 +410,39 @@ async function register() {
       cin: formData.cin,
       numtel: formData.numtel,
       date_naissance: formData.date,
-      lieu: formData.lieu
+      lieudenaissance: formData.lieudenaissance
     };
-    console.log('payload : ', payload)
+    console.log('Payload : ', payload);  // Vérifier les données envoyées
     const response = await api.post('/api/register', payload);
-    console.log('response : ', response)
+    console.log('Response : ', response);  // Vérifier la réponse du serveur
     const { user, token } = response.data;
 
+
+  
     sessionStorage.setItem('userSession', JSON.stringify({
       token,
       ...user
-
     }));
+
     console.log('userSession :', sessionStorage.getItem('userSession'));
 
-    isSubmitted.value = true;
-  } catch (error) {
-    console.error(error);
-    if (error.response && error.response.data && error.response.data.errors) {
-      // Gestion des erreurs de validation du serveur
-      const serverErrors = error.response.data.errors;
-      Object.keys(serverErrors).forEach(key => {
-        errors[key] = serverErrors[key][0];
-        validFields[key] = false;
-      });
-    } else {
-      alert("Erreur serveur lors de l'inscription");
+  isSubmitted.value = true;  // Mettre à jour l'état de soumission
+    } catch (error) {
+      console.error(error);  // Vérifier si une erreur se produit
+      if (error.response && error.response.data && error.response.data.errors) {
+        const serverErrors = error.response.data.errors;
+        Object.keys(serverErrors).forEach(key => {
+          errors[key] = serverErrors[key][0];
+          validFields[key] = false;
+        });
+      } else {
+        alert("Erreur serveur lors de l'inscription");
+      }
+    } finally {
+      loading.value = false;
     }
-  } finally {
-    loading.value = false;
   }
-}
+
 
 function goToCompteCandidat() {
   router.push('/CompteCandidat');

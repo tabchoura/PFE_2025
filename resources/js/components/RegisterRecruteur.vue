@@ -188,21 +188,21 @@
               <span class="valid-icon" v-if="formData.departement && validFields.departement">✓</span>
             </div>
 
-            <div class="input-group" @mouseenter="showHint('lieu')" @mouseleave="hideHint('lieu')">
-              <label for="lieu">Localisation</label>
+            <div class="input-group" @mouseenter="showHint('localisation')" @mouseleave="hideHint('localisation')">
+              <label for="localisation">Localisation</label>
               <input
                 type="text"
-                v-model.trim="formData.lieu"
-                id="lieu"
+                v-model.trim="formData.localisation"
+                id="localisation"
                 placeholder="Écrire votre localisation"
-                :class="{ 'input-error': errors.lieu, 'input-valid': validFields.lieu }"
+                :class="{ 'input-error': errors.localisation, 'input-valid': validFields.localisation }"
                 required
                 autocomplete="address-level2"
-                @input="validateField('lieu')"
+                @input="validateField('localisation')"
               />
-              <span class="error-message" v-if="errors.lieu">{{ errors.lieu }}</span>
+              <span class="error-message" v-if="errors.localisation">{{ errors.localisation }}</span>
 
-              <span class="valid-icon" v-if="formData.lieu && validFields.lieu">✓</span>
+              <span class="valid-icon" v-if="formData.localisation && validFields.localisation">✓</span>
             </div>
 
             <div class="input-group" @mouseenter="showHint('description')" @mouseleave="hideHint('description')">
@@ -270,7 +270,7 @@ const validFields = reactive({
   password: false,
   cin: false,
   numtel: false,
-  lieu: false,
+  localisation: false,
   departement:false,
   description:false,
   nomsociete:false,
@@ -285,7 +285,7 @@ const formData = reactive({
   cin: '',
   numtel: '',
   departement: '',
-  lieu: '',
+  localisation: '',
   description:'',
   nomsociete:'',
   siteweb:''
@@ -299,7 +299,7 @@ const hints = reactive({
   password: false,
   cin: false,
   numtel: false,
-  lieu: false,
+  localisation: false,
   departement:false,
   description:false,
   nomsociete:false,
@@ -442,10 +442,10 @@ function validateField(field) {
 
   
       
-    case 'lieu':
-      validFields.lieu = !!formData.lieu && nameRegex.test(formData.lieu);
-      if (!validFields.lieu && formData.lieu) {
-        errors.lieu = 'Lieu invalide';
+    case 'localisation':
+      validFields.localisation = !!formData.localisation && nameRegex.test(formData.localisation);
+      if (!validFields.localisation && formData.localisation) {
+        errors.localisation = 'localisation invalide';
       }
       break;
       case 'nomsociete':
@@ -498,7 +498,7 @@ async function register() {
       role: 'recruteur',
       cin: formData.cin,
       numtel: formData.numtel,
-      lieu: formData.lieu,
+      localisation: formData.localisation,
       departement: formData.departement,
       description: formData.description,
       nomsociete: formData.nomsociete,
