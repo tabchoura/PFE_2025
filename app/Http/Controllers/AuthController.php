@@ -20,7 +20,7 @@ class AuthController extends Controller
             'role' => 'required|in:candidat,recruteur,admin',
             'date_naissance' => 'date',
             'nomsociete' => 'nullable|string',
-            'lieu' => 'string',
+            'lieudenaissance' => 'string',
             'siteweb' => 'string',
             'cin' => 'required|string',
             'phone' => 'string',
@@ -42,7 +42,7 @@ class AuthController extends Controller
             'phone' => $request->phone,
             'datedepot' => now(), // Assuming this is a timestamp field
             'date_naissance' => $request->date_naissance,
-            'lieudenaissance' => $request->lieu,
+            'lieudenaissance' => $request->lieudenaissance,
         ]);
     
         return response()->json([

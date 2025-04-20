@@ -115,23 +115,23 @@
                 <span class="valid-icon" v-if="formData.cin && validFields.cin">✓</span>
               </div>
 
-              <div class="input-group" @mouseenter="showHint('numtel')" @mouseleave="hideHint('numtel')">
-                <label for="numtel">Numéro de téléphone</label>
+              <div class="input-group" @mouseenter="showHint('phone')" @mouseleave="hideHint('phone')">
+                <label for="phone">Numéro de téléphone</label>
                 <input
                   type="tel"
-                  v-model.trim="formData.numtel"
-                  id="numtel"
+                  v-model.trim="formData.phone"
+                  id="phone"
                   placeholder="Votre numéro de téléphone"
-                  :class="{ 'input-error': errors.numtel, 'input-valid': validFields.numtel }"
+                  :class="{ 'input-error': errors.phone, 'input-valid': validFields.phone }"
                   required
                   maxlength="8"
                   inputmode="tel"
                   autocomplete="tel"
-                  @input="validateField('numtel')"
+                  @input="validateField('phone')"
                 />
-                <span class="error-message" v-if="errors.numtel">{{ errors.numtel }}</span>
-                <span class="hint-message" v-if="hints.numtel">Le numéro de téléphone doit contenir exactement 8 chiffres</span>
-                <span class="valid-icon" v-if="formData.numtel && validFields.numtel">✓</span>
+                <span class="error-message" v-if="errors.phone">{{ errors.phone }}</span>
+                <span class="hint-message" v-if="hints.phone">Le numéro de téléphone doit contenir exactement 8 chiffres</span>
+                <span class="valid-icon" v-if="formData.phone && validFields.phone">✓</span>
               </div>
             </div>
 
@@ -269,7 +269,7 @@ const validFields = reactive({
   email: false,
   password: false,
   cin: false,
-  numtel: false,
+  phone: false,
   localisation: false,
   departement:false,
   description:false,
@@ -283,7 +283,7 @@ const formData = reactive({
   email: '',
   password: '',
   cin: '',
-  numtel: '',
+  phone: '',
   departement: '',
   localisation: '',
   description:'',
@@ -298,7 +298,7 @@ const hints = reactive({
   email: false,
   password: false,
   cin: false,
-  numtel: false,
+  phone: false,
   localisation: false,
   departement:false,
   description:false,
@@ -424,10 +424,10 @@ function validateField(field) {
       }
       break;
       
-    case 'numtel':
-      validFields.numtel = /^\d{8}$/.test(formData.numtel);
-      if (!validFields.numtel && formData.numtel) {
-        errors.numtel = 'Téléphone invalide (8 chiffres requis)';
+    case 'phone':
+      validFields.phone = /^\d{8}$/.test(formData.phone);
+      if (!validFields.phone && formData.phone) {
+        errors.phone = 'Téléphone invalide (8 chiffres requis)';
       }
       break;
       
@@ -497,7 +497,7 @@ async function register() {
       password: formData.password,
       role: 'recruteur',
       cin: formData.cin,
-      numtel: formData.numtel,
+      phone: formData.phone,
       localisation: formData.localisation,
       departement: formData.departement,
       description: formData.description,
@@ -515,6 +515,7 @@ async function register() {
       token,
       ...user
     }));
+    router.push('/monprofilerecruteur');
 
 
 
