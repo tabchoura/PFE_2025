@@ -94,39 +94,47 @@ export default {
     this.loadProfileData();
   },
   methods: {
+    // Ajout de la méthode toggleEditMode
+    toggleEditMode() {
+      if (!this.editMode) {
+        // Si nous entrons en mode édition, copier les données du profil dans le formulaire
+        this.form = { ...this.profile };
+      }
+      this.editMode = !this.editMode;
+    },
+    
     async loadProfileData() {
-  try {
-    await api.get('/sanctum/csrf-cookie'); // Assurez-vous d'obtenir le cookie CSRF
+      try {
+        await api.get('/sanctum/csrf-cookie'); // Assurez-vous d'obtenir le cookie CSRF
 
-    const me = await api.get("/api/me"); // Requête pour charger les données du profil utilisateur
+        const me = await api.get("/api/me"); // Requête pour charger les données du profil utilisateur
 
-    const user = me.data;
-    this.profile = {
-      nom: user.nom || "",
-      prenom: user.prenom || "",
-      email: user.email || "",
-      date_naissance: user.date_naissance || "",
-      lieudenaissance: user.lieudenaissance || "",
-      cin: user.cin || "",
-      phone: user.phone || "",
-    };
+        const user = me.data;
+        this.profile = {
+          nom: user.nom || "",
+          prenom: user.prenom || "",
+          email: user.email || "",
+          date_naissance: user.date_naissance || "",
+          lieudenaissance: user.lieudenaissance || "",
+          cin: user.cin || "",
+          phone: user.phone || "",
+        };
 
-    this.form = { ...this.profile };
+        this.form = { ...this.profile };
 
-  } catch (error) {
-    console.error("Erreur lors du chargement des données du profil:", error);
+      } catch (error) {
+        console.error("Erreur lors du chargement des données du profil:", error);
 
-    if (error.response && error.response.status === 401) {
-      // Gestion spécifique des erreurs 401 (Unauthorized)
-      alert("Votre session a expiré. Veuillez vous reconnecter.");
-      // Redirigez l'utilisateur vers la page de connexion ou effectuez une autre action appropriée
-    } else {
-      // Gestion des autres erreurs
-      alert("Une erreur est survenue lors du chargement des données du profil.");
-    }
-  }
-},
-
+        if (error.response && error.response.status === 401) {
+          // Gestion spécifique des erreurs 401 (Unauthorized)
+          alert("Votre session a expiré. Veuillez vous reconnecter.");
+          // Redirigez l'utilisateur vers la page de connexion ou effectuez une autre action appropriée
+        } else {
+          // Gestion des autres erreurs
+          alert("Une erreur est survenue lors du chargement des données du profil.");
+        }
+      }
+    },
 
     updateProfile() {
       if (!this.form.email || !this.form.nom || !this.form.prenom) {
@@ -150,15 +158,15 @@ export default {
         );
 
         const updatedSession = {
-  ...userSession,
-  nom: this.form.nom,
-  prenom: this.form.prenom,
-  email: this.form.email,
-  phone: this.form.phone,
-  lieudenaissance: this.form.lieudenaissance,
-  cin: this.form.cin,
-  date_naissance: this.form.date_naissance,
-};
+          ...userSession,
+          nom: this.form.nom,
+          prenom: this.form.prenom,
+          email: this.form.email,
+          phone: this.form.phone,
+          lieudenaissance: this.form.lieudenaissance,
+          cin: this.form.cin,
+          date_naissance: this.form.date_naissance,
+        };
 
         if (sessionStorage.getItem("userSession")) {
           sessionStorage.setItem("userSession", JSON.stringify(updatedSession));

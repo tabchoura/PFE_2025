@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         // Vérifie si la table 'entreprises' existe déjà
-        if (!Schema::hasTable('entreprises')) {
+        
             Schema::create('entreprises', function (Blueprint $table) {
                 $table->id();
                 $table->string('nomentreprise')->nullable();
@@ -25,7 +25,7 @@ return new class extends Migration
                 
                 $table->timestamps();
             });
-        }
+        
     }
 
     /**

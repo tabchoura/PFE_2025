@@ -19,6 +19,8 @@ class UserController extends Controller
         return response()->json($user);  // Retourne les données utilisateur en JSON
     }
     
+
+    
     public function index(){
         return response()->json(User::all());
     }
@@ -62,6 +64,8 @@ class UserController extends Controller
             'password'      =>Hash::make($request->password),
             'nomsociete'=>$request->nomsociete,
             'localisation'=>$request->localisation,
+            'departement'=>$request->departement,
+
 
     
         ]);
@@ -70,25 +74,29 @@ class UserController extends Controller
 
 public function update(User $user,Request $request ){
     $request->validate([
-        'nom'          => 'required|string|max:255',
-        'prenom'     => 'required|string|max:255',
-        'date_naissance'           => 'required|date',
-        'lieudenaissance'=> 'required|string',
+        'nom'          => 'nullable|string|max:255',
+        'prenom'     => ' nullable|string|max:255',
+       // 'date_naissance'           => 'date',
+        'lieudenaissance'=> 'nullable|string',
         'siteweb'=>'string',
-        'phone'         => 'required|string|max:20', 
-        'cover_letter'  => 'string',
+        'phone'         => 'nullable|string|max:20', 
+        'cover_letter'  => 'nullable|string',
         'datedepot'     => 'nullable|date',
-        'datevalidation'=> '|date',
-        'dateentretien' => 'date',
-        'cin'           => 'required|string|max:20',
-        'poste'         => 'string|max:255',
-        'nb_offres'     => 'integer|min:0',
-        'nbvalidation'  => 'integer|min:0',
-'email' => 'required|email|unique:users,email,' . $user->id,
-        'password'      => 'required|string|min:6',
-        'nomsociete'=>'string',
-        'localisation'=>'string',  // Correction ici
+        'datevalidation'=> 'nullable|date',
+       // 'dateentretien' => 'date',
+        'cin'           => 'nullable|string|max:20',
+        'email'         => 'nullable|string|max:20',
+'departement'=>'nullable|string|max:20',
+        'poste'         => 'nullable|string|max:255',
+        //'nb_offres'     => 'integer|min:0',
+       // 'nbvalidation'  => 'integer|min:0',
+        'password'      => 'nullable|string|min:6',
+        'nomsociete'=>'nullable|string',
+        'localisation'=>'nullable|string',  // Correction ici
 
+
+
+        
     ]);
     $user->update([
         'nom'          => $request->nom,
@@ -110,11 +118,22 @@ public function update(User $user,Request $request ){
         'siteweb'=>$request->siteweb,
         'nomsociete'=>$request->nomsociete,
         'localisation'=>$request->localisation,
+        'departement'=>$request->departement,
+
 
 
 
 
     ]);
-    return response()->json($user, 201);
+    return response()->json(data: $user);
 }
-}
+public function updateMyprofile(Request $request){
+    $user = auth()->user(); 
+    $user->update([
+        'nom'          => $request->nom,
+        'prenom'     => $request->prenom,
+    
+    ]);
+    return response()->json(data: $user);
+
+}  }

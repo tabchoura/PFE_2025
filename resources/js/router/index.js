@@ -16,6 +16,7 @@ import CreateLettre from '@/components/CreateLettre.vue';
 import Test from '@/components/Test.vue';
 import Mesnotifications from '@/components/MesNotifications.vue';
 import Candidaturesrecruteur from '../components/Candidaturesrecruteur.vue';
+import Offresrecruteur from '../components/Offresrecruteur.vue'
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -61,8 +62,8 @@ const routes = [
   { path: '/monprofilerecruteur', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
     { path: '', name: 'Monprofilerecruteur', component: Monprofilerecruteur }
   ]},
-  { path: '/offres/:id', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'offres', component: Offres }
+  { path: '/offresrecruteur', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Offresrecruteur', component: Offresrecruteur }
   ]},
   { path: '/Candidaturesrecruteur', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
     { path: '', name: 'Candidaturesrecruteur', component: Candidaturesrecruteur }

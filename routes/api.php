@@ -22,14 +22,20 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
+Route::put('/update-profil', [UserController::class, 'updateMyprofile']);
+
+
 });
 Route::middleware('auth:sanctum')->get('/me', [UserController::class, 'myProfile']);
 
 
+
 // 📦 Users
+
+
 Route::get('/users', [UserController::class, 'index']);
-Route::post('/users', [UserController::class, 'store']);
-Route::put('/users/{user}', [UserController::class, 'update']);
+Route::post('/users', action: [UserController::class, 'store']);
+//Route::put('/users/{user}', [UserController::class, 'update']);
 Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
 Route::get('/entretiens', [EntretienController::class, 'index']);
@@ -37,7 +43,7 @@ Route::post('/entretiens', [EntretienController::class, 'store']);
 Route::put('/entretiens/{id}', [EntretienController::class, 'update']);
 Route::delete('/entretiens/{id}', [EntretienController::class, 'destroy']);
 
-// 📄 Offres
+// 📄 Offresac
 Route::get('/offres', [OfferController::class, 'index']);
 Route::post('/offres', [OfferController::class, 'store']);
 Route::put('/offres/{id}', [OfferController::class, 'update']);

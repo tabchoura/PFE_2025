@@ -465,7 +465,6 @@ case 'siteweb':
   }
   break;
 
-      break;
       case 'description':
       validFields.description = !!formData.description && descriptionRegex.test(formData.description);
       if (!validFields.description && formData.description) {

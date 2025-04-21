@@ -7,14 +7,14 @@
         <li @click="navigateTo('/monprofilerecruteur')" :class="{ active: isActive('/monprofilerecruteur') }" role="button" tabindex="0">
           Mon profil
         </li>
-        <li @click="navigateTo('/Candidaturesrecruteur')">
+        <li @click="navigateTo('/Candidaturesrecruteur')"  :class="{ active: isActive('/Candidaturesrecruteur') }" role="button" tabindex="0">
           Candidatures reçues
         </li>
-        <li @click="navigateTo('/Entretiensrecruteurs')" :class="{ active: isActive('/Entretiensrecruteurs') }">
+        <li @click="navigateTo('/Entretiensrecruteurs')" :class="{ active: isActive('/Entretiensrecruteurs') }"  role="button" tabindex="0">
   Mes entretiens
 </li>
 
-        <li @click="navigateTo('/offres')" :class="{ active: isActive('/offres') }" role="button" tabindex="0">
+        <li @click="navigateTo('/Offresrecruteur')" :class="{ active: isActive('/Offresrecruteur') }" role="button" tabindex="0">
           Gérer les offres
         </li>
         <li @click="logout" class="logout-item" role="button" tabindex="0">

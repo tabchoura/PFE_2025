@@ -80,13 +80,12 @@ class AuthController extends Controller
     // Déconnexion de l'utilisateur
     public function logout(Request $request)
     {
-        Auth::logout();
-    
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-    
-        return response()->json(['message' => 'Déconnecté avec succès']);
+        // If using Sanctum, invalidate the user's token
+        Auth::user()->tokens->each(function ($token) {
+            $token->delete();
+        });
+
+        return response()->json(['message' => 'Déconnexion réussie']);
     }
-    
     
 }    
