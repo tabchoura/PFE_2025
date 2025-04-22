@@ -17,6 +17,10 @@ import Test from '@/components/Test.vue';
 import Mesnotifications from '@/components/MesNotifications.vue';
 import Candidaturesrecruteur from '../components/Candidaturesrecruteur.vue';
 import Offresrecruteur from '../components/Offresrecruteur.vue'
+import Ajouteroffre from '../components/Ajouteroffre.vue'
+import Modifieroffre from '../components/Modifieroffre.vue'
+import Supprimeroffre from '../components/Supprimeroffre.vue'
+
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -71,8 +75,26 @@ const routes = [
   { path: '/Entretiensrecruteurs', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
     { path: '', name: 'Entretiensrecruteurs', component: Entretiens }
   ]},
+  { path: '/Offresrecruteur', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Offresrecruteurs', component: Offresrecruteur }
+  ]},
+  { path: '/Entretiensrecruteurs', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Entretiensrecruteurs', component: Entretiens }
+  ]},
+
+  { path: '/Ajouteroffre', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Ajouteroffre', component: Ajouteroffre }
+  ]},
+  { path: '/modifieroffre/:id', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Modifieroffre', component: Modifieroffre ,  props: true, }
+  ]},
+  { path: '/supprimeroffre/:id', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Supprimeroffre', component: Supprimeroffre ,  props: true, }
+  ]},
 
   // Catch-all
+
+
   { path: '/:pathMatch(.*)*', redirect: '/' }
 ];
 

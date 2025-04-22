@@ -14,14 +14,18 @@ return new class extends Migration
         Schema::create('offres', function (Blueprint $table) {
             $table->id();
             $table->string('type')->nullable();
-            $table->string('description');
-            $table->float('salary')->nullable();
-            $table->unsignedBigInteger('user_id'); // Définition de la colonne user_id
+            $table->string('description')->nullable();
+            $table->string('salaire')->nullable();
+            $table->string('titre')->nullable();
+
+          //  $table->string('salaire')->nullable();  
+            //      $table->unsignedBigInteger('user_id')->nullable()->change(); // Rendre la colonne nullable
+
             
-            $table->foreign('user_id')  // Définition de la clé étrangère
-                  ->references('id')
-                  ->on('users')
-                  ->onDelete('cascade');
+            //$table->foreign('user_id')  // Définition de la clé étrangère
+              //    ->references('id')
+                //  ->on('users')
+                  //->onDelete('cascade');
                   
             $table->timestamps();
         });

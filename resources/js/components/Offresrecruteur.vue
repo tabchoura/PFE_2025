@@ -1,601 +1,341 @@
 <template>
   <div class="offers-section">
-
-    <!-- Premier offre -->
-    <div class="offer-actions">
-      <button @click="openAddForm" class="btn-add-offer">Ajouter une offre</button>
-    </div>
-    <div class="offer-card">
-    
-      <h3 class="title-offre">Website Design for SCFC Canada</h3>
-      <p class="description">
-        Born out of a vision, a single-minded objective that puts service before anything
-        else, Swift Clearance and Forwarding Corp. surging forth to deliver the best
-        services in the shipping and logistics scenario.
-      </p>
-      <button class="btn-edit" @click="editOffer(offer.id)" aria-label="Modifier l'offre">Modifier</button>
-        <button class="btn-delete" @click="deleteOffer(offer.id)" aria-label="Supprimer l'offre">Supprimer</button>
-      <div>
-        <!-- Button to toggle modal visibility -->
-        <button class="btn-see-more" @click="openPopup(0)">Voir plus</button>
-
-        <!-- Modal Display -->
-        <Teleport to="body">
-          <div v-if="activePopup === 0" class="modal-overlay" @click.self="closePopup">
-            <div class="modal-content">
-              <button class="close-button" @click="closePopup">×</button>
-              <Authentification />
-            </div>
-          </div>
-        </Teleport>
-      </div>
+    <div class="header-actions">
+      <h2>Liste des offres</h2>
+      <button @click="ajouterOffre" class="btn-ajouter" aria-label="Ajouter une nouvelle offre">
+        + Ajouter une offre
+      </button>
     </div>
 
-    <!-- Deuxième offre -->
-    <div class="offer-card">
-      <h3 class="title-offre">Website Design for SCFC Canada</h3>
-      <p class="description">
-        Born out of a vision, a single-minded objective that puts service before anything
-        else, Swift Clearance and Forwarding Corp. surging forth to deliver the best
-        services in the shipping and logistics scenario.
-      </p>
-      <button class="btn-edit" @click="editOffer(offer.id)" aria-label="Modifier l'offre">Modifier</button>
-        <button class="btn-delete" @click="deleteOffer(offer.id)" aria-label="Supprimer l'offre">Supprimer</button>
-      <div>
-        <!-- Button to toggle modal visibility -->
-        <button class="btn-see-more" @click="openPopup(1)">Voir plus</button>
-
-        <!-- Modal Display -->
-        <Teleport to="body">
-          <div v-if="activePopup === 1" class="modal-overlay" @click.self="closePopup">
-            <div class="modal-content">
-              <button class="close-button" @click="closePopup">×</button>
-              <Authentification />
-            </div>
-          </div>
-        </Teleport>
-      </div>
+    <div v-if="loading" class="loading-state">
+      <p>Chargement des offres...</p>
     </div>
 
-    <!-- Troisième offre -->
-    <div class="offer-card">
-      <h3 class="title-offre">Website Design for SCFC Canada</h3>
-      <p class="description">
-        Born out of a vision, a single-minded objective that puts service before anything
-        else, Swift Clearance and Forwarding Corp. surging forth to deliver the best
-        services in the shipping and logistics scenario.
-      </p>
-      <button class="btn-edit" @click="editOffer(offer.id)" aria-label="Modifier l'offre">Modifier</button>
-        <button class="btn-delete" @click="deleteOffer(offer.id)" aria-label="Supprimer l'offre">Supprimer</button>
-      <div>
-        <!-- Button to toggle modal visibility -->
-        <button class="btn-see-more" @click="openPopup(2)">Voir plus</button>
+    <div v-else-if="error" class="error-state">
+      <p>{{ error }}</p>
+      <button @click="getOffres" class="btn-retry">Réessayer</button>
+    </div>
 
-        <!-- Modal Display -->
-        <Teleport to="body">
-          <div v-if="activePopup === 2" class="modal-overlay" @click.self="closePopup">
-            <div class="modal-content">
-              <button class="close-button" @click="closePopup">×</button>
-              <Authentification :isInModal="true" />
-            </div>
+    <div v-else-if="offres.length === 0" class="empty-state">
+      <p>Aucune offre disponible pour le moment</p>
+    </div>
+
+    <div v-else class="offers-grid">
+      <div class="offer-card" v-for="offer in offres" :key="offer.id">
+        <div class="offer-card-header">
+          <h3 class="title-offre">{{ offer.titre }}</h3>
+        </div>
+
+        <div class="offer-card-body">
+          <p class="description"><strong>Description :</strong> {{ truncateText(offer.description, 100) }}</p>
+          <div class="offer-details">
+            <p class="salaire"><strong>Salaire :</strong> {{ formatSalaire(offer.salaire) }}</p>
           </div>
+        </div>
 
-        </Teleport>
+        <div class="offer-actions">
+          <button class="btn-modifier" @click="modifierOffre(offer.id)" aria-label="Modifier cette offre">
+            <span class="icon">✏️</span> Modifier
+          </button>
+          <button class="btn-supprimer" @click="supprimerOffre(offer.id)" aria-label="Supprimer cette offre">
+  <span class="icon">🗑️</span> Supprimer
+</button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref } from "vue";
-import Authentification from "./Authentification.vue";
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import axios from 'axios';
 
-// Variable pour suivre quel popup est actif (-1 signifie aucun)
-const activePopup = ref(-1);
+const offres = ref([]);
+const loading = ref(true);
+const error = ref(null);
+const router = useRouter();
 
-// Fonction pour ouvrir un popup spécifique
-function openPopup(index: number) {
-  activePopup.value = index;
-  // Pour empêcher le défilement du corps lorsque le modal est ouvert
-  document.body.style.overflow = "hidden";
-}
+const getOffres = async () => {
+  loading.value = true;
+  error.value = null;
 
-// Fonction pour fermer le popup
-function closePopup() {
-  activePopup.value = -1;
-  // Restaurer le défilement
-  document.body.style.overflow = "";
-}
-function openAddForm() {
-  isFormVisible.value = true;
-  isEditMode.value = false;
-  formData.value = { title: "", description: "", id: null };
-}
-
-// Fonction pour fermer le formulaire
-function closeForm() {
-  isFormVisible.value = false;
-}
-function handleSubmit() {
-  if (isEditMode.value) {
-    const offerIndex = offers.value.findIndex(offer => offer.id === formData.value.id);
-    if (offerIndex !== -1) {
-      offers.value[offerIndex] = { ...formData.value };
-    }
-  } else {
-    const newOffer = { ...formData.value, id: Date.now() };
-    offers.value.push(newOffer);
+  try {
+    const response = await axios.get('/api/offres');
+    offres.value = response.data;
+  } catch (err) {
+    error.value = 'Erreur lors de la récupération des offres. Veuillez réessayer.';
+    console.error('Erreur lors de la récupération des offres:', err);
+  } finally {
+    loading.value = false;
   }
-  closeForm();
-}
+};
 
-// Fonction pour activer le mode édition d'une offre
-function editOffer(id: number) {
-  const offer = offers.value.find(offer => offer.id === id);
-  if (offer) {
-    formData.value = { ...offer };
-    isEditMode.value = true;
-    isFormVisible.value = true;
-  }
-}
+onMounted(() => {
+  getOffres();
+});
 
-// Fonction pour supprimer une offre
-function deleteOffer(id: number) {
-  const index = offers.value.findIndex(offer => offer.id === id);
-  if (index !== -1) {
-    offers.value.splice(index, 1);
-  }
-}
+const ajouterOffre = () => {
+  router.push('/ajouteroffre');
+};
+
+const modifierOffre = (id) => {
+  router.push(`/modifieroffre/${id}`);
+};
+
+const supprimerOffre = (id) => {
+  router.push(`/supprimeroffre/${id}`);
+};
+
+// Fonctions utilitaires
+const truncateText = (text, maxLength) => {
+  if (!text) return '';
+  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+};
+
+const formatSalaire = (salaire) => {
+  if (!salaire) return 'Non précisé';
+  return salaire;
+};
 </script>
 
+
+
 <style scoped>
-/* General Styling */
-body {
-  font-family: 'Arial', sans-serif;
-  line-height: 1.6;
-  color: #333;
+.offers-section {
+  max-width: 1200px;
+  margin: 50px auto;
+  padding: 40px 20px;
+  background-color: #f8f9fa;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  position: relative;
 }
 
-/* Container des actions sur les offres */
-.offer-actions {
+.header-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eaeaea;
 }
 
-/* Bouton principal : Ajouter une offre */
-.btn-add-offer {
-  padding: 12px 24px;
-  background-color: rgba(183, 192, 227, 0.274);
-  color: black;
+.header-actions h2 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.6rem;
+}
+
+.btn-ajouter {
+  padding: 10px 20px;
+  background-color: #2980b9;
+  color: white;
   border: none;
-  border-radius: var(--border-radius);
-  font-size: 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: background-color 0.3s, transform 0.2s;
 }
 
-.btn-add-offer:hover {
-  background-color: var(--primary-hover);
-  transform: scale(1.05);
+.btn-ajouter:hover {
+  background-color: #3498db;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
-/* ================= OFFERS SECTION ================= */
-.offers-section {
 
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center; /* Center cards horizontally */
-  gap: 20px;
-  padding: 40px 20px;
-  max-width: 1200px;
-  margin: 120px auto; /* Add some top/bottom margin */
+.loading-state, .error-state, .empty-state {
   text-align: center;
-  background-color: #f8f9fa;
-  border-radius: 15px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1); /* Reduced shadow intensity */
+  padding: 40px;
+  color: #555;
 }
 
-/* Title Styling */
+.error-state {
+  color: #e74c3c;
+}
 
-/* Offer Card Styles */
+.btn-retry {
+  margin-top: 15px;
+  padding: 8px 20px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.offers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  justify-content: center;
+}
+
 .offer-card {
-
   background-color: #fff;
-  border-radius: 12px;
-  padding: 25px; /* Slightly reduced padding */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Reduced shadow intensity */
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  width: calc(33.33% - 20px);
-  margin-bottom: 30px; /* Adjusted spacing */
-  position: relative;
-  animation: slideUp 0.5s ease-in-out;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .offer-card:hover {
-  transform: translateY(-5px); /* Reduced lift effect */
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15); /* Adjusted shadow on hover */
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
 }
 
-/* Offer Title Styling */
+.offer-card-header {
+  margin-bottom: 15px;
+}
+
 .title-offre {
-  font-size: 1.6rem; /* Adjusted size */
-  font-weight: 600; /* Slightly reduced weight */
+  font-size: 1.3rem;
+  font-weight: bold;
   color: #2c3e50;
-  margin-bottom: 15px; /* Adjusted spacing */
-  letter-spacing: 0.5px; /* Reduced letter spacing */
+  margin: 0;
 }
 
-/* Description Styling */
+.offer-card-body {
+  flex-grow: 1;
+}
+
 .description {
-  font-size: 1rem; /* Adjusted size */
-  color: #7f8c8d;
-  line-height: 1.5; /* Adjusted line height */
-  margin-bottom: 15px; /* Adjusted spacing */
-  text-align: justify;
-  letter-spacing: 0.3px; /* Reduced letter spacing */
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 15px;
+  line-height: 1.5;
 }
 
-/* Button Styling */
-.btn-see-more {
-  padding: 12px 24px; /* Adjusted padding */
-  background-color: #2980b9;
-  color: #fff;
+.offer-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.salaire {
+  font-size: 0.95rem;
+  color: #555;
+  margin: 5px 0;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+
+
+.offer-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.btn-modifier, .btn-supprimer {
+  padding: 8px 14px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
+  font-weight: bold;
   cursor: pointer;
-  font-size: 1rem; /* Adjusted size */
-  font-weight: 500; /* Slightly reduced weight */
-  letter-spacing: 0.5px; /* Reduced letter spacing */
-  transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  transition: background-color 0.2s, transform 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
-.btn-see-more:hover {
-  background-color: #3498db;
-  box-shadow: 0 4px 12px rgba(41, 128, 185, 0.2); /* Adjusted shadow on hover */
-  transform: translateY(-2px); /* Subtle lift on hover */
+.btn-modifier {
+  background-color: #f39c12;
+  color: #fff;
 }
 
-.btn-see-more:focus {
-  outline: none; /* Remove default focus outline */
-  box-shadow: 0 0 6px rgba(41, 128, 185, 0.5); /* Adjusted focus shadow */
+.btn-modifier:hover {
+  background-color: #e67e22;
+  transform: translateY(-2px);
 }
 
-/* ================= MODAL OVERLAY & CONTENT ================= */
-.modal-overlay {
+.btn-supprimer {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.btn-supprimer:hover {
+  background-color: #c0392b;
+  transform: translateY(-2px);
+}
+
+/* Modal de confirmation */
+.confirmation-modal {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.7);
-  z-index: 1099;
-  overflow: auto; /* Allow scrolling if content overflows */
+  z-index: 1000;
 }
 
 .modal-content {
-  background-color: #fff;
-  border-radius: 12px;
-  max-height: 95vh; /* Increased max height */
-  width: 60%;
-  max-width: 800px; /* Adjusted max width */
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); /* Adjusted shadow */
-  border: 1px solid #ddd;
-  text-align: left; /* Adjusted text alignment */
-  overflow-y: auto;
-  position: relative;
+  background-color: white;
+  padding: 30px;
+  border-radius: 10px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
-/* Close Button */
-.close-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: transparent;
-  border: none;
-  font-size: 1.5rem; /* Adjusted size */
-  color: #e74c3c;
-  cursor: pointer;
-  z-index: 2;
-}
-
-.close-button:hover {
-  color: #c0392b;
-}
-
-/* ================= AUTHENTICATION STYLES ================= */
-.auth-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 0px;
-  min-height: 100vh;
-  background-color: #f4f6f9;
-  padding: 20px;
-  box-sizing: border-box;
-  text-align: left;
-  flex-direction: column;
-}
-
-.login-layout {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  gap: 30px;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.image-container {
-  flex: 1;
+.modal-actions {
   display: flex;
   justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
 }
 
-.form-container {
-  flex: 1;
-}
-
-/* ===== Auth Box Styles ===== */
-.auth-box {
-  background: #fff;
-  border-radius: 12px;
-  max-width: 480px;
-  width: 100%;
-  padding: 40px;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  border: 1px solid #ddd;
-  text-align: center;
-}
-
-.auth-title {
-  font-size: 1.8rem;
-  margin-bottom: 15px;
-  color: #2c3e50;
-  font-weight: 600;
-  letter-spacing: 1px;
-}
-
-/* Toggle Candidat / Recruteur */
-.toggle-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 60px;
-  height: 30px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  transition: 0.4s;
-  border-radius: 25px;
-}
-
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 22px;
-  width: 22px;
-  left: 4px;
-  bottom: 4px;
-  background-color: white;
-  transition: 0.4s;
-  border-radius: 50%;
-}
-
-input:checked + .slider {
-  background-color: #2980b9;
-}
-
-input:checked + .slider:before {
-  transform: translateX(30px);
-}
-
-.toggle-container span {
-  font-weight: 600;
-  color: #34495e;
-}
-
-.toggle-container span.active {
-  color: #2980b9;
-}
-
-/* ===== Form Styles ===== */
-.input-group {
-  margin-bottom: 20px;
-  text-align: left;
-}
-
-.input-group label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #34495e;
-}
-
-.input-group input {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 1rem;
-  transition: 0.3s;
-  color: #333;
-  background-color: #fafafa;
-}
-
-.input-group input:focus {
-  border-color: #2980b9;
-  outline: none;
-  background-color: #fff;
-  box-shadow: 0 0 10px rgba(41, 128, 185, 0.2);
-}
-
-.error-input {
-  border-color: #e74c3c !important;
-}
-
-.error-message {
-  color: #e74c3c;
-  font-size: 0.9rem;
-  margin-top: 5px;
-}
-
-.btn-submit {
-  width: 100%;
-  padding: 14px;
-  background-color: #2980b9;
-  border: none;
+.btn-confirm {
+  background-color: #e74c3c;
   color: white;
-  font-size: 1.1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.btn-submit:hover {
-  background-color: #1f6690;
-}
-
-.inscrit-title {
-  font-size: 1.4rem;
-  margin: 24px 0 19px 0;
-  font-weight: 600;
-  white-space: normal;
-  overflow-wrap: break-word;
-}
-
-.choix {
-  color: #2980b9;
-}
-
-.btn-create {
-  width: 100%;
-  padding: 14px;
-  background-color: #2980b9;
+  padding: 8px 16px;
   border: none;
-  color: white;
-  font-size: 1.1rem;
   border-radius: 6px;
   cursor: pointer;
-  text-decoration: none;
-  transition: background 0.3s ease;
 }
 
-.btn-create:hover {
-  background-color: #1f6690;
+.btn-cancel {
+  background-color: #95a5a6;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
-.img {
-  max-width: 100%;
-  height: auto;
-  object-fit: contain;
-  border-radius: 15%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-}
-
-.img:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
-}
-
-/* ================= RESPONSIVE DESIGN ================= */
-/* Small screens */
+/* Responsive */
 @media (max-width: 768px) {
-  .offers-section {
-    padding: 30px 10px;
-  }
-
-  .title {
-    font-size: 1.75rem;
-    margin-bottom: 25px;
-  }
-
-  .offer-card {
-    width: calc(50% - 20px); /* Two cards per row on smaller screens */
-    padding: 20px;
-    margin-bottom: 25px;
-  }
-
-  .title-offre {
-    font-size: 1.4rem;
-  }
-
-  .description {
-    font-size: 0.9rem;
-  }
-
-  .btn-see-more {
-    font-size: 0.9rem;
-    padding: 10px 20px;
-  }
-
-  /* Styles for Authentication */
-  .login-layout {
+  .header-actions {
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
+    align-items: flex-start;
   }
-
-  .auth-container {
-    padding: 15px;
-  }
-
-  .auth-box {
-    padding: 25px;
+  
+  .btn-ajouter {
     width: 100%;
-    max-width: 100%;
   }
-
-  .auth-title,
-  .inscrit-title {
-    font-size: 1.5rem;
+  
+  .offers-grid {
+    grid-template-columns: 1fr;
   }
-
-  .btn-submit,
-  .btn-create {
-    font-size: 1rem;
-    padding: 12px;
-  }
-}
-
-/* Extra small screens */
-@media (max-width: 576px) {
+  
   .offer-card {
-    width: 100%; /* One card per row on very small screens */
-  }
-
-  .auth-container {
-    padding: 10px;
-  }
-
-  .auth-box {
-    padding: 20px;
+    width: 100%;
   }
 }
-
 </style>

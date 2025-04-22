@@ -1,3 +1,4 @@
+
 <template>
   <div class="profil-container">
     <h2 class="title">👤 Bienvenue {{ profile.prenom }} {{ profile.nom }}</h2>
