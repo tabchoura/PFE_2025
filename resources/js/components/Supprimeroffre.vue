@@ -88,8 +88,9 @@ const confirmerSuppression = async () => {
   }
 };
 
+
 const retourListe = () => {
-  router.push('/offres');
+  router.push('/Offresrecruteur');
 };
 
 const formatSalaire = (salaire) => {

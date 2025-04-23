@@ -122,38 +122,45 @@ export default {
       return !this.emailError && !this.passwordError;
     },
     async login() {
-  if (!this.validateForm()) return;
-  this.isLoading = true;
+      if (!this.validateForm()) return;
+      this.isLoading = true;
 
-  try {
-    // ⚠️ CSRF-cookie obligatoire pour Sanctum
-    await api.get("/sanctum/csrf-cookie");
+      try {
+        // ⚠️ CSRF-cookie obligatoire pour Sanctum
+        await api.get("/sanctum/csrf-cookie");
 
-    // ✅ Appel login avec email & password uniquement
-    const response = await api.post("/api/login", {
-      email: this.email,
-      password: this.password
-    }, {
-      withCredentials: true
-    });
+        // ✅ Appel login avec email & password uniquement
+        const response = await api.post("/api/login", {
+          email: this.email,
+          password: this.password
+        }, {
+          withCredentials: true
+        });
 
-    // ✅ Enregistrement de la session (localStorage ou sessionStorage)
-    const userData = response.data;
-    const storage = this.rememberMe ? localStorage : sessionStorage;
-    storage.setItem("userSession", JSON.stringify(userData));
+        // ✅ Vérification du type de compte
+        if ((this.isRecruteur && response.data.type !== 'recruteur') ||
+            (!this.isRecruteur && response.data.type !== 'candidat')) {
+          alert("❌ Vous avez sélectionné le mauvais type de compte.");
+          this.isLoading = false;
+          return;
+        }
 
-    // ✅ Redirection selon le rôle
-    this.$router.push(
-      userData.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat"
-    );
-  } catch (error) {
-    alert("❌ Identifiants incorrects ou utilisateur non trouvé");
-    console.error("Erreur lors de la connexion:", error);
-  } finally {
-    this.isLoading = false;
-  }
-}
-,
+        // ✅ Enregistrement de la session (localStorage ou sessionStorage)
+        const userData = response.data;
+        const storage = this.rememberMe ? localStorage : sessionStorage;
+        storage.setItem("userSession", JSON.stringify(userData));
+
+        // ✅ Redirection selon le rôle
+        this.$router.push(
+          userData.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat"
+        );
+      } catch (error) {
+        alert("❌ Identifiants incorrects ou utilisateur non trouvé");
+        console.error("Erreur lors de la connexion:", error);
+      } finally {
+        this.isLoading = false;
+      }
+    },
     goToSignup() {
       this.page = this.isRecruteur ? "registerRecruteur" : "registerCandidat";
       this.$router.push(this.page === "registerRecruteur" ? "/registerRecruteur" : "/registerCandidat");
@@ -175,7 +182,6 @@ export default {
   }
 };
 </script>
-
 
 <style scoped>
 /* Styles de base */

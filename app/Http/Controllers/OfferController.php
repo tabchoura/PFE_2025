@@ -78,5 +78,19 @@ class OfferController extends Controller
         $offre->delete();
         return response()->json(['message' => 'Offre supprimée avec succès']);
     }
+    // Dans le contrôleur Laravel
+    public function addDetails(Request $request, $id)
+    {
+        // Récupérer l'offre par son ID
+        $offer = Offre::findOrFail($id);
+    
+        // Ajouter les détails supplémentaires
+        $offer->details = $request->input('details');
+        $offer->save(); // Sauvegarder les modifications
+    
+        return response()->json(['message' => 'Détails ajoutés avec succès'], 200);
+    }
+    
+
     
 }

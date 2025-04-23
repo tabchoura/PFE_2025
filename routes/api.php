@@ -28,6 +28,9 @@ Route::get('/offres', [OfferController::class, 'index']);
 Route::post('/entretiens', [EntretienController::class, 'store']);
 
 Route::put('/offres/{id}', [OfferController::class, 'update']);
+// Ajout des détails à une offre existante
+Route::put('/api/offres/{id}/adddetails', [OfferController::class, 'addDetails']);
+
 Route::delete('/offres/{id}', [OfferController::class, 'destroy']);
 
 

@@ -20,6 +20,7 @@ import Offresrecruteur from '../components/Offresrecruteur.vue'
 import Ajouteroffre from '../components/Ajouteroffre.vue'
 import Modifieroffre from '../components/Modifieroffre.vue'
 import Supprimeroffre from '../components/Supprimeroffre.vue'
+import Ajouterdetails  from '../components/Ajouterdetails.vue'
 
 
 const routes = [
@@ -88,9 +89,15 @@ const routes = [
   { path: '/modifieroffre/:id', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
     { path: '', name: 'Modifieroffre', component: Modifieroffre ,  props: true, }
   ]},
+  { path: '/ajouterdetails/:id', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Ajouterdetails', component: Ajouterdetails ,  props: true, }
+  ]},
   { path: '/supprimeroffre/:id', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
     { path: '', name: 'Supprimeroffre', component: Supprimeroffre ,  props: true, }
   ]},
+  
+  
+  
 
   // Catch-all
 

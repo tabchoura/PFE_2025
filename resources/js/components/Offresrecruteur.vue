@@ -40,6 +40,9 @@
           <button class="btn-supprimer" @click="supprimerOffre(offer.id)" aria-label="Supprimer cette offre">
   <span class="icon">🗑️</span> Supprimer
 </button>
+<button class="btn-details" @click="ajouterdetails(offer.id)" aria-label="Ajouter les détails de l'offre">
+            <span class="icon">🔍</span> Voir les détails
+          </button>
         </div>
       </div>
     </div>
@@ -86,6 +89,9 @@ const modifierOffre = (id) => {
 const supprimerOffre = (id) => {
   router.push(`/supprimeroffre/${id}`);
 };
+const ajouterdetails = (id) => {
+  router.push(`/ajouterdetails/${id}`);
+};
 
 // Fonctions utilitaires
 const truncateText = (text, maxLength) => {
@@ -98,18 +104,20 @@ const formatSalaire = (salaire) => {
   return salaire;
 };
 </script>
-
-
-
 <style scoped>
 .offers-section {
-  max-width: 1200px;
-  margin: 50px auto;
+  max-width: 1600px;
+  margin: 60px auto;
   padding: 40px 20px;
   background-color: #f8f9fa;
   border-radius: 15px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   position: relative;
+  transition: box-shadow 0.3s ease;
+}
+
+.offers-section:hover {
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
 }
 
 .header-actions {
@@ -124,25 +132,26 @@ const formatSalaire = (salaire) => {
 .header-actions h2 {
   margin: 0;
   color: #2c3e50;
-  font-size: 1.6rem;
+  font-size: 1.8rem;
+  font-weight: bold;
 }
 
 .btn-ajouter {
-  padding: 10px 20px;
+  padding: 8px 16px;
   background-color: #2980b9;
   color: white;
   border: none;
   border-radius: 6px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;  /* Réduit la taille de la police */
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .btn-ajouter:hover {
   background-color: #3498db;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
 }
 
 .loading-state, .error-state, .empty-state {
@@ -157,12 +166,18 @@ const formatSalaire = (salaire) => {
 
 .btn-retry {
   margin-top: 15px;
-  padding: 8px 20px;
+  padding: 6px 15px;
   background-color: #3498db;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.btn-retry:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
 }
 
 .offers-grid {
@@ -174,13 +189,14 @@ const formatSalaire = (salaire) => {
 
 .offer-card {
   background-color: #fff;
-  padding: 20px;
+  padding: 30px;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow: hidden;
 }
 
 .offer-card:hover {
@@ -193,7 +209,7 @@ const formatSalaire = (salaire) => {
 }
 
 .title-offre {
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   font-weight: bold;
   color: #2c3e50;
   margin: 0;
@@ -204,10 +220,10 @@ const formatSalaire = (salaire) => {
 }
 
 .description {
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: #555;
   margin-bottom: 15px;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .offer-details {
@@ -217,37 +233,27 @@ const formatSalaire = (salaire) => {
 }
 
 .salaire {
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: #555;
   margin: 5px 0;
 }
 
-.badge {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 15px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-
-
 .offer-actions {
   display: flex;
   justify-content: space-between;
-  margin-top: 20px;
+  margin-top: 15px;
+  gap: 10px;
 }
 
-.btn-modifier, .btn-supprimer {
-  padding: 8px 14px;
-  border: none;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.2s;
+.btn-modifier, .btn-supprimer, .btn-details {
+  padding: 6px 12px;  /* Réduit les dimensions des boutons */
+  font-size: 0.85rem;  /* Réduit la taille de la police */
   display: flex;
   align-items: center;
   gap: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .btn-modifier {
@@ -267,6 +273,16 @@ const formatSalaire = (salaire) => {
 
 .btn-supprimer:hover {
   background-color: #c0392b;
+  transform: translateY(-2px);
+}
+
+.btn-details {
+  background-color: #3498db;
+  color: white;
+}
+
+.btn-details:hover {
+  background-color: #2980b9;
   transform: translateY(-2px);
 }
 
