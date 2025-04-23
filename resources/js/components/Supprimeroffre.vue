@@ -18,8 +18,6 @@
           Êtes-vous sûr de vouloir supprimer l'offre <strong>{{ offre.titre }}</strong> ?
         </p>
         
-        
-        
         <div class="warning-message">
           <p>⚠️ Cette action est irréversible et supprimera définitivement cette offre.</p>
         </div>
@@ -88,14 +86,8 @@ const confirmerSuppression = async () => {
   }
 };
 
-
 const retourListe = () => {
   router.push('/Offresrecruteur');
-};
-
-const formatSalaire = (salaire) => {
-  if (!salaire) return 'Non précisé';
-  return salaire;
 };
 
 onMounted(() => {

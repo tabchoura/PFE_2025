@@ -30,8 +30,12 @@
           <p class="description"><strong>Description :</strong> {{ truncateText(offer.description, 100) }}</p>
           <div class="offer-details">
             <p class="salaire"><strong>Salaire :</strong> {{ formatSalaire(offer.salaire) }}</p>
+            <div class="offer-details">
+            <p class="details"><strong>details :</strong> {{ formatSalaire(offer.details) }}</p>
+          </div>
           </div>
         </div>
+        
 
         <div class="offer-actions">
           <button class="btn-modifier" @click="modifierOffre(offer.id)" aria-label="Modifier cette offre">
@@ -40,9 +44,9 @@
           <button class="btn-supprimer" @click="supprimerOffre(offer.id)" aria-label="Supprimer cette offre">
   <span class="icon">🗑️</span> Supprimer
 </button>
-<button class="btn-details" @click="ajouterdetails(offer.id)" aria-label="Ajouter les détails de l'offre">
+<!-- <button class="btn-details" @click="ajouterdetails(offer.id)" aria-label="Ajouter les détails de l'offre">
             <span class="icon">🔍</span> Voir les détails
-          </button>
+          </button> -->
         </div>
       </div>
     </div>
@@ -89,9 +93,9 @@ const modifierOffre = (id) => {
 const supprimerOffre = (id) => {
   router.push(`/supprimeroffre/${id}`);
 };
-const ajouterdetails = (id) => {
-  router.push(`/ajouterdetails/${id}`);
-};
+// const ajouterdetails = (id) => {
+//   router.push(`/ajouterdetails/${id}`);
+// };
 
 // Fonctions utilitaires
 const truncateText = (text, maxLength) => {

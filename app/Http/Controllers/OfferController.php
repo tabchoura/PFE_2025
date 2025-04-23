@@ -22,6 +22,8 @@ class OfferController extends Controller
             'titre'       => 'required|string|max:255',
             'description' => 'required|string|max:255',
             'salaire'     => 'nullable|string',
+            'details'     => 'nullable|string',
+
         ]);
 
         // Création de l'offre
@@ -30,6 +32,8 @@ class OfferController extends Controller
             'titre'       => $validatedData['titre'],
             'description' => $validatedData['description'],
             'salaire'     => $validatedData['salaire'],
+            'details'     => $validatedData['details'],
+
         ]);
 
         // Retourne la nouvelle offre créée
@@ -52,7 +56,9 @@ class OfferController extends Controller
            // 'type'        => 'nullable|string|max:255',
             'description' => 'nullable|string|max:255',
             'salaire'     => 'nullable|string|max:255',
-            'titre'       => 'nullable|string|max:255',  // Assurez-vous que cette règle est correcte pour vos besoins
+            'titre'       => 'nullable|string|max:255',  
+            'titre'       => 'nullable|string|max:255', 
+            'details'       => 'nullable|string|max:255', 
         ]);
     
         // Si les données sont valides, mettre à jour l'offre avec les nouvelles données

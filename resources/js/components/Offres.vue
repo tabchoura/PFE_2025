@@ -1,27 +1,22 @@
 <template>
   <div class="offers-section">
-    <!-- Titre de la section des offres -->
     <div class="header-actions">
       <h2>Liste des offres</h2>
     </div>
 
-    <!-- Gestion des états de chargement -->
     <div v-if="loading" class="loading-state">
       <p>Chargement des offres...</p>
     </div>
 
-    <!-- Gestion des erreurs -->
     <div v-else-if="error" class="error-state">
       <p>{{ error }}</p>
       <button @click="getOffres" class="btn-retry">Réessayer</button>
     </div>
 
-    <!-- Affichage quand il n'y a pas d'offres -->
     <div v-else-if="offres.length === 0" class="empty-state">
       <p>Aucune offre disponible pour le moment</p>
     </div>
 
-    <!-- Affichage des offres -->
     <div v-else class="offers-grid">
       <div class="offer-card" v-for="offer in offres" :key="offer.id">
         <div class="offer-card-header">
@@ -35,32 +30,23 @@
           </div>
         </div>
 
-        <!-- Bouton Voir plus pour afficher le modal d'authentification -->
-        <button class="btn-see-more" @click="openAuthModal">Voir plus</button>
+        <div class="offer-actions">
+          <button class="btn-see-more" @click="voirDetails(offer.id)">Voir les détails</button>
+        </div>
       </div>
     </div>
   </div>
-
-  <!-- Modal pour l'authentification -->
-  <Teleport to="body">
-    <div v-if="authModalVisible" class="modal-overlay" @click.self="closeAuthModal">
-      <div class="modal-content">
-        <button class="close-button" @click="closeAuthModal">×</button>
-        <Authentification />
-      </div>
-    </div>
-  </Teleport>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
-import Authentification from './Authentification.vue';  // Composant d'authentification
 
 const offres = ref([]);  // Tableau pour stocker les offres récupérées
 const loading = ref(true); // Indicateur de chargement
 const error = ref(null);  // Message d'erreur en cas de problème
-const authModalVisible = ref(false);  // Contrôle de l'affichage du modal d'authentification
+const router = useRouter();
 
 // Fonction pour récupérer les offres depuis l'API
 const getOffres = async () => {
@@ -78,31 +64,23 @@ const getOffres = async () => {
   }
 };
 
-// Charger les offres au montage du composant
+const voirDetails = (offerId) => {
+  // Rediriger l'utilisateur vers la page des détails de l'offre
+  router.push(`/ajouterdetails/${offerId}`);
+};
+
 onMounted(() => {
   getOffres();
 });
 
-// Fonction pour tronquer le texte (pour la description)
 const truncateText = (text, maxLength) => {
   if (!text) return '';
   return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
 };
 
-// Fonction pour formater le salaire (si nécessaire)
 const formatSalaire = (salaire) => {
   if (!salaire) return 'Non précisé';
   return salaire;
-};
-
-// Fonction pour ouvrir le modal d'authentification
-const openAuthModal = () => {
-  authModalVisible.value = true;
-};
-
-// Fonction pour fermer le modal d'authentification
-const closeAuthModal = () => {
-  authModalVisible.value = false;
 };
 </script>
 
@@ -210,7 +188,6 @@ const closeAuthModal = () => {
   margin: 5px 0;
 }
 
-/* Bouton Voir plus */
 .btn-see-more {
   padding: 12px 24px;
   background-color: #2980b9;
@@ -228,62 +205,5 @@ const closeAuthModal = () => {
   background-color: #3498db;
   box-shadow: 0 4px 12px rgba(41, 128, 185, 0.2);
   transform: translateY(-2px);
-}
-
-/* Modal d'authentification */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: rgba(0, 0, 0, 0.7);
-  z-index: 1099;
-}
-
-.modal-content {
-  background-color: #fff;
-  border-radius: 12px;
-  max-height: 95vh;
-  width: 60%;
-  max-width: 800px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-  border: 1px solid #ddd;
-  text-align: left;
-  overflow-y: auto;
-  position: relative;
-}
-
-.close-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: transparent;
-  border: none;
-  font-size: 1.5rem;
-  color: #e74c3c;
-  cursor: pointer;
-  z-index: 2;
-}
-
-.close-button:hover {
-  color: #c0392b;
-}
-
-.modal-body {
-  padding: 20px;
-}
-
-.modal-body h3 {
-  font-size: 1.5rem;
-  color: #2c3e50;
-}
-
-.modal-body p {
-  font-size: 1rem;
-  color: #555;
 }
 </style>

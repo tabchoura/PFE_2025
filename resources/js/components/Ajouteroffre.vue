@@ -11,6 +11,8 @@
 
       <label for="salaire">Salaire</label>
       <input type="text" name="salaire" id="salaire" v-model="formdata.salaire" />
+      <label for="details">details</label>
+      <input type="text" name="details" id="details" v-model="formdata.details" />
 
       
 
@@ -28,12 +30,13 @@ const formdata = reactive({
   titre: '',
   description: '',
   salaire: '',
+  details:''
 });
 
 const router = useRouter();
 const ajouter = () => {
   // Validation basique
-  if (!formdata.titre || !formdata.description || !formdata.salaire ) {
+  if (!formdata.titre || !formdata.description || !formdata.salaire || !formdata.details ) {
     alert("Tous les champs doivent être remplis!");
     return;
   }
