@@ -30,10 +30,11 @@
           <p class="description"><strong>Description :</strong> {{ truncateText(offer.description, 100) }}</p>
           <div class="offer-details">
             <p class="salaire"><strong>Salaire :</strong> {{ formatSalaire(offer.salaire) }}</p>
-            <div class="offer-details">
-            <p class="details"><strong>details :</strong> {{ formatSalaire(offer.details) }}</p>
+  
           </div>
-          </div>
+          <div class="offer-details">
+          <p class="salaire"><strong>Détails :</strong> {{ offer.details || 'Non précisé' }}</p>
+        </div>
         </div>
         
 
@@ -93,9 +94,9 @@ const modifierOffre = (id) => {
 const supprimerOffre = (id) => {
   router.push(`/supprimeroffre/${id}`);
 };
-// const ajouterdetails = (id) => {
-//   router.push(`/ajouterdetails/${id}`);
-// };
+const ajouterdetails = (id) => {
+  router.push(`/ajouterdetails/${id}`);
+};
 
 // Fonctions utilitaires
 const truncateText = (text, maxLength) => {

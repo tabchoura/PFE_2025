@@ -13,26 +13,30 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
 
+// Initialisation des variables
 const offer = ref({});
 const route = useRoute();
 const router = useRouter();
-const offerId = route.params.id;
+const offerId = route.params.id;  // Récupération de l'ID de l'offre depuis l'URL
 
+// Fonction pour récupérer les détails de l'offre
 const getOfferDetails = async () => {
   try {
     const response = await axios.get(`/api/offres/${offerId}`);
-    offer.value = response.data;
+    offer.value = response.data;  // Stockage des données de l'offre dans `offer`
   } catch (err) {
     console.error('Erreur lors de la récupération des détails de l\'offre:', err);
   }
 };
 
+// Appel à la fonction au montage de la page
 onMounted(() => {
   getOfferDetails();
 });
 
+// Fonction pour revenir à la liste des offres
 const retourListe = () => {
-  router.push('/offresrecruteur');
+  router.push('/offresrecruteur');  // Redirige vers la liste des offres
 };
 </script>
 

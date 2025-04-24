@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->string('salaire')->nullable();
             $table->string('titre')->nullable();
+            $table->string('details')->nullable();
+
 
           //  $table->string('salaire')->nullable();  
             //      $table->unsignedBigInteger('user_id')->nullable()->change(); // Rendre la colonne nullable

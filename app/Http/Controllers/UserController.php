@@ -28,18 +28,6 @@ class UserController extends Controller
         $request->validate([
             'nom'          => 'required|string|max:255',
             'prenom'     => 'required|string|max:255',
-            //'date_naissance'           => 'required|date',
-//            'lieudenaissance'=> 'required|string',
-       
-  //          'phone'         => 'required|string|max:20', 
-    //        'cover_letter'  => 'string',
-      //      'datedepot'     => 'nullable|date',
-        //    'datevalidation'=> '|date',
-          //  'dateentretien' => 'date',
-            //'cin'           => 'required|string|max:20',
-            //'poste'         => 'string|max:255',
-            //'nb_offres'     => 'integer|min:0',
-            //'nbvalidation'  => 'integer|min:0',
             'email'         => 'required|email|unique:users,email',
             'password'      => 'required|string|min:6',
         ]);
@@ -50,7 +38,7 @@ class UserController extends Controller
             'prenom'     => $request->prenom,
             'date_naissance'           => $request->date_naissance,
             'phone'         => $request->phone,
-            'lieudenaissance' => $request->lieudenaissance,
+           'lieudenaissance' => $request->lieudenaissance,
             'cv'            => $file->store('uploads', 'public'),
             'cover_letter'  => $request->cover_letter,
             'datedepot'     => $request->datedepot,
@@ -62,9 +50,9 @@ class UserController extends Controller
             'nbvalidation'  => $request->nbvalidation,
             'email'         => $request->email,
             'password'      =>Hash::make($request->password),
-            'nomsociete'=>$request->nomsociete,
-            'localisation'=>$request->localisation,
-            'departement'=>$request->departement,
+            'nomsociete'=> $request->nomsociete,
+            'localisation'=> $request->localisation,
+            'departement'=> $request->departement,
 
 
     

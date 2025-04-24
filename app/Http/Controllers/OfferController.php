@@ -14,31 +14,29 @@ class OfferController extends Controller
     }
 
     // Crée une nouvelle offre
-    public function store(Request $request)
-    {
-        // Validation des données
-        $validatedData = $request->validate([
-         //   'type'        => 'nullable|string|max:255',
-            'titre'       => 'required|string|max:255',
-            'description' => 'required|string|max:255',
-            'salaire'     => 'nullable|string',
-            'details'     => 'nullable|string',
-
-        ]);
-
-        // Création de l'offre
-        $offre = Offre::create([
-           // 'type'        => $validatedData['type'],
-            'titre'       => $validatedData['titre'],
-            'description' => $validatedData['description'],
-            'salaire'     => $validatedData['salaire'],
-            'details'     => $validatedData['details'],
-
-        ]);
-
-        // Retourne la nouvelle offre créée
-        return response()->json($offre, 201);
-    }
+    
+        public function store(Request $request)
+        {
+            // Validation des données
+            $validatedData = $request->validate([
+                'titre'       => 'required|string|max:255',
+                'description' => 'required|string|max:255',
+                'salaire'     => 'nullable|string',
+                'details'     => 'nullable|string|max:255', // "details" est maintenant nullable
+            ]);
+        
+            // Création de l'offre
+            $offre = Offre::create([
+                'titre'       => $validatedData['titre'],
+                'description' => $validatedData['description'],
+                'salaire'     => $validatedData['salaire'],
+                'details'     => $validatedData['details'], // Détails bien pris en compte
+            ]);
+        
+            // Retourne la nouvelle offre créée
+            return response()->json($offre, 201);
+        }
+        
 
     // Met à jour une offre existante
     public function update(Request $request, $id)
@@ -57,7 +55,6 @@ class OfferController extends Controller
             'description' => 'nullable|string|max:255',
             'salaire'     => 'nullable|string|max:255',
             'titre'       => 'nullable|string|max:255',  
-            'titre'       => 'nullable|string|max:255', 
             'details'       => 'nullable|string|max:255', 
         ]);
     
@@ -85,18 +82,35 @@ class OfferController extends Controller
         return response()->json(['message' => 'Offre supprimée avec succès']);
     }
     // Dans le contrôleur Laravel
-    public function addDetails(Request $request, $id)
+    // public function addDetails(Request $request, $id)
+    // {
+    //     // Récupérer l'offre par son ID
+    //     $offer = Offre::findOrFail($id);
+    
+    //     // Ajouter les détails supplémentaires
+    //     $offer->details = $request->input('details');
+    //     $offer->save(); // Sauvegarder les modifications
+    
+    //     return response()->json(['message' => 'Détails ajoutés avec succès'], 200);
+    public function voirdetails($id)
     {
-        // Récupérer l'offre par son ID
-        $offer = Offre::findOrFail($id);
+        // Vérification de l'utilisateur authentifié
+        $user = auth()->user();
+        if (!$user) {
+            return response()->json(['message' => 'Utilisateur non authentifié'], 401);
+        }
     
-        // Ajouter les détails supplémentaires
-        $offer->details = $request->input('details');
-        $offer->save(); // Sauvegarder les modifications
+        // Chercher l'offre par son ID
+        $offre = Offre::find($id);
     
-        return response()->json(['message' => 'Détails ajoutés avec succès'], 200);
+        // Si l'offre n'existe pas, retourner une erreur 404
+        if (!$offre) {
+            return response()->json(['message' => 'Offre non trouvée'], 404);
+        }
+    
+        // Retourner les détails de l'offre
+        return response()->json($offre, 200);
     }
     
-
     
 }

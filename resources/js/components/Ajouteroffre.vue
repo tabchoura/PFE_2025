@@ -11,7 +11,7 @@
 
       <label for="salaire">Salaire</label>
       <input type="text" name="salaire" id="salaire" v-model="formdata.salaire" />
-      <label for="details">details</label>
+      <label for="details">Details</label>
       <input type="text" name="details" id="details" v-model="formdata.details" />
 
       

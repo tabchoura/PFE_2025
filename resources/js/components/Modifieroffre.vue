@@ -11,6 +11,8 @@
 
       <label for="salaire">Salaire</label>
       <input type="text" name="salaire" id="salaire" v-model="formdata.salaire" />
+      <label for="details">details</label>
+      <input type="text" name="details" id="details" v-model="formdata.details" />
 
 
       <button type="submit">Enregistrer les modifications</button>
@@ -32,7 +34,8 @@ const formdata = reactive({
   titre: '',
   description: '',
   salaire: '',
-  type: ''
+  type: '',
+  details:''
 });
 
 // Fonction pour récupérer les données de l'offre à modifier
@@ -43,6 +46,7 @@ const getOffer = async () => {
     formdata.description = response.data.description;
     formdata.salaire = response.data.salaire;
     formdata.type = response.data.type;
+    formdata.type=response.data.details;
   } catch (error) {
     console.error('Erreur lors de la récupération de l\'offre:', error);
   }
