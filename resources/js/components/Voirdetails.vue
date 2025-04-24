@@ -1,162 +1,155 @@
 <template>
-    <div class="offer-details-section">
-      <div v-if="loading" class="loading-state">
-        <p>Chargement des détails...</p>
-      </div>
-  
-      <div v-else-if="error" class="error-state">
-        <p>{{ error }}</p>
-        <button @click="fetchOfferDetails" class="btn-retry">Réessayer</button>
-      </div>
-  
-      <div v-else class="offer-details-content">
-        <h2>Modifier l'offre</h2>
-  
-        <!-- Champ titre modifiable -->
-        <div class="input-group">
-          <label for="titre"><strong>Titre :</strong></label>
-          <input type="text" id="titre" v-model="offerDetails.titre" />
-        </div>
-  
-        <!-- Champ description modifiable -->
-        <div class="input-group">
-          <label for="description"><strong>Description :</strong></label>
-          <textarea id="description" v-model="offerDetails.description"></textarea>
-        </div>
-  
-        <!-- Champ salaire modifiable -->
-        <div class="input-group">
-          <label for="salaire"><strong>Salaire :</strong></label>
-          <input type="number" id="salaire" v-model="offerDetails.salaire" />
-        </div>
-  
-        <button @click="saveChanges" class="btn-save">Enregistrer les modifications</button>
-        <button @click="goBack" class="btn-back">Retour à la liste</button>
-      </div>
+  <div class="offer-details">
+    <h1>{{ offer.titre }}</h1>
+    <p><strong>Description:</strong> {{ offer.description }}</p>
+    <p><strong>Salaire:</strong> {{ offer.salaire }}</p>
+    <p><strong>Détails:</strong> {{ offer.details }}</p>
+    <div class="button-container">
+      <button class="btnapply" @click="Postuler">Postuler par ici</button>
     </div>
-  </template>
-  
-  <script setup>
-  import { ref, onMounted } from 'vue';
-  import { useRoute, useRouter } from 'vue-router';
-  import axios from 'axios';
-  
-  const offerDetails = ref({});
-  const loading = ref(true);
-  const error = ref(null);
-  const route = useRoute();
-  const router = useRouter();
-  
-  const offerId = route.params.id; // Récupère l'ID de l'offre depuis l'URL
-  
-  // Fonction pour récupérer les détails de l'offre
-  const fetchOfferDetails = async () => {
-    loading.value = true;
-    error.value = null;
-  
-    try {
-      const response = await axios.get(`/api/offres/${offerId}`);
-      offerDetails.value = response.data;
-    } catch (err) {
-      error.value = 'Erreur lors de la récupération des détails de l\'offre. Veuillez réessayer.';
-      console.error('Erreur:', err);
-    } finally {
-      loading.value = false;
-    }
-  };
-  
-  // Fonction pour enregistrer les modifications
-  const saveChanges = async () => {
-    try {
-      await axios.put(`/api/offres/${offerId}`, offerDetails.value);
-      alert('Les modifications ont été enregistrées avec succès!');
-    } catch (err) {
-      alert('Erreur lors de l\'enregistrement des modifications.');
-      console.error('Erreur:', err);
-    }
-  };
-  
-  // Fonction pour revenir à la liste des offres
-  const goBack = () => {
-    router.push('/listeoffres'); // Remplace '/listeoffres' par la route appropriée de votre liste d'offres
-  };
-  
-  onMounted(() => {
-    fetchOfferDetails(); // Appel de la fonction lors du montage du composant
-  });
-  </script>
-  
-  <style scoped>
-  .offer-details-section {
-    padding: 30px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    max-width: 800px;
-    margin: 40px auto;
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+import { useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
+
+
+const offer = ref({});
+const route = useRoute();
+const router=useRouter();
+const offerId = route.params.id;
+
+onMounted(() => {
+  // Récupérer les détails de l'offre en fonction de l'ID
+  axios.get(`/api/offres/${offerId}`)
+    .then(response => {
+      offer.value = response.data;
+    })
+    .catch(error => {
+      console.error('Erreur lors de la récupération des détails de l\'offre:', error);
+    });
+});
+
+const Postuler=()=>{
+router.push('/postuler');
+}
+</script>
+
+<style scoped>
+.offer-details {
+  max-width: 900px;
+  margin: 30px auto;
+  margin-top:100px;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease-in-out;
+  min-height: 300px; /* Hauteur minimale pour éviter que la section soit trop petite */
+  max-height: 400px; /* Hauteur maximale */
+  overflow-y: auto; /* Permet le défilement vertical si le contenu dépasse */
+}
+
+.offer-details:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.button-container {
+  display: flex;
+  justify-content: flex-end; /* Aligne le contenu à droite */
+  margin-top: 20px;
+}
+
+.btnapply {
+  padding: 12px 24px;
+  background-color: #09a1cb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.btnapply:hover {
+  background-color: #428beb;
+}
+
+h1 {
+  font-size: 2rem;
+  text-align: center;
+  color: #2980b9;
+  margin-bottom: 20px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+p {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #555;
+  margin-bottom: 15px;
+}
+
+strong {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.offer-details p:first-child {
+  margin-top: 0;
+}
+
+.offer-details p:last-child {
+  margin-bottom: 0;
+}
+
+.offer-details .offer-header {
+  background-color: #2980b9;
+  color: white;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 25px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.offer-details .btn {
+  background-color: #2ecc71;
+  color: white;
+  padding: 12px 30px;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 20px;
+  display: block;
+  width: 100%;
+}
+
+.offer-details .btn:hover {
+  background-color: #27ae60;
+}
+
+@media (max-width: 768px) {
+  .offer-details {
+    padding: 20px;
   }
   
-  .loading-state, .error-state {
-    text-align: center;
-    padding: 40px;
-    color: #555;
+  h1 {
+    font-size: 1.8rem;
   }
   
-  .error-state {
-    color: #e74c3c;
-  }
-  
-  .offer-details-content {
-    font-size: 1.1rem;
-  }
-  
-  .offer-details-content h2 {
-    color: #2c3e50;
-    font-size: 1.6rem;
-    margin-bottom: 20px;
-  }
-  
-  .input-group {
-    margin-bottom: 20px;
-  }
-  
-  .input-group label {
-    font-weight: bold;
-    display: block;
-    margin-bottom: 5px;
-  }
-  
-  .input-group input, .input-group textarea {
-    width: 100%;
-    padding: 10px;
+  p {
     font-size: 1rem;
-    border-radius: 6px;
-    border: 1px solid #ddd;
   }
-  
-  .input-group textarea {
-    resize: vertical;
-    min-height: 100px;
-  }
-  
-  .btn-save, .btn-back {
-    padding: 10px 20px;
-    background-color: #3498db;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-  }
-  
-  .btn-save:hover, .btn-back:hover {
-    background-color: #2980b9;
-    transform: translateY(-2px);
-  }
-  
-  .btn-back {
-    margin-top: 10px;
-  }
-  </style>
-  
+}
+</style>

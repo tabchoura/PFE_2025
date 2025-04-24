@@ -305,7 +305,7 @@
       delete errors[field];
     }
     
-    const nameRegex = /^[a-zA-ZÀ-ſ\s'-]+$/;
+    const nameRegex = /^[a-zA-ZÀ-ſ0-9\s'-]+$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     
     switch (field) {
@@ -432,7 +432,7 @@
         token,
         ...user
       }));
-      router.push('/monprofile');
+      router.push('/LoginCandidat');
 
       console.log('userSession :', sessionStorage.getItem('userSession'));
 
@@ -454,7 +454,7 @@
   }
 
   function goToCompteCandidat() {
-    router.push('/CompteCandidat');
+    router.push('/LoginCandidat');
   }
   </script>
 

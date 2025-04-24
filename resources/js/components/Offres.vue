@@ -32,19 +32,24 @@
           <p class="description"><strong>Description :</strong> {{ truncateText(offer.description, 100) }}</p>
           <div class="offer-details">
             <p class="salaire"><strong>Salaire :</strong> {{ formatSalaire(offer.salaire) }}</p>
+               
           </div>
         </div>
 
+
+        <div>
+     </div>
+
         <!-- Bouton Voir plus pour afficher le modal d'authentification -->
-        <button class="btn-see-more" @click="openAuthModal(offer.id)">Voir plus</button>
+        <button class="btn-see-more" @click="checkAuthentication(offer.id)">Voir plus</button>
       </div>
     </div>
   </div>
 
   <!-- Modal pour l'authentification -->
   <Teleport to="body">
-    <div v-if="authModalVisible" class="modal-overlay" @click.self="closeAuthModal">
-      <div class="modal-content">
+    <div v-if="authModalVisible" class="modal-overlay" :class="{ 'showing': modalShowing }" @click.self="closeAuthModal">
+      <div class="modal-content" :class="{ 'showing': modalShowing }">
         <button class="close-button" @click="closeAuthModal">×</button>
         
         <!-- Login Form -->
@@ -144,6 +149,7 @@ const offres = ref([]);
 const loading = ref(true);
 const error = ref(null);
 const authModalVisible = ref(false);
+const modalShowing = ref(false);
 const selectedOfferId = ref(null);
 
 // Auth variables
@@ -189,16 +195,35 @@ const formatSalaire = (salaire) => {
   return salaire;
 };
 
-// Fonction pour ouvrir le modal d'authentification
-const openAuthModal = (offerId) => {
-  selectedOfferId.value = offerId;
-  console.log("ID de l'offre sélectionnée:", offerId); // Log pour vérifier que l'ID est correctement récupéré
-  authModalVisible.value = true;
+// Fonction pour vérifier l'authentification avant de rediriger vers les détails de l'offre
+const checkAuthentication = (offerId) => {
+  const userSession = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
+  
+  if (!userSession) {
+    // Si l'utilisateur n'est pas connecté, rediriger vers la page d'authentification
+    router.push('/authentification');
+  } else {
+    // Si l'utilisateur est connecté, rediriger vers les détails de l'offre
+    router.push(`/voirdetails/${offerId}`);
+  }
 };
 
-// Fonction pour fermer le modal d'authentification
+// Fonction pour ouvrir le modal d'authentification avec animation
+const openAuthModal = (offerId) => {
+  selectedOfferId.value = offerId;
+  console.log("ID de l'offre sélectionnée:", offerId);
+  authModalVisible.value = true;
+  setTimeout(() => {
+    modalShowing.value = true;
+  }, 10);
+};
+
+// Fonction pour fermer le modal d'authentification avec animation
 const closeAuthModal = () => {
-  authModalVisible.value = false;
+  modalShowing.value = false;
+  setTimeout(() => {
+    authModalVisible.value = false;
+  }, 300);
 };
 
 // Fonction de validation du formulaire de connexion
@@ -243,12 +268,12 @@ const login = async () => {
     const targetId = selectedOfferId.value;
 
     // Fermeture du modal avant la redirection
-    authModalVisible.value = false;
+    closeAuthModal();
 
     // Vérifiez si l'ID de l'offre est bien récupéré avant de rediriger
     if (targetId) {
       // Rediriger immédiatement après l'authentification réussie
-      router.push(`/detailsoffre/${targetId}`);
+      router.push(`/voirdetails/${targetId}`);
     } else {
       alert("❌ Offre introuvable.");
     }
@@ -294,81 +319,53 @@ const goToSignup = () => {
   font-size: 1.6rem;
 }
 
-/* Styles pour le modal d'authentification */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: rgba(0, 0, 0, 0.7);
-  z-index: 1099;
+/* Grille d'offres */
+.offers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
 }
 
-.modal-content {
-  background-color: #fff;
-  border-radius: 12px;
-  max-height: 95vh;
-  width: 60%;
-  max-width: 800px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-  border: 1px solid #ddd;
-  text-align: left;
-  overflow-y: auto;
-  position: relative;
-}
-
-.close-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: transparent;
-  border: none;
-  font-size: 1.5rem;
-  color: #e74c3c;
-  cursor: pointer;
-  z-index: 2;
-}
-
-.close-button:hover {
-  color: #c0392b;
-}
-
-.modal-body {
-  padding: 20px;
-}
-
-.modal-body h3 {
-  font-size: 1.5rem;
-  color: #2c3e50;
-}
-
-.modal-body p {
-  font-size: 1rem;
-  color: #555;
-}
-
-/* Styles pour les cartes d'offres et autres éléments */
+/* Cartes d'offres */
 .offer-card {
   background-color: #fff;
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s, box-shadow 0.3s;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  min-height: 220px;
+}
+
+.offer-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 
 .offer-card-header h3 {
   font-size: 1.3rem;
   font-weight: bold;
   color: #2c3e50;
+  margin-top: 0;
+}
+
+.offer-card-body {
+  flex-grow: 1;
 }
 
 .offer-card-body p {
   font-size: 0.95rem;
   color: #555;
+}
+
+.offer-details {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
 }
 
 .btn-see-more {
@@ -381,22 +378,129 @@ const goToSignup = () => {
   font-size: 1rem;
   font-weight: 500;
   transition: background-color 0.3s ease;
+  margin-top: 15px;
+  width: 100%;
 }
 
 .btn-see-more:hover {
   background-color: #3498db;
 }
 
-/* Styles de base */
+/* États de chargement et d'erreur */
+.loading-state, .error-state, .empty-state {
+  padding: 40px;
+  text-align: center;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.loading-state {
+  position: relative;
+}
+
+.loading-state:after {
+  content: "";
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #2980b9;
+  border-radius: 50%;
+  display: block;
+  margin: 15px auto;
+  animation: spin 1s linear infinite;
+}
+
+.btn-retry {
+  margin-top: 15px;
+  padding: 8px 20px;
+  background-color: #2980b9;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-retry:hover {
+  background-color: #3498db;
+}
+
+/* Styles pour le modal d'authentification */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1099;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.modal-overlay.showing {
+  opacity: 1;
+}
+
+.modal-content {
+  background-color: #fff;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 900px;  
+  max-height: 90vh;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  border: 1px solid #ddd;
+  text-align: left;
+  overflow-y: auto;
+  position: relative;
+  transform: scale(0.95);
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  padding: 0;
+}
+
+.modal-content.showing {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.close-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  font-size: 1.8rem;
+  color: #e74c3c;
+  cursor: pointer;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.close-button:hover {
+  color: #c0392b;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+/* Styles de base pour l'authentification */
 .auth-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  background-color: #f4f6f9;
   padding: 20px;
-  margin-top: 60px;
+  margin-top: 0;
   text-align: left;
+  min-height: unset;
 }
 
 /* Layout principal */
@@ -404,7 +508,7 @@ const goToSignup = () => {
   display: flex;
   max-width: 900px;
   width: 100%;
-  margin: 20px auto;
+  margin: 0 auto;
   gap: 20px;
 }
 
@@ -446,10 +550,10 @@ const goToSignup = () => {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   background-color: #f8f9fa;
   border-radius: 25px;
-  padding: 4px;
+  padding: 6px 10px;
 }
 
 .switch {
@@ -502,6 +606,7 @@ input:checked + .slider:before {
   font-weight: 500;
   color: #777;
   transition: color 0.3s;
+  padding: 4px 8px;
 }
 
 .toggle-container span.active {
@@ -511,7 +616,7 @@ input:checked + .slider:before {
 
 /* Formulaire */
 .input-group {
-  margin-bottom: 12px;
+  margin-bottom: 15px;
   text-align: left;
 }
 
@@ -526,23 +631,16 @@ input:checked + .slider:before {
   position: relative;
 }
 
-.input-with-icon i {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  left: 10px;
-  color: #ccc;
-}
-
 input[type="email"],
 input[type="password"],
 input[type="text"] {
-  width: calc(100% - 40px);
-  padding: 10px 12px 10px 30px;
+  width: 100%;
+  padding: 12px 15px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 1rem;
-  transition: border-color 0.3s;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  box-sizing: border-box;
 }
 
 input[type="email"]:focus,
@@ -550,6 +648,11 @@ input[type="password"]:focus,
 input[type="text"]:focus {
   outline: none;
   border-color: #2980b9;
+  box-shadow: 0 0 0 2px rgba(41, 128, 185, 0.2);
+}
+
+.input-with-icon input {
+  padding-right: 40px;
 }
 
 .error-message {
@@ -561,23 +664,37 @@ input[type="text"]:focus {
 .toggle-password {
   position: absolute;
   top: 50%;
-  right: 8px;
+  right: 10px;
   transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;
+  color: #777;
+}
+
+.toggle-password:hover {
+  color: #333;
 }
 
 .remember-forgot {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+  align-items: center;
+  margin: 15px 0 20px;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #555;
 }
 
 .forgot-password {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: #2980b9;
-  cursor: pointer;
+  text-decoration: none;
 }
 
 .forgot-password:hover {
@@ -586,34 +703,50 @@ input[type="text"]:focus {
 
 .btn-submit {
   width: 100%;
-  padding: 12px;
+  padding: 12px;  
   background-color: #2980b9;
   color: #fff;
   font-size: 1.1rem;
+  font-weight: 500;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.3s;
+  position: relative;
 }
 
 .btn-submit:disabled {
-  background-color: #ccc;
+  background-color: #b3b3b3;
+  cursor: not-allowed;
 }
 
 .btn-submit:hover:not(:disabled) {
   background-color: #21618c;
 }
 
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+  vertical-align: middle;
+}
+
 .btn-create {
   width: 100%;
   padding: 12px;
-  background-color:#29a4b9;
+  background-color: #29a4b9;
   color: #fff;
   font-size: 1.1rem;
+  font-weight: 500;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.3s;
+  margin-top: 10px;
 }
 
 .btn-create:hover {
@@ -623,11 +756,63 @@ input[type="text"]:focus {
 .inscrit-title {
   text-align: center;
   font-size: 1.1rem;
-  margin: 12px 0;
+  margin: 20px 0 15px;
+  color: #555;
 }
 
 .highlight {
   font-weight: bold;
   color: #2980b9;
 }
-</style>
+
+/* Animation */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Media Queries pour le responsive */
+@media (max-width: 768px) {
+  .login-layout {
+    flex-direction: column;
+  }
+  
+  .image-container {
+    display: none; /* Masquer l'image sur mobile */
+  }
+  
+  .modal-content {
+    width: 95%;
+  }
+  
+  .offers-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .header-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .auth-box {
+    padding: 20px 15px;
+  }
+  
+  .remember-forgot {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .forgot-password {
+    margin-left: 0;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .offers-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+</style> 

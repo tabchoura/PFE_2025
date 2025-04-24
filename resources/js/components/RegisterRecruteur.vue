@@ -514,7 +514,7 @@ async function register() {
       token,
       ...user
     }));
-    router.push('/monprofilerecruteur');
+    router.push('/LoginRecruteur');
 
 
 
@@ -537,7 +537,7 @@ async function register() {
 
 
 function goToCompteRecruteur() {
-  router.push('/monprofilerecruteur'); // ✅ maintenant elle existe
+  router.push('/LoginRecruteur'); // ✅ maintenant elle existe
 }
 </script>
 
