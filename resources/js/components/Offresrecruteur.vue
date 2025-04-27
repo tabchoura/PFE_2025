@@ -39,7 +39,7 @@
         
 
         <div class="offer-actions">
-          <button class="btn-modifier" @click="modifierOffre(offer.id)" aria-label="Modifier cette offre">
+          <button class="btn-modifier" @click="modifierOffre(offer.id)" >
             <span class="icon">✏️</span> Modifier
           </button>
           <button class="btn-supprimer" @click="supprimerOffre(offer.id)" aria-label="Supprimer cette offre">

@@ -1,228 +1,761 @@
 <template>
-    <div class="create-cv-container">
-      <h2>📝 Créer un CV</h2>
-      <form @submit.prevent="submitCv" class="cv-form">
-        <!-- Infos personnelles -->
-        <div class="form-group">
-          <label for="infopersonnels">Infos personnelles *</label>
-          <textarea
-            v-model="form.infopersonnels"
-            id="infopersonnels"
-            rows="2"
-            placeholder="Entrez vos informations personnelles (nom, adresse, etc.)"
-            :aria-invalid="errors.infopersonnels ? 'true' : 'false'"
-          />
-          <span v-if="errors.infopersonnels" class="error">
-            {{ errors.infopersonnels }}
-          </span>
-        </div>
-  
-        <!-- Diplômes -->
-        <div class="form-group">
-          <label for="diplomes">Diplômes</label>
-          <input
-            v-model="form.diplomes"
-            type="text"
-            id="diplomes"
-            placeholder="Entrez vos diplômes"
-          />
-        </div>
-  
-        <!-- Expériences -->
-        <div class="form-group">
-          <label for="experiences">Expériences</label>
-          <input
-            v-model="form.experiences"
-            type="text"
-            id="experiences"
-            placeholder="Décrivez vos expériences professionnelles"
-          />
-        </div>
-  
-        <!-- Compétences -->
-        <div class="form-group">
-          <label for="competences">Compétences</label>
-          <input
-            v-model="form.competences"
-            type="text"
-            id="competences"
-            placeholder="Listez vos compétences"
-          />
-        </div>
-  
-        <!-- Langues -->
-        <div class="form-group">
-          <label for="langues">Langues</label>
-          <input
-            v-model="form.langues"
-            type="text"
-            id="langues"
-            placeholder="Indiquez vos langues parlées"
-          />
-        </div>
-  
-        <!-- Fichier -->
-        <div class="form-group">
-          <label for="cvFile">Téléverser un CV (PDF ou Word)</label>
-          <input
-            type="file"
-            id="cvFile"
-            @change="handleFile"
-            accept=".pdf, .doc, .docx"
-          />
-          <div v-if="form.fichier" class="file-preview">
-            <span>{{ form.fichier.name }}</span>
-            <button type="button" @click="removeFile">Supprimer</button>
-          </div>
-          <span v-if="errors.fichier" class="error">{{ errors.fichier }}</span>
-        </div>
-  
-        <!-- Soumettre -->
-        <button type="submit" :disabled="loading" aria-live="polite">
-          {{ loading ? "Création en cours..." : "Créer mon CV" }}
-        </button>
-      </form>
+  <div class="postuler-container">
+    <h1 class="title">Postuler à l'offre</h1>
+
+    <div v-if="loading" class="loading-container">
+      <div class="loader"></div>
+      <p class="loading-text">Chargement de vos CV...</p>
     </div>
-  </template>
-  
-  <script>
-  const ALLOWED_TYPES = [
-    "application/pdf",
-    "application/msword",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ];
-  const MAX_SIZE = 5 * 1024 * 1024;
-  
-  export default {
-    name: "CreateCv",
-    data() {
-      return {
-        form: {
-          infopersonnels: "",
-          diplomes: "",
-          experiences: "",
-          competences: "",
-          langues: "",
-          fichier: null,
-        },
-        errors: {},
-        loading: false,
-      };
-    },
-    methods: {
-      handleFile(e) {
-        const file = e.target.files[0];
-        if (file) {
-          this.form.fichier = file;
-          this.errors.fichier = "";
-        }
-      },
-      removeFile() {
-        this.form.fichier = null;
-      },
-      validate() {
-        this.errors = {};
-        if (!this.form.infopersonnels.trim()) {
-          this.errors.infopersonnels = "Ce champ est requis.";
-        }
-        if (this.form.fichier) {
-          if (!ALLOWED_TYPES.includes(this.form.fichier.type)) {
-            this.errors.fichier = "Format non autorisé. (PDF, DOC)";
-          } else if (this.form.fichier.size > MAX_SIZE) {
-            this.errors.fichier = "Fichier trop volumineux (max 5MB)";
-          }
-        }
-        return Object.keys(this.errors).length === 0;
-      },
-      async submitCv() {
-        if (!this.validate()) return;
-        this.loading = true;
-  
-        try {
-          await new Promise((res) => setTimeout(res, 1500));
-          alert("CV créé avec succès !");
-          // Tu peux ici faire un appel API pour enregistrer le CV
-        } catch (err) {
-          alert("Erreur lors de la création");
-        } finally {
-          this.loading = false;
-        }
-      },
-    },
-  };
-  </script>
-  
-  <style scoped>
-  .create-cv-container {
-    max-width: 600px;
-    margin: auto;
-    padding: 20px;
-    font-family: Arial, sans-serif;
+
+    <div v-else-if="cvs.length === 0" class="empty-state">
+      <div class="empty-icon">📝</div>
+      <h3>Vous n'avez pas encore de CV</h3>
+      <p>Pour postuler à cette offre, vous devez d'abord créer votre CV.</p>
+      <button @click="Creercv" class="primary-button create-cv-button">
+        <span class="button-icon">➕</span> Créer votre CV
+      </button>
+    </div>
+
+    <div v-else class="confirmation-state">
+      <div class="offre-info" v-if="detailsoffre">
+        <h3 class="offre-title">{{ detailsoffre.titre }}</h3>
+        <p class="offre-company">{{ detailsoffre.entreprise }}</p>
+        <p class="offre-location">{{ detailsoffre.localisation }}</p>
+      </div>
+
+      <div class="cv-selection" v-if="cvs.length > 1">
+        <h3>Sélectionnez le CV à utiliser</h3>
+        <div class="cv-list">
+          <div 
+            v-for="(cv, index) in cvs" 
+            :key="index" 
+            :class="['cv-item', { 'selected': selectedCvId === cv.id }]"
+            @click="selectedCvId = cv.id"
+          >
+            <div class="cv-item-content">
+              <span class="cv-name">{{ cv.nom }} {{ cv.prenom }}</span>
+              <span class="cv-date">Mis à jour: {{ formatDate(cv.updated_at || cv.created_at) }}</span>
+            </div>
+            <div class="check-indicator" v-if="selectedCvId === cv.id">✓</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="confirmation-message">
+        <p>Êtes-vous sûr de vouloir postuler à cette offre ?</p>
+
+        <div class="motivation-section">
+          <label for="motivation" class="motivation-label">Ajoutez un message (optionnel)</label>
+          <textarea id="motivation" v-model="motivationText" class="motivation-textarea" placeholder="Expliquez brièvement pourquoi ce poste vous intéresse..."></textarea>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button @click="confirmPostuler" class="primary-button confirm-button" :disabled="submitting">
+          <span class="button-icon" v-if="!submitting">✓</span>
+          <span class="loader small-loader" v-else></span>
+          {{ submitting ? 'Envoi en cours...' : 'Confirmer ma candidature' }}
+        </button>
+        <button @click="cancel" class="secondary-button">Annuler</button>
+      </div>
+    </div>
+
+    <div v-if="error" class="error-message">
+      <span class="error-icon">⚠️</span>
+      <p>{{ error }}</p>
+      <button @click="error = null" class="close-error-button">×</button>
+    </div>
+
+    <div v-if="success" class="success-message">
+      <span class="success-icon">✅</span>
+      <p>{{ success }}</p>
+      <div class="success-actions">
+        <button @click="goToCandidatures" class="primary-button small-button">Voir mes candidatures</button>
+        <button @click="goToOffers" class="secondary-button small-button">Voir d'autres offres</button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
+
+const route = useRoute()
+const router = useRouter()
+
+const cvs = ref<any[]>([])
+const loading = ref(true)
+const error = ref<string|null>(null)
+const success = ref<string|null>(null)
+const submitting = ref(false)
+const selectedCvId = ref<string|null>(null)
+const motivationText = ref('')
+const detailsoffre = ref<any>(null)
+
+function formatDate(dateStr: string) {
+  if (!dateStr) return 'Date inconnue'
+  const date = new Date(dateStr)
+  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+}
+
+onMounted(async () => {
+  try {
+    const offerId = route.params.id as string
+    const [offreResponse, cvsResponse] = await Promise.all([
+      axios.get(`/api/offres/${offerId}`),
+      axios.get(`/api/cv`) // 🔵 charger tous les CV
+    ])
+    detailsoffre.value = offreResponse.data
+    cvs.value = cvsResponse.data
+
+    if (cvs.value.length > 0) {
+      selectedCvId.value = cvs.value[0].id
+    }
+  } catch (e: any) {
+    error.value = e.response?.data?.message || 'Impossible de charger les données nécessaires'
+  } finally {
+    loading.value = false
+  }
+})
+
+async function confirmPostuler() {
+  const offerId = route.params.id as string
+  const cvId = selectedCvId.value || (cvs.value.length > 0 ? cvs.value[0].id : null)
+
+  if (!cvId) {
+    error.value = 'Aucun CV disponible pour postuler'
+    return
+  }
+
+  submitting.value = true
+
+  try {
+    await axios.post(`/api/offres/${offerId}/postuler`, {
+      cv_id: cvId,
+      message: motivationText.value || null,
+      statut: "En attente" // 🔵 très important
+    })
+    success.value = 'Votre candidature a été envoyée avec succès!'
+    error.value = null
+  } catch (e: any) {
+    console.error('Erreur:', e)
+    error.value = e.response?.data?.message || 'Erreur lors de la candidature'
+  } finally {
+    submitting.value = false
+  }
+}
+
+function Creercv() {
+  router.push({ name: 'creerCv', query: { from: 'postuler', offreId: route.params.id } })
+}
+
+
+function cancel() {
+  router.back()
+}
+
+function goToCandidatures() {
+  router.push({ name: 'Candidature' })
+}
+
+function goToOffers() {
+  router.push({ name: 'Offres' })
+}
+</script>
+
+
+<style scoped>.postuler-container {
+  max-width: 800px;
+  margin: 6rem auto 2.5rem;   padding: 2.5rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.title {
+  color: #2c3e50;
+  font-size: 2.2rem;
+  margin-bottom: 2.5rem;
+  text-align: center;
+  position: relative;
+  font-weight: 700;
+}
+
+.title:after {
+  content: "";
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 4px;
+  background: linear-gradient(90deg, #3498db, #2980b9);
+  border-radius: 4px;
+}
+
+/* États de chargement */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 0;
+}
+
+.loader {
+  border: 4px solid rgba(52, 152, 219, 0.1);
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1.2s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+  margin-bottom: 1.5rem;
+}
+
+.small-loader {
+  width: 22px;
+  height: 22px;
+  border-width: 2px;
+  margin-right: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  color: #7f8c8d;
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+/* État vide - pas de CV */
+.empty-state {
+  text-align: center;
+  padding: 4rem 0;
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.empty-icon {
+  font-size: 5rem;
+  margin-bottom: 1.5rem;
+  color: #95a5a6;
+  opacity: 0.8;
+}
+
+.empty-state h3 {
+  font-size: 1.7rem;
+  margin-bottom: 1.2rem;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.empty-state p {
+  color: #7f8c8d;
+  margin-bottom: 2.5rem;
+  font-size: 1.1rem;
+  max-width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* État de confirmation */
+.confirmation-state {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  animation: fadeIn 0.5s ease;
+}
+
+/* Information sur l'offre */
+.offre-info {
+  background: linear-gradient(to right, #f8f9fa, #f1f3f4);
+  padding: 1.8rem;
+  border-radius: 12px;
+  margin-bottom: 1.2rem;
+  border-left: 5px solid #3498db;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.offre-info:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+.offre-title {
+  margin: 0 0 0.7rem 0;
+  font-size: 1.6rem;
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.offre-company {
+  font-weight: 600;
+  margin: 0 0 0.7rem 0;
+  color: #34495e;
+  font-size: 1.2rem;
+}
+
+.offre-location {
+  color: #7f8c8d;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  font-size: 1.05rem;
+}
+
+.offre-location:before {
+  content: "📍";
+  margin-right: 6px;
+}
+
+/* Sélection du CV */
+.cv-selection {
+  margin: 1.5rem 0;
+}
+
+.cv-selection h3 {
+  margin-bottom: 1.2rem;
+  font-size: 1.3rem;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.cv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.cv-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem 1.5rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  transition: all 0.25s ease;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.cv-item:hover {
+  border-color: #3498db;
+  background: #f8f9fa;
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.1);
+}
+
+.cv-item.selected {
+  border-color: #3498db;
+  background: #ebf7fd;
+  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.15);
+}
+
+.cv-item-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.cv-name {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 1.1rem;
+}
+
+.cv-date {
+  font-size: 0.95rem;
+  color: #7f8c8d;
+  margin-top: 0.6rem;
+}
+
+.check-indicator {
+  color: #3498db;
+  font-size: 1.8rem;
+  font-weight: bold;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.cv-item.selected .check-indicator {
+  transform: scale(1.2);
+}
+
+/* Message de confirmation */
+.confirmation-message {
+  text-align: center;
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.confirmation-message p {
+  font-size: 1.3rem;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+/* Lettre de motivation */
+.motivation-section {
+  margin: 2rem 0;
+  text-align: left;
+}
+
+.motivation-label {
+  display: block;
+  margin-bottom: 0.8rem;
+  color: #34495e;
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+.motivation-textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  min-height: 140px;
+  resize: vertical;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.motivation-textarea:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+.motivation-textarea::placeholder {
+  color: #b2bec3;
+}
+
+/* Boutons d'action */
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+button {
+  padding: 0.9rem 1.8rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.05rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.primary-button {
+  background: linear-gradient(to right, #3498db, #2980b9);
+  color: white;
+  box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+}
+
+.primary-button:hover {
+  background: linear-gradient(to right, #2980b9, #2471a3);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
+}
+
+.primary-button:active {
+  transform: translateY(-1px);
+}
+
+.primary-button:disabled {
+  background: linear-gradient(to right, #95a5a6, #7f8c8d);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.secondary-button {
+  background: #f5f7fa;
+  color: #34495e;
+  border: 2px solid #dfe6e9;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.secondary-button:hover {
+  background: #e0e7ee;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.secondary-button:active {
+  transform: translateY(-1px);
+}
+
+.create-cv-button {
+  padding: 1.2rem 2.5rem;
+  font-size: 1.15rem;
+  border-radius: 12px;
+}
+
+.small-button {
+  padding: 0.6rem 1.2rem;
+  font-size: 0.95rem;
+}
+
+.button-icon {
+  margin-right: 10px;
+  font-size: 1.1em;
+}
+
+.confirm-button {
+  padding: 1rem 2.5rem;
+  min-width: 220px;
+}
+
+/* Message d'erreur */
+.error-message {
+  display: flex;
+  align-items: center;
+  background: #fdedec;
+  border-left: 5px solid #e74c3c;
+  padding: 1.2rem;
+  margin-top: 2rem;
+  border-radius: 10px;
+  color: #c0392b;
+  position: relative;
+  animation: slideIn 0.3s ease;
+  box-shadow: 0 4px 10px rgba(231, 76, 60, 0.1);
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.error-icon {
+  margin-right: 12px;
+  font-size: 1.4rem;
+}
+
+.error-message p {
+  font-size: 1.05rem;
+  margin-right: 20px;
+}
+
+.close-error-button {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  background: none;
+  border: none;
+  color: #e74c3c;
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.2s ease;
+}
+
+.close-error-button:hover {
+  transform: scale(1.2);
+}
+
+/* Message de succès */
+.success-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #e8f8f5;
+  border-left: 5px solid #2ecc71;
+  padding: 2rem;
+  margin-top: 2rem;
+  border-radius: 12px;
+  color: #27ae60;
+  text-align: center;
+  animation: fadeIn 0.5s ease;
+  box-shadow: 0 4px 15px rgba(46, 204, 113, 0.15);
+}
+
+.success-icon {
+  font-size: 3rem;
+  margin-bottom: 1.2rem;
+  animation: successPulse 2s infinite;
+}
+
+@keyframes successPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.success-message p {
+  color: #2c3e50;
+  font-size: 1.4rem;
+  margin-bottom: 1.8rem;
+  font-weight: 500;
+}
+
+.success-actions {
+  display: flex;
+  gap: 1.2rem;
+  margin-top: 0.8rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .postuler-container {
+    padding: 1.8rem;
+    margin: 1rem;
+    border-radius: 12px;
   }
   
-  .cv-form {
-    display: flex;
+  .title {
+    font-size: 1.8rem;
+  }
+  
+  .title:after {
+    width: 80px;
+  }
+  
+  .action-buttons {
     flex-direction: column;
-    gap: 1.2rem;
+    gap: 1rem;
   }
   
-  .form-group {
-    display: flex;
+  .action-buttons button {
+    width: 100%;
+  }
+  
+  .success-actions {
     flex-direction: column;
+    width: 100%;
+    gap: 0.8rem;
   }
   
-  textarea,
-  input[type="text"],
-  input[type="file"] {
-    padding: 0.75rem;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    margin-top: 5px;
+  .offre-title {
+    font-size: 1.4rem;
   }
   
-  input[type="file"] {
-    padding: 0.5rem;
+  .confirmation-message p {
+    font-size: 1.2rem;
   }
   
-  label {
-    font-weight: 600;
-    margin-bottom: 0.5rem;
+  .empty-state p {
+    max-width: 100%;
   }
   
-  .error {
-    color: #e11d48;
-    font-size: 0.875rem;
-    margin-top: 5px;
+  .empty-icon {
+    font-size: 4rem;
   }
   
-  .file-preview {
-    background: #f3f4f6;
-    padding: 8px;
-    margin-top: 5px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-radius: 5px;
+  .cv-item {
+    padding: 1rem;
   }
   
-  button[type="submit"] {
-    background-color: #2563eb;
-    color: white;
-    padding: 12px;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+  .motivation-textarea {
+    min-height: 120px;
+  }
+}
+
+/* Accessibilité et détails supplémentaires */
+@media (prefers-reduced-motion) {
+  *, *::before, *::after {
+    animation-duration: 0.001s !important;
+    transition-duration: 0.001s !important;
+  }
+}
+
+/* Style focus pour accessibilité */
+button:focus, .motivation-textarea:focus, .cv-item:focus {
+  outline: 3px solid rgba(52, 152, 219, 0.4);
+  outline-offset: 2px;
+}
+
+/* Transition plus douce entre les états */
+.postuler-container > div {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Mode sombre - support basique si le système est en mode sombre */
+@media (prefers-color-scheme: dark) {
+  .postuler-container {
+    background: #1a1e25;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
   }
   
-  button[type="submit"]:disabled {
-    background-color: #93c5fd;
-    cursor: not-allowed;
+  .title, .offre-title, .cv-name, .confirmation-message p, .success-message p, .cv-selection h3, .empty-state h3 {
+    color: #ecf0f1;
   }
   
-  button[type="submit"]:not(:disabled):hover {
-    background-color: #1d4ed8;
+  .offre-info {
+    background: linear-gradient(to right, #2c3e50, #34495e);
+    border-left-color: #3498db;
   }
-  </style>
   
+  .offre-company {
+    color: #bdc3c7;
+  }
+  
+  .cv-item {
+    background: #2c3e50;
+    border-color: #34495e;
+  }
+  
+  .cv-item:hover {
+    background: #34495e;
+  }
+  
+  .cv-item.selected {
+    background: #2980b9;
+  }
+  
+  .cv-date {
+    color: #bdc3c7;
+  }
+  
+  .confirmation-message {
+    background: #2c3e50;
+  }
+  
+  .motivation-textarea {
+    background: #2c3e50;
+    color: #ecf0f1;
+    border-color: #34495e;
+  }
+  
+  .motivation-textarea::placeholder {
+    color: #95a5a6;
+  }
+  
+  .secondary-button {
+    background: #34495e;
+    color: #ecf0f1;
+    border-color: #4a6073;
+  }
+  
+  .secondary-button:hover {
+    background: #4a6073;
+  }
+  
+  .error-message {
+    background: #4e1a17;
+    border-left-color: #e74c3c;
+  }
+  
+  .success-message {
+    background: #1e5931;
+    border-left-color: #2ecc71;
+  }
+}
+</style>

@@ -112,5 +112,26 @@ class OfferController extends Controller
         return response()->json($offre, 200);
     }
     
-    
+    public function postuler(Request $request, $id)
+{
+    // Validation simple
+    $request->validate([
+        'cv_id' => 'required|exists:cvs,id',
+        'message' => 'nullable|string|max:1000',
+    ]);
+
+    // Exemple simple d'enregistrement
+    // Ici, tu peux créer une table "candidatures" pour lier offre + cv + message
+    \DB::table('candidatures')->insert([
+        'offre_id' => $id,
+        'cv_id' => $request->cv_id,
+        'message' => $request->message,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    return response()->json([
+        'message' => '✅ Candidature envoyée avec succès.'
+    ]);
+}
 }

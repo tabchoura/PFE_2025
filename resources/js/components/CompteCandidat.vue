@@ -4,29 +4,80 @@
     <aside class="sidebar">
       <h2>Mon Espace</h2>
       <ul>
-        <li @click="navigateTo('/monprofile')" :class="{ active: isActive('/monprofile') }" role="button" tabindex="0">
+        <li
+          @click="navigateTo('/monprofile')"
+          :class="{ active: isActive('/monprofile') }"
+          role="button"
+          tabindex="0"
+        >
           Mon profil
         </li>
-        <li @click="navigateTo('/candidature')" :class="{ active: isActive('/candidature') }" role="button" tabindex="0">
+        <li
+          @click="navigateTo('/candidature')"
+          :class="{ active: isActive('/candidature') }"
+          role="button"
+          tabindex="0"
+        >
           Mes candidatures
         </li>
-        <li @click="navigateTo('/entretiens')" :class="{ active: isActive('/entretiens') }" role="button" tabindex="0">
+        <li
+          @click="navigateTo('/entretiens')"
+          :class="{ active: isActive('/entretiens') }"
+          role="button"
+          tabindex="0"
+        >
           Mes entretiens
         </li>
-        <li @click="navigateTo('/Offres')" :class="{ active: isActive('/offres') }" role="button" tabindex="0">
-  Mes offres Enregistrées
-</li>
-
-        <li @click="navigateTo('/CreateCv')" :class="{ active: isActive('/CreateCv') || isActive('/CreateLettre') }" role="button" tabindex="0">
-          Mes CV & Lettres
+        <li
+          @click="navigateTo('/offres')"
+          :class="{ active: isActive('/offres') }"
+          role="button"
+          tabindex="0"
+        >
+          Mes offres enregistrées
         </li>
-        <li @click="navigateTo('/Test')" :class="{ active: isActive('/Test') }" role="button" tabindex="0">
+
+        <!-- Mes CV (seulement si on a un cvId) -->
+        <li
+          v-if="cvId"
+          @click="navigateTo(`/mescv`)"
+          :class="{ active: isActive(`/mescv`) }"
+          role="button"
+          tabindex="0"
+        >
+          Mes CV
+        </li>
+
+        <li
+          @click="navigateTo('/create-lettre')"
+          :class="{ active: isActive('/create-lettre') }"
+          role="button"
+          tabindex="0"
+        >
+          Créer Lettre
+        </li>
+        <li
+          @click="navigateTo('/test')"
+          :class="{ active: isActive('/test') }"
+          role="button"
+          tabindex="0"
+        >
           Mes Tests
         </li>
-        <li @click="navigateTo('/Mesnotifications')" :class="{ active: isActive('/Mesnotifications') }" role="button" tabindex="0">
+        <li
+          @click="navigateTo('/notifications')"
+          :class="{ active: isActive('/notifications') }"
+          role="button"
+          tabindex="0"
+        >
           Mes Notifications
         </li>
-        <li @click="logout" class="logout-item" role="button" tabindex="0">
+        <li
+          @click="logout"
+          class="logout-item"
+          role="button"
+          tabindex="0"
+        >
           Déconnexion
         </li>
       </ul>
@@ -34,201 +85,155 @@
 
     <!-- Contenu principal -->
     <main class="content">
-      <!-- Affichage dynamique du composant -->
-      <router-view></router-view> <!-- Ce composant affichera dynamiquement le composant associé à la route -->
+      <router-view />
     </main>
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from "vue";
-import { useRouter, useRoute } from "vue-router";
-import api from "@/axios";
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import api from 'axios'   // ton axios préconfiguré
 
-// Initialiser le router et la route
-const router = useRouter();
-const route = useRoute();
-const userData = ref(null);
+const router   = useRouter()
+const route    = useRoute()
+const userData = ref<any>(null)
+const cvId     = ref<string | null>(null)
 
-// Vérifier si une route est active
-function isActive(path) {
-  return route.path === path;
+/**
+ * Détermine si la route passée en argument correspond à la route active
+ */
+function isActive(path: string) {
+  return route.path === path
 }
 
-// Fonction de navigation vers une page
-function navigateTo(path) {
+/**
+ * Navigue simplement vers la route donnée
+ */
+function navigateTo(path: string) {
   if (route.path !== path) {
-    router.push(path);
+    router.push(path)
   }
 }
 
-// Vérifier la session utilisateur à l'initialisation
-onMounted(() => {
-  const session = JSON.parse(
-    sessionStorage.getItem("userSession") || localStorage.getItem("userSession") || "null"
-  );
-  
-  if (session) {
-    userData.value = session;
+onMounted(async () => {
+  // 1️⃣ Chargement de la session
+  const raw = sessionStorage.getItem('userSession')
+           || localStorage.getItem('userSession')
 
-    // Si l'utilisateur accède directement à /CompteCandidat sans section spécifique
-    if (route.path === '/CompteCandidat') {
-      router.push('/monprofile');  // Redirige automatiquement vers la page par défaut (par exemple 'Monprofile')
-    }
-  } else {
-    router.push("/authentification");  // Redirige vers la page d'authentification si non connecté
+  if (!raw) {
+    return router.push('/authentification')
   }
-});
+  userData.value = JSON.parse(raw)
 
-// Déconnexion
+  // 2️⃣ Récupération de l'ID du premier CV de l'utilisateur
+  try {
+    const { data: cvs } = await api.get('/api/cv', {
+      params: { user_id: userData.value.id }
+    })
+    if (Array.isArray(cvs) && cvs.length) {
+      cvId.value = String(cvs[0].id)
+    }
+  } catch (e) {
+    console.error("Erreur lors du chargement des CV :", e)
+  }
+
+  // 3️⃣ Redirection par défaut si on est sur /CompteCandidat
+  if (route.path === '/CompteCandidat') {
+    router.push('/monprofile')
+  }
+})
+
+/**
+ * Effectue la déconnexion
+ */
 async function logout() {
   try {
-    const session = JSON.parse(
-      sessionStorage.getItem('userSession') || localStorage.getItem('userSession') || '{}'
-    );
-
-    const token = session.token;
-    if (token) {
-      // Ajoute le token dans l'en-tête Authorization pour que Laravel reconnaisse l'utilisateur
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    }
-
-    await api.post("/api/logout"); // Laravel va supprimer les tokens ici
-  } catch (error) {
-    console.error("Erreur lors de la déconnexion :", error.response?.data || error.message);
+    // Nettoyage côté API
+    await api.post('/api/logout')
+  } catch {
+    /* ignore */
   } finally {
-    // Supprimer la session même s'il y a une erreur
-    localStorage.removeItem("userSession");
-    sessionStorage.removeItem("userSession");
-    // Redirige vers la page de connexion
-    router.push("/authentification");
+    sessionStorage.removeItem('userSession')
+    localStorage.removeItem('userSession')
+    router.push('/authentification')
   }
 }
-
 </script>
 
 <style scoped>
-/* Styles pour l'ensemble du composant */
 .mon-espace {
-  min-height: 100vh;
-  font-family: "Roboto", sans-serif;
-  background-color: #f4f6f9;
-  padding: 20px;
-  margin: 30px;
   display: flex;
-  justify-content: flex-start;
-  align-items: flex-start;
+  min-height: 100vh;
+  background-color: #f4f6f9;
+  font-family: "Segoe UI", sans-serif;
 }
-
-/* Barre Latérale */
 .sidebar {
   width: 250px;
-  background-color: #fff;
-  padding: 30px;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-  border-right: 1px solid #e1e1e1;
   position: fixed;
   top: 55px;
   left: 0;
-  height: calc(100vh - 55px); /* Fixer la barre latérale */
+  height: calc(100vh - 55px);
+  background: #fff;
+  padding: 30px;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+  border-right: 1px solid #e1e1e1;
   z-index: 10;
 }
-
 .sidebar h2 {
-  margin-bottom: 20px;
-  font-size: 1.6rem;
-  color: #0055a5;
-  font-weight: 700;
   text-align: center;
+  color: #0055a5;
+  margin-bottom: 20px;
+  font-weight: 700;
 }
-
 .sidebar ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
-
 .sidebar li {
+  margin-bottom: 12px;
   padding: 15px;
   cursor: pointer;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  color: #333;
-  font-size: 1rem;
-  transition: background-color 0.3s, color 0.3s;
   text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: 8px;
+  transition: background-color .3s, color .3s, transform .3s;
 }
-
-.sidebar li.active,
-.sidebar li:hover {
-  background-color: #cce0ff;
+.sidebar li:hover,
+.sidebar li.active {
+  background: #cce0ff;
   color: #0055a5;
   transform: translateX(5px);
 }
-
 .logout-item {
   margin-top: 30px;
   border-top: 1px solid #e1e1e1;
   padding-top: 18px;
   color: #e74c3c;
   font-weight: 600;
-  text-align: center;
-  transition: background-color 0.3s, color 0.3s;
 }
-
-.logout-item:hover {
-  background-color: #f9e6e6;
-  color: #c0392b;
-}
-
 .content {
+  margin-left: 250px;
   flex: 1;
   padding: 60px;
-  background: #ffffff;
-  overflow-y: auto;
-  margin-left: 250px;
-  transition: margin-left 0.3s ease;
+  background: #fff;
   border-radius: 9px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
-
 @media (max-width: 768px) {
-  .mon-espace {
-    flex-direction: column;
-  }
-
+  .mon-espace { flex-direction: column; }
   .sidebar {
+    position: relative;
     width: 100%;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 10;
-    padding: 15px;
-    background-color: #fff;
     height: auto;
+    top: 0;
+    border-right: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   }
-
   .content {
     margin-left: 0;
     margin-top: 300px;
     padding: 20px;
-  }
-
-  .sidebar h2 {
-    font-size: 1.4rem;
-    text-align: left;
-  }
-
-  .sidebar ul {
-    padding-left: 10px;
-  }
-
-  .sidebar li {
-    padding: 12px;
   }
 }
 </style>

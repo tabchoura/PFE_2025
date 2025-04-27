@@ -195,18 +195,17 @@ const formatSalaire = (salaire) => {
   return salaire;
 };
 
-// Fonction pour vérifier l'authentification avant de rediriger vers les détails de l'offre
 const checkAuthentication = (offerId) => {
   const userSession = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
   
   if (!userSession) {
-    // Si l'utilisateur n'est pas connecté, rediriger vers la page d'authentification
-    router.push('/authentification');
+    // Ouvrir le modal d'authentification au lieu de rediriger
+    openAuthModal(offerId);
   } else {
     // Si l'utilisateur est connecté, rediriger vers les détails de l'offre
     router.push(`/voirdetails/${offerId}`);
   }
-};
+}
 
 // Fonction pour ouvrir le modal d'authentification avec animation
 const openAuthModal = (offerId) => {
@@ -217,6 +216,8 @@ const openAuthModal = (offerId) => {
     modalShowing.value = true;
   }, 10);
 };
+
+
 
 // Fonction pour fermer le modal d'authentification avec animation
 const closeAuthModal = () => {
@@ -272,11 +273,11 @@ const login = async () => {
 
     // Vérifiez si l'ID de l'offre est bien récupéré avant de rediriger
     if (targetId) {
-      // Rediriger immédiatement après l'authentification réussie
-      router.push(`/voirdetails/${targetId}`);
-    } else {
-      alert("❌ Offre introuvable.");
-    }
+  router.replace(`/voirdetails/${targetId}`);
+} else {
+  alert("❌ Offre introuvable.");
+}
+
 
   } catch (error) {
     alert("❌ Identifiants incorrects ou utilisateur non trouvé");

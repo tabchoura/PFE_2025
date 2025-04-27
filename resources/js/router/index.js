@@ -11,7 +11,7 @@ import Candidature from '@/components/Candidature.vue';
 import CompteRecruteur from '@/components/CompteRecruteur.vue';
 import Monprofilerecruteur from '@/components/Monprofilerecruteur.vue';
 import Entretiens from '@/components/Entretiens.vue';
-import CreateCv from '@/components/CreateCv.vue';
+import Voircv from '@/components/Voircv.vue';
 import CreateLettre from '@/components/CreateLettre.vue';
 import Test from '@/components/Test.vue';
 import Mesnotifications from '@/components/MesNotifications.vue';
@@ -24,6 +24,14 @@ import Voirdetails from '../components/Voirdetails.vue';  // Importation de Voir
 import LoginCandidat from '../components/LoginCandidat.vue';
 import LoginRecruteur from '../components/LoginRecruteur.vue';
 import Postuler from '../components/Postuler.vue';
+import Ajouterimage from '../components/Ajouterimage.vue';
+import Modifiercv from '../components/Modifiercv.vue';
+import Mescv from '../components/Mescv.vue';
+import Confirmationpostuler from '../components/Confirmationpostuler.vue';
+import Creercv from '../components/Creercv.vue';
+import Aftercvpostuler from '../components/Aftercvpostuler.vue'
+import DetailsCandidature from '../components/DetailsCandidature.vue';
+
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -32,6 +40,9 @@ const routes = [
   { path: '/registercandidat', name: 'RegisterCandidat', component: RegisterCandidat },
   { path: '/registerrecruteur', name: 'RegisterRecruteur', component: RegisterRecruteur },
   { path: '/apropos', name: 'Apropos', component: Apropos },
+
+
+  { path: '/ajouterimage', name: 'Ajouterimage', component:Ajouterimage },
 
   // Candidat
   { 
@@ -42,6 +53,8 @@ const routes = [
       { path: '', name: 'CompteCandidat', component: CompteCandidat }
     ]
   },
+ 
+
   { path: '/monprofile', component: CompteCandidat, meta: { requiresAuth: true }, children: [
     { path: '', name: 'Monprofile', component: Monprofile }
   ]},
@@ -50,10 +63,48 @@ const routes = [
   ]},
   { path: '/entretiens', component: CompteCandidat, meta: { requiresAuth: true }, children: [
     { path: '', name: 'Entretiens', component: Entretiens }
+  ]}, { path: '/mescv', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Mescv', component: Mescv }
   ]},
-  { path: '/CreateCv', component: CompteCandidat, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'CreateCv', component: CreateCv }
+  { path: '/creercv', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'CreerCv', component: Creercv }
   ]},
+
+  { path: '/aftercvpostuler', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Aftercvpostuler', component: Aftercvpostuler }
+  ]},
+
+  {
+    path: '/detailscandidature/:id',   // Détail d'une candidature
+    name: 'DetailsCandidature',
+    component: DetailsCandidature,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/voircv/:id',          // segment dynamique
+    name: 'VoirCv',               // nom EXACT
+    component: Voircv,
+    meta: { requiresAuth: true },
+    props: true                   // si tu préfères passer l’id en prop
+  }, 
+  {
+    path: '/modifiercv/:id',          // segment dynamique
+    name: 'Modifiercv',               // nom EXACT
+    component: Modifiercv,
+    meta: { requiresAuth: true },
+    props: true                   // si tu préfères passer l’id en prop
+  }, 
+   
+   // … vos autres routes …
+   {
+    path: '/postuler/confirm/:offerId',
+    name: 'Confirmationpostuler',
+    component: Confirmationpostuler,
+    props: true,
+    meta: { requiresAuth: true }
+  },
+  
+,  
   { path: '/CreateLettre', component: CompteCandidat, meta: { requiresAuth: true }, children: [
     { path: '', name: 'CreateLettre', component: CreateLettre }
   ]},
@@ -62,10 +113,15 @@ const routes = [
   ]},
   { path: '/Mesnotifications', component: CompteCandidat, meta: { requiresAuth: true }, children: [
     { path: '', name: 'Mesnotifications', component: Mesnotifications }
-  ]}, { path: '/postuler', component: CompteCandidat, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'Postuler', component: Postuler }
-  ]},
-  { path: '/loginCandidat', name: 'LoginCandidat', component: LoginCandidat },
+  ]}, {
+    path: '/postuler/:id',
+    name: 'Postuler',
+    component: Postuler,
+    props: true,
+    meta: { requiresAuth: true }
+  },
+  
+  { path: '/LoginCandidat', name: 'LoginCandidat', component: LoginCandidat },
   { path: '/LoginRecruteur', name: 'LoginRecruteur', component: LoginRecruteur },
 
   // Recruteur

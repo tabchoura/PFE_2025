@@ -34,8 +34,9 @@ onMounted(() => {
 });
 
 const Postuler=()=>{
-router.push('/postuler');
-}
+  const offreId = route.params.id 
+
+  router.push(`/postuler/${offreId}`)}
 </script>
 
 <style scoped>
