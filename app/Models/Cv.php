@@ -19,4 +19,8 @@ class Cv extends Model
         'projets'               => 'array',
         // 'date_naissance'        => 'date',
     ];
+    public function candidatures()
+    {
+        return $this->hasMany(Candidature::class); // Un CV peut avoir plusieurs candidatures
+    }
 }

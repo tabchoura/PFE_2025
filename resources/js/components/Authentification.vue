@@ -4,7 +4,7 @@
       <div class="image-container">
         <img :src="recrutlogin" alt="Plateforme de recrutement" />
         <div class="image-overlay">
-          <h1 class="platform-name">JobGO</h1>
+          <h1 class="platform-name">Jobgp</h1>
           <p class="platform-slogan">Connectez talents et opportunités</p>
         </div>
       </div>
@@ -47,30 +47,30 @@
             </div>
 
             <div class="input-group">
-              <label for="password">Mot de passe</label>
-              <div class="input-with-icon">
-                <i class="fas fa-lock input-icon"></i>
-                <input
-                  :type="showPassword ? 'text' : 'password'"
-                  v-model="password"
-                  id="password"
-                  placeholder="Votre mot de passe"
-                  required
-                  :class="{ error: passwordError }"
-                  @input="passwordError = false"
-                />
-                <button
-                  type="button"
-                  class="toggle-password"
-                  @click="showPassword = !showPassword"
-                >
-                  <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-                </button>
-              </div>
-              <p v-if="passwordError" class="error-message">
-                <i class="fas fa-exclamation-circle"></i> Mot de passe requis (min. 6 caractères)
-              </p>
-            </div>
+  <label for="password">Mot de passe</label>
+  <div class="input-with-icon">
+    <i class="fas fa-lock input-icon"></i>
+    <input
+      :type="showPassword ? 'text' : 'password'"
+      v-model="password"
+      id="password"
+      placeholder="Votre mot de passe"
+      required
+      :class="{ error: passwordError }"
+      @input="passwordError = false"
+    />
+    <button
+      type="button"
+      class="toggle-password"
+      @click="togglePassword"
+    >
+      <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+    </button>
+  </div>
+  <p v-if="passwordError" class="error-message">
+    <i class="fas fa-exclamation-circle"></i> Mot de passe requis (min. 6 caractères)
+  </p>
+</div>
 
             <div class="remember-forgot">
               <label class="remember-me">
@@ -90,7 +90,6 @@
               <span>OU</span>
             </div>
 
-            
             <div class="signup-prompt">
               <h3>
                 Vous n'avez pas de compte 
@@ -201,6 +200,9 @@ export default {
       this.$router.push(userData.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat");
     }
   },
+  togglePassword() {
+  this.showPassword = !this.showPassword;
+},
   mounted() {
     const session = localStorage.getItem("userSession") || sessionStorage.getItem("userSession");
     if (session && document.referrer === "") {
@@ -502,11 +504,15 @@ label {
   cursor: pointer;
   font-size: 1rem;
   transition: var(--transition);
+  padding: 8px;
+  border-radius: 50%;
 }
 
 .input-with-icon .toggle-password:hover {
   color: var(--primary-color);
+  background-color: var(--light-blue);
 }
+
 
 input.error {
   border-color: var(--error-color);

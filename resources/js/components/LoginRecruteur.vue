@@ -11,11 +11,11 @@
           </div>
         </div>
       </div>
-      
+
       <div class="form-section">
         <form @submit.prevent="login" class="login-form">
           <div class="form-header">
-            <h1>Connexion Recruteur </h1>
+            <h1>Connexion Recruteur</h1>
             <p class="form-subtitle">Accédez à votre espace personnel</p>
           </div>
 
@@ -27,7 +27,6 @@
               </span>
               <input 
                 type="email" 
-                id="email" 
                 v-model="email" 
                 required 
                 placeholder="votre@email.com"
@@ -46,7 +45,6 @@
               <input
                 :type="showPassword ? 'text' : 'password'"
                 v-model="password"
-                id="password"
                 required
                 placeholder="Entrez votre mot de passe"
                 :class="{ 'input-error': errors.password }"
@@ -83,10 +81,6 @@
             <span v-if="isLoading" class="loading-spinner"></span>
             <span v-else>Se connecter</span>
           </button>
-          
-          <!-- <div class="form-footer">
-            <p class="no-account">Pas encore de compte ? <a href="#" @click.prevent="goToRegister">S'inscrire</a></p>
-          </div> -->
         </form>
 
         <div v-if="error" class="error-notification">
@@ -108,122 +102,94 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
 import axios from 'axios';
 import logincandidat from "../../assets/logincandidat.jpg";
 
-export default {
-  data() {
-    return {
-      logincandidat,
-      email: "",
-      password: "",
-      rememberMe: false,
-      error: "",
-      successMessage: "",
-      errors: {
-        email: "",
-        password: ""
-      },
-      isLoading: false,
-      showPassword: false,
-    };
-  },
-  
-  methods: {
-    validateForm() {
-      let isValid = true;
-      this.errors = {
-        email: "",
-        password: ""
-      };
-      
-      // Validation email
-      if (!this.email) {
-        this.errors.email = "L'email est requis";
-        isValid = false;
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email)) {
-        this.errors.email = "Format d'email invalide";
-        isValid = false;
-      }
-      
-      // Validation mot de passe
-      if (!this.password) {
-        this.errors.password = "Le mot de passe est requis";
-        isValid = false;
-      }
-      
-      return isValid;
-    },
+const email = ref("");
+const password = ref("");
+const rememberMe = ref(false);
+const error = ref("");
+const successMessage = ref("");
+const errors = ref({
+  email: "",
+  password: ""
+});
+const isLoading = ref(false);
+const showPassword = ref(false);
 
-    async login() {
-      if (!this.validateForm()) return;
-      
-      this.isLoading = true;
-      this.error = "";
+const validateForm = () => {
+ 
 
-      try {
-        // CSRF-cookie pour Sanctum
-        await axios.get("/sanctum/csrf-cookie");
+  if (!email.value) {
+    errors.value.email = "L'email est requis";
+    isValid = false;
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+    errors.value.email = "Format d'email invalide";
+    isValid = false;
+  }
 
-        // Appel API pour la connexion
-        const response = await axios.post("/api/login", {
-          email: this.email,
-          password: this.password,
-          remember: this.rememberMe
-        }, {
-          withCredentials: true,
-        });
+  if (!password.value) {
+    errors.value.password = "Le mot de passe est requis";
+    isValid = false;
+  }
 
-        // Enregistrer la session
-        const userData = response.data;
-        const storage = this.rememberMe ? localStorage : sessionStorage;
-        storage.setItem("userSession", JSON.stringify(userData));
+  return isValid;
+};
 
-        // Afficher succès
-        this.showSuccessMessage();
-        
-        // Redirection après un court délai pour voir le message de succès
-        setTimeout(() => {
-          this.$router.push('/monprofilerecruteur');
-        }, 1500);
-        
-      } catch (error) {
-        if (error.response && error.response.status === 401) {
-          this.error = "Identifiants incorrects ou utilisateur non trouvé";
-        } else if (error.response && error.response.data.errors) {
-          // Erreurs de validation du backend
-          const serverErrors = error.response.data.errors;
-          if (serverErrors.email) this.errors.email = serverErrors.email[0];
-          if (serverErrors.password) this.errors.password = serverErrors.password[0];
-        } else {
-          this.error = "Une erreur est survenue. Veuillez réessayer.";
-        }
-        console.error("Erreur lors de la connexion:", error);
-      } finally {
-        this.isLoading = false;
-      }
-    },
+const login = async () => {
+  if (!validateForm()) return;
 
-    resetPassword() {
-      this.$router.push('/reset-password');
-    },
+  isLoading.value = true;
+  error.value = "";
+
+  try {
+    await axios.get("/sanctum/csrf-cookie");
+
+    const response = await axios.post("/api/login", {
+      email: email.value,
+      password: password.value,
+      remember: rememberMe.value
+    }, {
+      withCredentials: true
+    });
+
+    const userData = response.data;
+    const storage = rememberMe.value ? localStorage : sessionStorage;
+    storage.setItem("userSession", JSON.stringify(userData));
+
+    showSuccessMessage();
     
-    goToRegister() {
-      this.$router.push('/register');
-    },
-
-    togglePassword() {
-      this.showPassword = !this.showPassword;
-    },
-    
-    showSuccessMessage() {
-      this.successMessage = "Connexion réussie! Redirection en cours...";
-      setTimeout(() => {
-        this.successMessage = "";
-      }, 3000);
+    setTimeout(() => {
+      router.push( "/monprofilerecruteur");
+    }, 1500);
+  } catch (err) {
+    if (err.response && err.response.status === 401) {
+      error.value = "Identifiants incorrects ou utilisateur non trouvé";
+    } else {
+      error.value = "Une erreur est survenue. Veuillez réessayer.";
     }
-  },
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const resetPassword = () => {
+  window.location.href = "/reset-password";
+};
+
+
+
+const togglePassword = () => {
+  showPassword.value = !showPassword.value;
+};
+
+const showSuccessMessage = () => {
+  successMessage.value = "Connexion réussie! Redirection en cours...";
+  setTimeout(() => {
+    successMessage.value = "";
+  }, 3000);
 };
 </script>
 
@@ -231,7 +197,7 @@ export default {
 /* Variables pour les couleurs et les styles */
 :root {
   --primary-color: #2563eb;
-  --primary-hover: #1d4ed8;
+  --secondary-color: #1d4ed8;
   --secondary-color: #3b82f6;
   --dark-blue: #1e40af;
   --light-blue: #dbeafe;
@@ -296,7 +262,7 @@ body {
 .image-section {
   flex: 1;
   position: relative;
-  background-color: var(--primary-color);
+  background-color: var(#2563eb);
   overflow: hidden;
   display: none;
 }
@@ -374,7 +340,7 @@ h1::after {
   display: block;
   width: 80px;
   height: 3px;
-  background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+  background: linear-gradient(to right, var(#2563eb), var(--secondary-color));
   margin: 0.5rem auto 0;
   border-radius: 2px;
 }
@@ -425,14 +391,14 @@ input {
 }
 
 input:focus {
-  border-color: var(--primary-color);
+  border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
   background-color: white;
   outline: none;
 }
 
 input:focus + .input-icon {
-  color: var(--primary-color);
+  color: #2563eb;
 }
 
 input::placeholder {
@@ -481,7 +447,7 @@ input::placeholder {
 }
 
 .toggle-password:hover {
-  color: var(--primary-color);
+  color: #2563eb;
 }
 
 /* Options de connexion */
@@ -532,8 +498,8 @@ input::placeholder {
 }
 
 .checkbox-container input:checked ~ .checkmark {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
+  background-color: var(#2563eb);
+  border-color: var(#2563eb);
 }
 
 .checkmark:after {
@@ -554,13 +520,13 @@ input::placeholder {
 
 .forgot-password {
   font-size: 0.875rem;
-  color: var(--primary-color);
+  color: var(#2563eb);
   text-decoration: none;
   transition: var(--transition);
 }
 
 .forgot-password:hover {
-  color: var(--primary-hover);
+  color: var(#1d4ed8);
   text-decoration: underline;
 }
 
@@ -569,7 +535,7 @@ input::placeholder {
   width: 100%;
   padding: 0.8rem 1rem;
   margin-top: 0.5rem;
-  background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+  background:#2563eb;
   color: white;
   border: none;
   border-radius: 8px;
@@ -600,7 +566,7 @@ input::placeholder {
 .login-button:hover {
   transform: translateY(-3px);
   box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4);
-  background: linear-gradient(to right, var(--primary-hover), var(--dark-blue));
+  background: linear-gradient(to right, var(#1d4ed8), var(--dark-blue));
 }
 
 .login-button:hover::before {
@@ -646,14 +612,14 @@ input::placeholder {
 }
 
 .no-account a {
-  color: var(--primary-color);
+  color: var(#2563eb);
   font-weight: 600;
   text-decoration: none;
   transition: var(--transition);
 }
 
 .no-account a:hover {
-  color: var(--primary-hover);
+  color: var(#1d4ed8);
   text-decoration: underline;
 }
 

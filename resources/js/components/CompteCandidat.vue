@@ -2,7 +2,7 @@
   <div class="mon-espace">
     <!-- Barre Latérale -->
     <aside class="sidebar">
-      <h2>Mon Espace</h2>
+      <h2>Mon Espace Candidat</h2>
       <ul>
         <li
           @click="navigateTo('/monprofile')"
@@ -48,30 +48,30 @@
           Mes CV
         </li>
 
-        <li
+        <!-- <li
           @click="navigateTo('/create-lettre')"
           :class="{ active: isActive('/create-lettre') }"
           role="button"
           tabindex="0"
         >
           Créer Lettre
-        </li>
-        <li
+        </li> -->
+        <!-- <li
           @click="navigateTo('/test')"
           :class="{ active: isActive('/test') }"
           role="button"
           tabindex="0"
         >
           Mes Tests
-        </li>
-        <li
+        </li> -->
+        <!-- <li
           @click="navigateTo('/notifications')"
           :class="{ active: isActive('/notifications') }"
           role="button"
           tabindex="0"
         >
           Mes Notifications
-        </li>
+        </li> -->
         <li
           @click="logout"
           class="logout-item"

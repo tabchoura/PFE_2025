@@ -2,11 +2,13 @@
   <div class="postuler-container">
     <h1 class="title">Postuler à l'offre</h1>
 
+    <!-- Chargement -->
     <div v-if="loading" class="loading-container">
       <div class="loader"></div>
       <p class="loading-text">Chargement de vos CV...</p>
     </div>
 
+    <!-- Si pas de CV -->
     <div v-else-if="cvs.length === 0" class="empty-state">
       <div class="empty-icon">📝</div>
       <h3>Vous n'avez pas encore de CV</h3>
@@ -16,11 +18,13 @@
       </button>
     </div>
 
+    <!-- Etat de confirmation -->
     <div v-else class="confirmation-state">
       <div class="offre-info" v-if="detailsoffre">
         <h3 class="offre-title">{{ detailsoffre.titre }}</h3>
-        <p class="offre-company">{{ detailsoffre.entreprise }}</p>
-        <p class="offre-location">{{ detailsoffre.localisation }}</p>
+        <p class="offre-company">{{ detailsoffre.description }}</p>
+        <p class="offre-location">{{ detailsoffre.salaire }}</p>
+        <p> {{ detailsoffre.details }}</p>
       </div>
 
       <div class="cv-selection" v-if="cvs.length > 1">
@@ -41,6 +45,7 @@
         </div>
       </div>
 
+      <!-- Message de confirmation -->
       <div class="confirmation-message">
         <p>Êtes-vous sûr de vouloir postuler à cette offre ?</p>
 
@@ -60,12 +65,14 @@
       </div>
     </div>
 
+    <!-- Message d'erreur -->
     <div v-if="error" class="error-message">
       <span class="error-icon">⚠️</span>
       <p>{{ error }}</p>
       <button @click="error = null" class="close-error-button">×</button>
     </div>
 
+    <!-- Message de succès -->
     <div v-if="success" class="success-message">
       <span class="success-icon">✅</span>
       <p>{{ success }}</p>
@@ -77,51 +84,57 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 
+// Déclaration des variables réactives
 const route = useRoute()
 const router = useRouter()
 
-const cvs = ref<any[]>([])
-const loading = ref(true)
-const error = ref<string|null>(null)
-const success = ref<string|null>(null)
-const submitting = ref(false)
-const selectedCvId = ref<string|null>(null)
-const motivationText = ref('')
-const detailsoffre = ref<any>(null)
+const cvs = ref([]) // Tableau des CVs
+const loading = ref(true) // Variable de chargement
+const error = ref(null) // Message d'erreur
+const success = ref(null) // Message de succès
+const submitting = ref(false) // Indicateur de soumission
+const selectedCvId = ref(null) // ID du CV sélectionné
+const motivationText = ref('') // Texte de la lettre de motivation
+const detailsoffre = ref(null) // Détails de l'offre
 
-function formatDate(dateStr: string) {
+// Fonction pour formater les dates
+function formatDate(dateStr) {
   if (!dateStr) return 'Date inconnue'
   const date = new Date(dateStr)
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
+// Récupération des données au montage du composant
 onMounted(async () => {
   try {
-    const offerId = route.params.id as string
+    const offerId = route.params.id
+    // Charger les données des offres et des CVs en parallèle
     const [offreResponse, cvsResponse] = await Promise.all([
       axios.get(`/api/offres/${offerId}`),
-      axios.get(`/api/cv`) // 🔵 charger tous les CV
+      axios.get(`/api/cv`) // Récupérer tous les CVs
     ])
-    detailsoffre.value = offreResponse.data
-    cvs.value = cvsResponse.data
+    detailsoffre.value = offreResponse.data // Détails de l'offre
+    cvs.value = cvsResponse.data // Liste des CVs
 
+    // Sélectionner le premier CV s'il existe
     if (cvs.value.length > 0) {
       selectedCvId.value = cvs.value[0].id
     }
-  } catch (e: any) {
+  } catch (e) {
     error.value = e.response?.data?.message || 'Impossible de charger les données nécessaires'
   } finally {
     loading.value = false
   }
 })
 
+// Fonction pour confirmer la candidature
 async function confirmPostuler() {
-  const offerId = route.params.id as string
+  const offerId = route.params.id
   const cvId = selectedCvId.value || (cvs.value.length > 0 ? cvs.value[0].id : null)
 
   if (!cvId) {
@@ -135,38 +148,43 @@ async function confirmPostuler() {
     await axios.post(`/api/offres/${offerId}/postuler`, {
       cv_id: cvId,
       message: motivationText.value || null,
-      statut: "En attente" // 🔵 très important
+      statut: "En attente" // Statut de la candidature
     })
     success.value = 'Votre candidature a été envoyée avec succès!'
     error.value = null
-  } catch (e: any) {
-    console.error('Erreur:', e)
+  } catch (e) {
     error.value = e.response?.data?.message || 'Erreur lors de la candidature'
   } finally {
     submitting.value = false
   }
 }
 
+// Fonction pour créer un CV
 function Creercv() {
   router.push({ name: 'creerCv', query: { from: 'postuler', offreId: route.params.id } })
 }
 
-
+// Fonction pour annuler et revenir à la page précédente
 function cancel() {
   router.back()
 }
 
+// Fonction pour aller aux candidatures
 function goToCandidatures() {
   router.push({ name: 'Candidature' })
 }
 
+// Fonction pour voir d'autres offres
 function goToOffers() {
   router.push({ name: 'Offres' })
 }
 </script>
 
 
-<style scoped>.postuler-container {
+
+
+<style scoped>
+.postuler-container {
   max-width: 800px;
   margin: 6rem auto 2.5rem;   padding: 2.5rem;
   background: white;

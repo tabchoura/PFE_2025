@@ -1,8 +1,8 @@
 <template>
-  <div class="candidature-section">
-    <!-- Titre de la section des candidatures -->
+  <div class="candidatures-container">
+    <!-- Titre de la section des candidatures avec icône -->
     <div class="header-actions">
-      <h2>Mes candidatures</h2>
+      <h2><i class="fas fa-user-check"></i> Mes candidatures</h2>
     </div>
 
     <!-- Gestion des états de chargement -->
@@ -13,7 +13,7 @@
     <!-- Gestion des erreurs -->
     <div v-else-if="error" class="error-state">
       <p>{{ error }}</p>
-      <button @click="getCandidatures" class="btn-retry">Réessayer</button>
+      <button @click="getCandidatures" class="btn-retry"><i class="fas fa-redo-alt"></i> Réessayer</button>
     </div>
 
     <!-- Affichage quand il n'y a pas de candidatures -->
@@ -22,25 +22,23 @@
     </div>
 
     <!-- Affichage des candidatures -->
-    <div v-else class="candidature-grid">
-      <div class="candidature-card" v-for="candidature in candidatures" :key="candidature.id">
-        <div class="candidature-card-header">
+    <ul v-else class="candidature-grid">
+      <li class="candidature-item" v-for="candidature in candidatures" :key="candidature.id">
+        <div class="candidature-info">
           <h3 class="title-offre">{{ candidature.offre.titre }}</h3>
         </div>
-
         <div class="candidature-card-body">
           <p><strong>Description :</strong> {{ truncateText(candidature.offre.description, 100) }}</p>
           <p><strong>Salaire :</strong> {{ candidature.offre.salaire }}</p>
           <p><strong>Message envoyé :</strong> {{ truncateText(candidature.message, 120) }}</p>
         </div>
-        
         <div class="candidature-card-footer">
-          <button class="btn-see-more" @click="viewCandidatureDetails(candidature.id)">
-            Voir détails
+          <button class="voir-button" @click="voirDetails(candidature.id)">
+            <i class="fas fa-eye"></i> Voir détails
           </button>
         </div>
-      </div>
-    </div>
+      </li>
+    </ul>
   </div>
 </template>
 
@@ -63,8 +61,8 @@ const truncateText = (text, maxLength) => {
 };
 
 // Fonction pour voir les détails d'une candidature
-const viewCandidatureDetails = (id) => {
-  router.push(`/candidatures/${id}`);
+const voirDetails = (id) => {
+  router.push(`/details-candidature/${id}`);
 };
 
 // Fonction pour récupérer les candidatures depuis l'API
@@ -90,14 +88,14 @@ onMounted(() => {
 
 <style scoped>
 /* Styles pour la section des candidatures */
-.candidature-section {
-  max-width: 1200px;
-  margin: 50px auto;
-  padding: 40px 20px;
-  background-color: #f8f9fa;
-  border-radius: 15px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-  position: relative;
+.candidatures-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .header-actions {
@@ -124,34 +122,21 @@ onMounted(() => {
 }
 
 /* Cartes de candidatures */
-.candidature-card {
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s, box-shadow 0.3s;
+.candidature-item {
+  background: white;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   display: flex;
-  flex-direction: column;
   justify-content: space-between;
-  height: 100%;
-  min-height: 220px;
+  align-items: center;
 }
 
-.candidature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
-}
-
-.candidature-card-header {
-  margin-bottom: 15px;
-}
-
-.candidature-card-header h3 {
+.candidature-info h3 {
+  margin: 0;
+  color: #3498db;
   font-size: 1.3rem;
-  font-weight: bold;
-  color: #2c3e50;
-  margin-top: 0;
-  margin-bottom: 5px;
 }
 
 .candidature-card-body {
@@ -171,21 +156,23 @@ onMounted(() => {
   border-top: 1px solid #eee;
 }
 
-.btn-see-more {
-  padding: 12px 24px;
-  background-color: #2980b9;
-  color: #fff;
+.voir-button {
+  background: #3498db;
+  color: white;
   border: none;
-  border-radius: 8px;
+  padding: 0.7rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  transition: background-color 0.3s ease;
-  width: 100%;
+  transition: background 0.3s;
 }
 
-.btn-see-more:hover {
-  background-color: #3498db;
+.voir-button i {
+  margin-right: 5px;
+}
+
+.voir-button:hover {
+  background: #2980b9;
 }
 
 /* États de chargement et d'erreur */
@@ -195,10 +182,6 @@ onMounted(() => {
   background-color: #fff;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.loading-state {
-  position: relative;
 }
 
 .loading-state:after {
@@ -227,7 +210,7 @@ onMounted(() => {
   background-color: #3498db;
 }
 
-/* Animation */
+/* Animation de chargement */
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -238,14 +221,14 @@ onMounted(() => {
   .candidature-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .header-actions {
     flex-direction: column;
     align-items: flex-start;
     gap: 10px;
   }
-  
-  .candidature-card {
+
+  .candidature-item {
     padding: 15px;
   }
 }

@@ -73,21 +73,15 @@ const routes = [
   { path: '/aftercvpostuler', component: CompteCandidat, meta: { requiresAuth: true }, children: [
     { path: '', name: 'Aftercvpostuler', component: Aftercvpostuler }
   ]},
-
-  {
-    path: '/detailscandidature/:id',   // Détail d'une candidature
-    name: 'DetailsCandidature',
-    component: DetailsCandidature,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/voircv/:id',          // segment dynamique
-    name: 'VoirCv',               // nom EXACT
-    component: Voircv,
-    meta: { requiresAuth: true },
-    props: true                   // si tu préfères passer l’id en prop
-  }, 
-  {
+  { path: '/detailscandidature/:id', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'DetailsCandidature', component: DetailsCandidature }
+  ]},
+  { path: '/voircv/:id', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'VoirCv', component: Voircv }
+  ]},
+ 
+  
+    {
     path: '/modifiercv/:id',          // segment dynamique
     name: 'Modifiercv',               // nom EXACT
     component: Modifiercv,
@@ -105,9 +99,9 @@ const routes = [
   },
   
 ,  
-  { path: '/CreateLettre', component: CompteCandidat, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'CreateLettre', component: CreateLettre }
-  ]},
+  // { path: '/CreateLettre', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+  //   { path: '', name: 'CreateLettre', component: CreateLettre }
+  // ]},
   { path: '/Test', component: CompteCandidat, meta: { requiresAuth: true }, children: [
     { path: '', name: 'Test', component: Test }
   ]},

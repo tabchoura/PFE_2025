@@ -16,34 +16,54 @@ import axios from 'axios';
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
 
-
 const offer = ref({});
 const route = useRoute();
-const router=useRouter();
+const router = useRouter();
 const offerId = route.params.id;
 
+// Fonction pour récupérer les détails de l'offre uniquement si l'utilisateur est authentifié
+const getOfferDetails = async () => {
+  try {
+    // Vérifier si l'utilisateur est authentifié en obtenant le cookie CSRF
+    await axios.get('/sanctum/csrf-cookie');
+    
+    // Vérifier si l'utilisateur est connecté (session existante)
+    const userSession = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
+    
+    if (!userSession) {
+      // Rediriger l'utilisateur vers la page de connexion s'il n'est pas authentifié
+      alert("Veuillez vous connecter pour voir les détails de l'offre.");
+      router.push('/login');  // Redirection vers la page de connexion
+      return;
+    }
+    
+    // L'utilisateur est authentifié, on récupère les détails de l'offre
+    const response = await axios.get(`/api/offres/${offerId}`);
+    offer.value = response.data;
+    
+  } catch (error) {
+    console.error('Erreur lors de la récupération des détails de l\'offre:', error);
+    alert('Une erreur est survenue lors de la récupération des détails de l\'offre.');
+  }
+};
+
+// Fonction pour postuler à l'offre
+const Postuler = () => {
+  const offreId = route.params.id;
+  router.push(`/postuler/${offreId}`);
+};
+
 onMounted(() => {
-  // Récupérer les détails de l'offre en fonction de l'ID
-  axios.get(`/api/offres/${offerId}`)
-    .then(response => {
-      offer.value = response.data;
-    })
-    .catch(error => {
-      console.error('Erreur lors de la récupération des détails de l\'offre:', error);
-    });
+  getOfferDetails();  // Appel de la fonction pour récupérer les détails de l'offre lors du montage du composant
 });
-
-const Postuler=()=>{
-  const offreId = route.params.id 
-
-  router.push(`/postuler/${offreId}`)}
 </script>
 
 <style scoped>
+/* Styles pour la section des offres */
 .offer-details {
   max-width: 900px;
   margin: 30px auto;
-  margin-top:100px;
+  margin-top: 100px;
   padding: 30px;
   background-color: #ffffff;
   border-radius: 12px;

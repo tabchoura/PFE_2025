@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Offre;
+use Http;
 use Illuminate\Http\Request;
+use  App\Models\Candidature;
 
 class OfferController extends Controller
 {
@@ -111,24 +113,23 @@ class OfferController extends Controller
         // Retourner les détails de l'offre
         return response()->json($offre, 200);
     }
-    
     public function postuler(Request $request, $id)
 {
-    // Validation simple
+    // Validation des données
     $request->validate([
-        'cv_id' => 'required|exists:cvs,id',
-        'message' => 'nullable|string|max:1000',
+        'cv_id' => 'required|exists:cvs,id', // Le CV doit exister dans la table `cvs`
+        'message' => 'nullable|string|max:1000', // Le message est facultatif
     ]);
 
-    // Exemple simple d'enregistrement
-    // Ici, tu peux créer une table "candidatures" pour lier offre + cv + message
-    \DB::table('candidatures')->insert([
-        'offre_id' => $id,
-        'cv_id' => $request->cv_id,
-        'message' => $request->message,
-        'created_at' => now(),
-        'updated_at' => now(),
-    ]);
+    // Récupération de l'offre avec l'ID
+    $offre = Offre::findOrFail($id); // Récupérer l'offre en utilisant l'ID ou échouer
+
+    // Créer une nouvelle candidature pour l'offre
+    $candidature = new Candidature();
+    $candidature->offre_id = $offre->id; // Lier l'offre à la candidature
+    $candidature->cv_id = $request->cv_id; // Lier le CV à la candidature
+    $candidature->message = $request->message; // Ajouter le message de motivation
+    $candidature->save(); // Sauvegarder la candidature dans la base de données
 
     return response()->json([
         'message' => '✅ Candidature envoyée avec succès.'

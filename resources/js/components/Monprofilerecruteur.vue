@@ -219,7 +219,12 @@ async function loadProfileData() {
   } catch (error) {
     console.error('Erreur lors du chargement des données du profil:', error);
   }
-}const passwordStrengthClass = computed(() => {
+
+
+}
+
+
+const passwordStrengthClass = computed(() => {
   if (!formData.password) return '';
   if (formData.password.length < 8) return 'faible';
   

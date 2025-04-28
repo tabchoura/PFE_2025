@@ -11,7 +11,7 @@
           </div>
         </div>
       </div>
-      
+
       <div class="form-section">
         <form @submit.prevent="login" class="login-form">
           <div class="form-header">
@@ -23,15 +23,18 @@
             <label for="email">Email</label>
             <div class="input-wrapper">
               <span class="input-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18">
+                  <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
               </span>
-              <input 
-                type="email" 
-                id="email" 
-                v-model="email" 
-                required 
+              <input
+                type="email"
+                id="email"
+                v-model="email"
+                required
                 placeholder="votre@email.com"
-                :class="{ 'input-error': errors.email }"
+                :class="{ error: emailError }"
+                @input="emailError = false"
               />
             </div>
             <p v-if="errors.email" class="error-message">{{ errors.email }}</p>
@@ -41,7 +44,9 @@
             <label for="password">Mot de passe</label>
             <div class="input-wrapper password-input-container">
               <span class="input-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v3m-6-3v3m12-3v3M3.75 9.765c0-1.125.63-2.16 1.64-2.7l5.25-2.63a2.25 2.25 0 012.1 0l5.25 2.63c1.01.54 1.64 1.575 1.64 2.7V16.5a2.25 2.25 0 01-2.25 2.25h-12A2.25 2.25 0 013.75 16.5V9.765z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18">
+                  <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v3m-6-3v3m12-3v3M3.75 9.765c0-1.125.63-2.16 1.64-2.7l5.25-2.63a2.25 2.25 0 012.1 0l5.25 2.63c1.01.54 1.64 1.575 1.64 2.7V16.5a2.25 2.25 0 01-2.25 2.25h-12A2.25 2.25 0 013.75 16.5V9.765z"/>
+                </svg>
               </span>
               <input
                 :type="showPassword ? 'text' : 'password'"
@@ -58,10 +63,14 @@
                 :aria-label="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
               >
                 <span v-if="showPassword">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/>
+                  </svg>
                 </span>
                 <span v-else>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
                 </span>
               </button>
             </div>
@@ -84,14 +93,16 @@
             <span v-else>Se connecter</span>
           </button>
           
-          <div class="form-footer">
+          <!-- <div class="form-footer">
             <p class="no-account">Pas encore de compte ? <a href="#" @click.prevent="goToRegister">S'inscrire</a></p>
-          </div>
+          </div> -->
         </form>
 
         <div v-if="error" class="error-notification">
           <span class="error-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+              <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+            </svg>
           </span>
           {{ error }}
           <button @click="error = ''" class="close-error">×</button>
@@ -99,7 +110,9 @@
         
         <div v-if="successMessage" class="success-notification">
           <span class="success-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+              <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
           </span>
           {{ successMessage }}
         </div>
@@ -108,124 +121,104 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
 import axios from 'axios';
 import logincandidat from "../../assets/logincandidat.jpg";
 
-export default {
-  data() {
-    return {
-      logincandidat,
-      email: "",
-      password: "",
-      rememberMe: false,
-      error: "",
-      successMessage: "",
-      errors: {
-        email: "",
-        password: ""
-      },
-      isLoading: false,
-      showPassword: false,
-    };
-  },
+// Déclaration des variables réactives
+const email = ref('');
+const password = ref('');
+const rememberMe = ref(false);
+const error = ref('');
+const successMessage = ref('');
+const errors = ref({ email: '', password: '' });
+const isLoading = ref(false);
+const showPassword = ref(false);
+
+
+
+
+
+// Validation du formulaire
+const validateForm = () => {
+  let isValid = true;
+  errors.value = { email: '', password: '' };
   
-  methods: {
-    validateForm() {
-      let isValid = true;
-      this.errors = {
-        email: "",
-        password: ""
-      };
-      
-      // Validation email
-      if (!this.email) {
-        this.errors.email = "L'email est requis";
-        isValid = false;
-      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email)) {
-        this.errors.email = "Format d'email invalide";
-        isValid = false;
-      }
-      
-      // Validation mot de passe
-      if (!this.password) {
-        this.errors.password = "Le mot de passe est requis";
-        isValid = false;
-      }
-      
-      return isValid;
-    },
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  emailError.value = !emailRegex.test(email.value);
 
-    async login() {
-      if (!this.validateForm()) return;
-      
-      this.isLoading = true;
-      this.error = "";
+  
+  // Validation du mot de passe
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  passwordError.value = !passwordRegex.test(password.value);  // Vérifie si le mot de passe respecte la condition
 
-      try {
-        // CSRF-cookie pour Sanctum
-        await axios.get("/sanctum/csrf-cookie");
+  return !emailError.value && !passwordError.value;
+  
+};
 
-        // Appel API pour la connexion
-        const response = await axios.post("/api/login", {
-          email: this.email,
-          password: this.password,
-          remember: this.rememberMe
-        }, {
-          withCredentials: true,
-        });
+// Connexion
+const login = async () => {
+  if (!validateForm()) return;
+  
+  isLoading.value = true;
+  error.value = "";
 
-        // Enregistrer la session
-        const userData = response.data;
-        const storage = this.rememberMe ? localStorage : sessionStorage;
-        storage.setItem("userSession", JSON.stringify(userData));
+  try {
+    // CSRF-cookie pour Sanctum
+    await axios.get("/sanctum/csrf-cookie");
 
-        // Afficher succès
-        this.showSuccessMessage();
-        
-        // Redirection après un court délai pour voir le message de succès
-        setTimeout(() => {
-          this.$router.push('/monprofile');
-        }, 1500);
-        
-      } catch (error) {
-        if (error.response && error.response.status === 401) {
-          this.error = "Identifiants incorrects ou utilisateur non trouvé";
-        } else if (error.response && error.response.data.errors) {
-          // Erreurs de validation du backend
-          const serverErrors = error.response.data.errors;
-          if (serverErrors.email) this.errors.email = serverErrors.email[0];
-          if (serverErrors.password) this.errors.password = serverErrors.password[0];
-        } else {
-          this.error = "Une erreur est survenue. Veuillez réessayer.";
-        }
-        console.error("Erreur lors de la connexion:", error);
-      } finally {
-        this.isLoading = false;
-      }
-    },
+    // Appel API pour la connexion
+    const response = await axios.post("/api/login", {
+      email: email.value,
+      password: password.value,
+      remember: rememberMe.value
+    }, {
+      withCredentials: true,
+    });
 
-    resetPassword() {
-      this.$router.push('/reset-password');
-    },
+    // Enregistrer la session
+    const userData = response.data;
+    const storage = rememberMe.value ? localStorage : sessionStorage;
+    storage.setItem("userSession", JSON.stringify(userData));
+
+    // Afficher succès
+    successMessage.value = "Connexion réussie !";
     
-    goToRegister() {
-      this.$router.push('/register');
-    },
-
-    togglePassword() {
-      this.showPassword = !this.showPassword;
-    },
+    // Redirection après un court délai pour voir le message de succès
+    setTimeout(() => {
+      router.push( '/monprofile');
+    }, 1500);
     
-    showSuccessMessage() {
-      this.successMessage = "Connexion réussie! Redirection en cours...";
-      setTimeout(() => {
-        this.successMessage = "";
-      }, 3000);
+  } catch (error) {
+    if (error.response && error.response.status === 401) {
+      error.value = "Identifiants incorrects ou utilisateur non trouvé";
+    } else {
+      error.value = "Une erreur est survenue. Veuillez réessayer.";
     }
-  },
+    console.error("Erreur lors de la connexion:", error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+// // Réinitialisation du mot de passe
+// const resetPassword = () => {
+//   window.location.href = '/reset-password';
+// };
+
+// // Inscription
+// const goToRegister = () => {
+//   window.location.href = '/register';
+// };
+
+// Basculer la visibilité du mot de passe
+const togglePassword = () => {
+  showPassword.value = !showPassword.value;
 };
 </script>
+
+
 
 <style scoped>
 /* Variables pour les couleurs et les styles */
@@ -566,7 +559,8 @@ input::placeholder {
   width: 100%;
   padding: 0.8rem 1rem;
   margin-top: 0.5rem;
-  background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+  background:  #2563eb;
+
   color: white;
   border: none;
   border-radius: 8px;
@@ -597,7 +591,7 @@ input::placeholder {
 .login-button:hover {
   transform: translateY(-3px);
   box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4);
-  background: linear-gradient(to right, var(--primary-hover), var(--dark-blue));
+  background-color: #3b82f6;
 }
 
 .login-button:hover::before {
