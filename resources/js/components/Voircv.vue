@@ -17,10 +17,7 @@
       <div class="cv-left-column">
         <div class="profile-section">
           <div class="profile-picture-container">
-            <div
-              class="profile-picture"
-              :style="profileImageStyle"
-            />
+            <div class="profile-picture" :style="profileImageStyle"></div>
           </div>
         </div>
         <div class="section">
@@ -45,33 +42,33 @@
         <section v-if="cv.experiences.length" class="section">
           <h3 class="section-title">Expériences professionnelles</h3>
           <ul>
-            <li v-for="(exp,i) in cv.experiences" :key="i">{{ exp }}</li>
+            <li v-for="(exp, i) in cv.experiences" :key="i">{{ exp }}</li>
           </ul>
         </section>
         <section v-if="cv.educations_formations.length" class="section">
           <h3 class="section-title">Éducation & Formation</h3>
           <ul>
-            <li v-for="(edu,i) in cv.educations_formations" :key="i">{{ edu }}</li>
+            <li v-for="(edu, i) in cv.educations_formations" :key="i">{{ edu }}</li>
           </ul>
         </section>
         <div class="two-columns" v-if="cv.competences.length || cv.langues.length">
           <section v-if="cv.competences.length" class="section">
             <h3 class="section-title">Compétences</h3>
             <ul>
-              <li v-for="(c,i) in cv.competences" :key="i">{{ c }}</li>
+              <li v-for="(c, i) in cv.competences" :key="i">{{ c }}</li>
             </ul>
           </section>
           <section v-if="cv.langues.length" class="section">
             <h3 class="section-title">Langues</h3>
             <ul>
-              <li v-for="(l,i) in cv.langues" :key="i">{{ l }}</li>
+              <li v-for="(l, i) in cv.langues" :key="i">{{ l }}</li>
             </ul>
           </section>
         </div>
         <section v-if="cv.projets.length" class="section">
           <h3 class="section-title">Projets</h3>
           <ul>
-            <li v-for="(p,i) in cv.projets" :key="i">{{ p }}</li>
+            <li v-for="(p, i) in cv.projets" :key="i">{{ p }}</li>
           </ul>
         </section>
       </div>
@@ -92,35 +89,35 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import html2pdf from 'html2pdf.js'
 
-const route     = useRoute()
-const router    = useRouter()
-const cv        = ref<any>(null)
+const route = useRoute()
+const router = useRouter()
+const cv = ref(null)
 const isLoading = ref(true)
-const error     = ref<string|null>(null)
-const cvElement = ref<HTMLElement|null>(null)
+const error = ref(null)
+const cvElement = ref(null)
 
 // Charger le CV
 async function loadCv() {
-  const id = route.params.id as string
+  const id = route.params.id 
   isLoading.value = true
-  error.value     = null
+  error.value = null
   try {
     const { data } = await axios.get(`/api/cv/${id}`)
     cv.value = {
       ...data,
-      experiences:           data.experiences             || [],
-      educations_formations: data.educations_formations   || [],
-      competences:           data.competences             || [],
-      langues:               data.langues                 || [],
-      projets:               data.projets                 || []
+      experiences: data.experiences || [],
+      educations_formations: data.educations_formations || [],
+      competences: data.competences || [],
+      langues: data.langues || [],
+      projets: data.projets || []
     }
-  } catch (e: any) {
+  } catch (e) {
     error.value = e.response?.data?.message || 'Impossible de charger le CV'
   } finally {
     isLoading.value = false
@@ -135,7 +132,7 @@ const profileImageStyle = computed(() => ({
 }))
 
 // Formatage de date FR
-function formatDate(d: string) {
+function formatDate(d) {
   return new Date(d).toLocaleDateString('fr-FR', {
     day: 'numeric', month: 'long', year: 'numeric'
   })
@@ -160,22 +157,24 @@ function downloadPdf() {
 
 // Modifier
 function modifyCv() {
-  const id = route.params.id as string
-  router.push({ name: 'Modifiercv', params: { id } })
+  const id = route.params.id 
+   router.push({ name: 'Modifiercv', params: { id } })
 }
 
 // Supprimer
 async function deleteCv() {
-  const id = route.params.id as string
+  const id = route.params.id 
   if (!confirm(`Confirmez-vous la suppression du CV de ${cv.value.prenom} ${cv.value.nom} ?`)) return
   try {
     await axios.delete(`/api/cv/${id}`)
     router.push('/monprofile')
-  } catch (e: any) {
+  } catch (e) {
     alert(e.response?.data?.message || 'Erreur lors de la suppression')
   }
 }
 </script>
+
+
 
 <style scoped>
 /* Container général */

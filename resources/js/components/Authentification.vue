@@ -113,107 +113,100 @@
     </div>
   </div>
 </template>
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import api from '@/axios'
 
-<script>
-import recrutlogin from "../../assets/authentification.jpg";
-import RegisterCandidat from "../components/RegisterCandidat.vue";
-import RegisterRecruteur from "../components/RegisterRecruteur.vue";
-import api from '@/axios';
+import recrutlogin from "../../assets/authentification.jpg"
+import RegisterCandidat from "../components/RegisterCandidat.vue"
+import RegisterRecruteur from "../components/RegisterRecruteur.vue"
 
-export default {
-  components: {
-    RegisterCandidat,
-    RegisterRecruteur,
-  },
-  data() {
-    return {
-      recrutlogin,
-      email: "",
-      password: "",
-      isRecruteur: false,
-      page: "login",
-      isLoading: false,
-      emailError: false,
-      passwordError: false,
-      showPassword: false,
-      rememberMe: false,
-    };
-  },
-  methods: {
-    validateForm() {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      this.emailError = !emailRegex.test(this.email);
-      this.passwordError = this.password.length < 6;
-      return !this.emailError && !this.passwordError;
-    },
-    async login() {
-      if (!this.validateForm()) return;
-      this.isLoading = true;
+// Initialisation du router
+const router = useRouter()
 
-      try {
-        // ⚠️ CSRF-cookie obligatoire pour Sanctum
-        await api.get("/sanctum/csrf-cookie");
+// Variables
+const email = ref("")
+const password = ref("")
+const isRecruteur = ref(false)
+const page = ref("login")
+const isLoading = ref(false)
+const emailError = ref(false)
+const passwordError = ref(false)
+const showPassword = ref(false)
+const rememberMe = ref(false)
 
-        // ✅ Appel login avec email & password uniquement
-        const response = await api.post("/api/login", {
-          email: this.email,
-          password: this.password
-        }, {
-          withCredentials: true
-        });
+// Validation du formulaire
+const validateForm = () => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  emailError.value = !emailRegex.test(email.value)
+  passwordError.value = password.value.length < 6
+  return !emailError.value && !passwordError.value
+}
 
-        // ✅ Vérification du type de compte
-        if ((this.isRecruteur && response.data.type !== 'recruteur') ||
-            (!this.isRecruteur && response.data.type !== 'candidat')) {
-          this.showAlert("❌ Vous avez sélectionné le mauvais type de compte.");
-          this.isLoading = false;
-          return;
-        }
+// Fonction de connexion
+const login = async () => {
+  if (!validateForm()) return
+  isLoading.value = true
 
-        // ✅ Enregistrement de la session (localStorage ou sessionStorage)
-        const userData = response.data;
-        const storage = this.rememberMe ? localStorage : sessionStorage;
-        storage.setItem("userSession", JSON.stringify(userData));
+  try {
+    await api.get("/sanctum/csrf-cookie")
 
-        // ✅ Redirection selon le rôle
-        this.$router.push(
-          userData.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat"
-        );
-      } catch (error) {
-        this.showAlert("❌ Identifiants incorrects ou utilisateur non trouvé");
-        console.error("Erreur lors de la connexion:", error);
-      } finally {
-        this.isLoading = false;
-      }
-    },
-    showAlert(message) {
-      // Vous pourriez implémenter un système de notification plus élégant ici
-      alert(message);
-    },
-    goToSignup() {
-      this.page = this.isRecruteur ? "registerRecruteur" : "registerCandidat";
-      this.$router.push(this.page === "registerRecruteur" ? "/registerRecruteur" : "/registerCandidat");
-    },
-    handleRegistrationComplete(userData) {
-      const storage = this.rememberMe ? localStorage : sessionStorage;
-      storage.setItem("userSession", JSON.stringify(userData));
-      this.$router.push(userData.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat");
+    const response = await api.post("/api/login", {
+      email: email.value,
+      password: password.value
+    }, { withCredentials: true })
+
+    if ((isRecruteur.value && response.data.type !== 'recruteur') ||
+        (!isRecruteur.value && response.data.type !== 'candidat')) {
+      alert("❌ Vous avez sélectionné le mauvais type de compte.")
+      isLoading.value = false
+      return
     }
-  },
-  togglePassword() {
-  this.showPassword = !this.showPassword;
-},
-  mounted() {
-    const session = localStorage.getItem("userSession") || sessionStorage.getItem("userSession");
-    if (session && document.referrer === "") {
-      const user = JSON.parse(session);
-      this.email = user.email;
-      this.isRecruteur = user.type === "recruteur";
-      this.$router.push(user.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat");
-    }
+
+    const userData = response.data
+    const storage = rememberMe.value ? localStorage : sessionStorage
+    storage.setItem("userSession", JSON.stringify(userData))
+
+    router.push(userData.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat")
+  } catch (error) {
+    alert("❌ Identifiants incorrects ou utilisateur non trouvé")
+    console.error("Erreur lors de la connexion:", error)
+  } finally {
+    isLoading.value = false
   }
-};
+}
+
+// Rediriger vers la page d'inscription
+const goToSignup = () => {
+  page.value = isRecruteur.value ? "registerRecruteur" : "registerCandidat"
+  router.push(page.value === "registerRecruteur" ? "/registerRecruteur" : "/registerCandidat")
+}
+
+// Gestion après enregistrement
+const handleRegistrationComplete = (userData) => {
+  const storage = rememberMe.value ? localStorage : sessionStorage
+  storage.setItem("userSession", JSON.stringify(userData))
+  router.push(userData.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat")
+}
+
+// Afficher ou cacher le mot de passe
+const togglePassword = () => {
+  showPassword.value = !showPassword.value
+}
+
+// Vérifier si déjà connecté
+onMounted(() => {
+  const session = localStorage.getItem("userSession") || sessionStorage.getItem("userSession")
+  if (session && document.referrer === "") {
+    const user = JSON.parse(session)
+    email.value = user.email
+    isRecruteur.value = user.type === "recruteur"
+    router.push(user.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat")
+  }
+})
 </script>
+
 
 <style scoped>
 :root {

@@ -36,10 +36,23 @@
         >
           Mes offres enregistrées
         </li>
-
-        <!-- Mes CV (seulement si on a un cvId) -->
+<!-- 
+        Mes CV (seulement si on a un cvId)
         <li
           v-if="cvId"
+          @click="navigateTo(`/mescv`)"
+          :class="{ active: isActive(`/mescv`) }"
+          role="button"
+          tabindex="0"
+        >
+          Mes CV
+        </li> 
+        
+         -->
+        
+        
+        <li
+          
           @click="navigateTo(`/mescv`)"
           :class="{ active: isActive(`/mescv`) }"
           role="button"

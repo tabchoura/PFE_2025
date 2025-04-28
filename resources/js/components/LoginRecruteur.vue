@@ -106,7 +106,8 @@
 import { ref } from 'vue';
 import axios from 'axios';
 import logincandidat from "../../assets/logincandidat.jpg";
-
+import {useRouter} from'vue-router'
+const router=useRouter();
 const email = ref("");
 const password = ref("");
 const rememberMe = ref(false);
@@ -118,6 +119,7 @@ const errors = ref({
 });
 const isLoading = ref(false);
 const showPassword = ref(false);
+const isValid=ref(false)
 
 const validateForm = () => {
  
