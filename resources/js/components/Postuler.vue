@@ -84,6 +84,7 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -161,7 +162,7 @@ async function confirmPostuler() {
 
 // Fonction pour créer un CV
 function Creercv() {
-  router.push({ name: 'creerCv', query: { from: 'postuler', offreId: route.params.id } })
+  router.push({ name: 'CreerCv', query: { from: 'postuler', offreId: route.params.id } })
 }
 
 // Fonction pour annuler et revenir à la page précédente
@@ -171,7 +172,7 @@ function cancel() {
 
 // Fonction pour aller aux candidatures
 function goToCandidatures() {
-  router.push({ name: 'Candidature' })
+  router.push('/candidature')
 }
 
 // Fonction pour voir d'autres offres
@@ -179,10 +180,6 @@ function goToOffers() {
   router.push({ name: 'Offres' })
 }
 </script>
-
-
-
-
 <style scoped>
 .postuler-container {
   max-width: 800px;

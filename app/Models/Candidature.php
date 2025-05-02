@@ -12,19 +12,26 @@ class Candidature extends Model
     protected $fillable = [
         'offre_id',
         'cv_id',
+        'user_id',  // Assurez-vous que user_id est bien dans les fillable
         'message',
         'statut'
     ];
 
-    // 🔵 Relation : une candidature appartient à une offre
+    // Relation avec l'offre
     public function offre()
     {
         return $this->belongsTo(Offre::class);
     }
 
-    // 🔵 Relation : une candidature appartient à un CV
+    // Relation avec le CV
     public function cv()
     {
-        return $this->belongsTo(Cv::class);
+        return $this->belongsTo(CV::class);
+    }
+
+    // Relation avec l'utilisateur
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

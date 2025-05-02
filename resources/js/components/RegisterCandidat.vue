@@ -1,192 +1,343 @@
 <template>
-  <div class="auth-container">
-    <div class="auth-content">
+  <div class="register-container">
+    <div class="register-card">
+      <!-- IMAGE SECTION -->
       <div class="image-section">
-        <img :src="hiringImage" alt="Recrutement" class="hiring-image" />
+        <img :src="hiringImage" alt="Recrutement" class="register-image" />
+        <div class="overlay">
+          <div class="brand-text">
+            <h2>Inscription Candidat</h2>
+            <p>Rejoignez‑nous et gérez vos candidatures en toute simplicité</p>
+          </div>
+        </div>
       </div>
+
+      <!-- FORM SECTION -->
       <div class="form-section">
-        <div v-if="!isSubmitted" class="auth-box login-box">
-          <h2 class="auth-title">Inscription Candidat</h2>
-          <form @submit.prevent="register" class="auth-form" novalidate>
-            <div class="form-grid">
-              <div class="input-group" @mouseenter="showHint('nom')" @mouseleave="hideHint('nom')">
+        <h1 class="form-title">Créez votre compte</h1>
+
+        <!-- STEPPER NAVIGATION -->
+        <div class="stepper">
+          <div
+            v-for="(step, index) in steps"
+            :key="index"
+            :class="['step', { active: currentStep === index, completed: index < currentStep }]"
+            @click="goToStep(index)"
+          >
+            <div class="step-icon">
+              <span class="step-number" v-if="index >= currentStep">{{ index + 1 }}</span>
+              <i class="fas fa-check" v-else></i>
+            </div>
+            <div class="step-label">{{ step.label }}</div>
+          </div>
+        </div>
+
+        <!-- PROGRESS BAR -->
+        <div class="progress-container">
+          <div class="progress-bar" :style="{ width: progressWidth }"></div>
+        </div>
+
+        <!-- === FORM === -->
+        <form @submit.prevent="nextStep" class="form" novalidate>
+          <!-- STEP 1: PERSONAL INFORMATION -->
+          <fieldset class="form-fieldset" v-if="currentStep === 0">
+            <legend>Informations personnelles</legend>
+            <div class="grid two-columns">
+              <!-- NOM -->
+              <div class="form-group" @mouseenter="showHint('nom')" @mouseleave="hideHint('nom')">
                 <label for="nom">Nom</label>
                 <input
+                  id="nom"
                   type="text"
                   v-model.trim="formData.nom"
-                  id="nom"
                   placeholder="Entrez votre nom"
-                  :class="{ 'input-error': errors.nom, 'input-valid': formData.nom && isValidField('nom') }"
-                  required
+                  :class="inputClass('nom')"
                   autocomplete="family-name"
                   @input="validateField('nom')"
+                  required
                 />
-                <span class="error-message" v-if="errors.nom">{{ errors.nom }}</span>
-                <span class="hint-message" v-if="hints.nom">Lettres, espaces, apostrophes et tirets uniquement</span>
-                <span class="valid-icon" v-if="formData.nom && isValidField('nom')">✓</span>
+                <span v-if="errors.nom" class="error-message">{{ errors.nom }}</span>
+                <span v-else-if="hints.nom" class="hint-message">Lettres, espaces, apostrophes et tirets uniquement</span>
+                <span v-if="formData.nom && validFields.nom" class="valid-icon">✓</span>
               </div>
-              <div class="input-group" @mouseenter="showHint('prenom')" @mouseleave="hideHint('prenom')">
+
+              <!-- PRENOM -->
+              <div class="form-group" @mouseenter="showHint('prenom')" @mouseleave="hideHint('prenom')">
                 <label for="prenom">Prénom</label>
                 <input
+                  id="prenom"
                   type="text"
                   v-model.trim="formData.prenom"
-                  id="prenom"
                   placeholder="Entrez votre prénom"
-                  :class="{ 'input-error': errors.prenom, 'input-valid': formData.prenom && isValidField('prenom') }"
-                  required
+                  :class="inputClass('prenom')"
                   autocomplete="given-name"
                   @input="validateField('prenom')"
+                  required
                 />
-                <span class="error-message" v-if="errors.prenom">{{ errors.prenom }}</span>
-                <span class="hint-message" v-if="hints.prenom">Lettres, espaces, apostrophes et tirets uniquement</span>
-                <span class="valid-icon" v-if="formData.prenom && isValidField('prenom')">✓</span>
+                <span v-if="errors.prenom" class="error-message">{{ errors.prenom }}</span>
+                <span v-else-if="hints.prenom" class="hint-message">Lettres, espaces, apostrophes et tirets uniquement</span>
+                <span v-if="formData.prenom && validFields.prenom" class="valid-icon">✓</span>
               </div>
             </div>
 
-            <div class="input-group" @mouseenter="showHint('email')" @mouseleave="hideHint('email')">
+            <!-- EMAIL -->
+            <div class="form-group" @mouseenter="showHint('email')" @mouseleave="hideHint('email')">
               <label for="email">Email</label>
               <input
+                id="email"
                 type="email"
                 v-model.trim="formData.email"
-                id="email"
-                placeholder="Entrez votre email"
-                :class="{ 'input-error': errors.email, 'input-valid': formData.email && isValidField('email') }"
-                required
+                placeholder="exemple@domaine.com"
+                :class="inputClass('email')"
                 autocomplete="email"
                 @input="validateField('email')"
+                required
               />
-              <span class="error-message" v-if="errors.email">{{ errors.email }}</span>
-              <span class="hint-message" v-if="hints.email">Format attendu: exemple@domaine.com</span>
-              <span class="valid-icon" v-if="formData.email && isValidField('email')">✓</span>
+              <span v-if="errors.email" class="error-message">{{ errors.email }}</span>
+              <span v-else-if="hints.email" class="hint-message">Format attendu : exemple@domaine.com</span>
+              <span v-if="formData.email && validFields.email" class="valid-icon">✓</span>
             </div>
 
-            <div class="input-group" @mouseenter="showHint('password')" @mouseleave="hideHint('password')">
-              <label for="password">Mot de passe</label>
-              <div class="password-input-container">
-                <input
-                  :type="showPassword ? 'text' : 'password'"
-                  v-model.trim="formData.password"
-                  id="password"
-                  placeholder="Entrez votre mot de passe"
-                  :class="{ 'input-error': errors.password, 'input-valid': formData.password && isValidField('password') }"
-                  required
-                  autocomplete="new-password"
-                  @input="validateField('password')"
-                />
-                <button
-                  type="button"
-                  class="toggle-password"
-                  @click="togglePassword"
-                  :aria-label="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
-                >
-                  <span aria-hidden="true">{{ showPassword ? '🔒' : '👁️' }}</span>
-                </button>
-                <span class="valid-icon" v-if="formData.password && isValidField('password')">✓</span>
-              </div>
-              <span class="error-message" v-if="errors.password">{{ errors.password }}</span>
-              <div class="password-strength" v-if="formData.password">
-                <div class="strength-bar" :class="passwordStrengthClass"></div>
-                <span>{{ passwordStrengthText }}</span>
-              </div>
-              <span class="hint-message" v-if="hints.password">
-                Le mot de passe doit contenir au moins 8 caractères, incluant majuscules, minuscules,
-                chiffres et caractères spéciaux.
-              </span>
-            </div>
+                    <!-- GROUPE DE MOTS DE PASSE -->
+<div class="password-fields-container">
+  <!-- PASSWORD -->
+  <div
+    class="form-group"
+    @mouseenter="showHint('password')"
+    @mouseleave="hideHint('password')"
+  >
+    <label for="password">Mot de passe</label>
+    <div class="password-wrapper">
+      <input
+        id="password"
+        :type="showPassword ? 'text' : 'password'"
+        v-model.trim="formData.password"
+        placeholder="••••••••"
+        :class="inputClass('password')"
+        @input="validateField('password')"
+        autocomplete="new-password"
+        required
+      />
+      <button
+        type="button"
+        class="toggle-password"
+        @click="togglePassword"
+        :aria-label="
+          showPassword
+            ? 'Masquer le mot de passe'
+            : 'Afficher le mot de passe'
+        "
+      >
+        <span aria-hidden="true">{{ showPassword ? "🔒" : "👁️" }}</span>
+      </button>
+    </div>
+    <span v-if="errors.password" class="error-message">{{
+      errors.password
+    }}</span>
+    <span v-else-if="hints.password" class="hint-message"
+      >Au moins 8 caractères, majuscules, minuscules, chiffres et
+      spéciaux</span
+    >
+    <span v-if="formData.password && validFields.password" class="valid-icon"
+      >✓</span
+    >
+  </div>
 
-            <div class="form-grid">
-              <div class="input-group" @mouseenter="showHint('cin')" @mouseleave="hideHint('cin')">
+  <!-- CONFIRM PASSWORD -->
+  <div
+    class="form-group"
+    @mouseenter="showHint('confirmpassword')"
+    @mouseleave="hideHint('confirmpassword')"
+  >
+    <label for="confirmpassword">Confirmez le mot de passe</label>
+    <div class="password-wrapper">
+      <input
+        id="confirmpassword"
+        :type="showPassword ? 'text' : 'password'"
+        v-model.trim="formData.confirmpassword"
+        placeholder="••••••••"
+        :class="inputClass('confirmpassword')"
+        @input="validateField('confirmpassword')"
+        autocomplete="new-password"
+        required
+      />
+      <button
+        type="button"
+        class="toggle-password"
+        @click="togglePassword"
+        :aria-label="
+          showPassword
+            ? 'Masquer le mot de passe'
+            : 'Afficher le mot de passe'
+        "
+      >
+        <span aria-hidden="true">{{ showPassword ? "🔒" : "👁️" }}</span>
+      </button>
+    </div>
+    <span v-if="errors.confirmpassword" class="error-message">{{
+      errors.confirmpassword
+    }}</span>
+    <span v-else-if="hints.confirmpassword" class="hint-message"
+      >Les deux mots de passe doivent correspondre</span
+    >
+    <span
+      v-if="formData.confirmpassword && validFields.confirmpassword"
+      class="valid-icon"
+      >✓</span
+    >
+  </div>
+            </div>
+          </fieldset>
+
+          <!-- STEP 2: ADMINISTRATIVE DETAILS -->
+          <fieldset class="form-fieldset" v-else-if="currentStep === 1">
+            <legend>Détails administratifs</legend>
+            <div class="grid two-columns">
+              <!-- CIN -->
+              <div class="form-group" @mouseenter="showHint('cin')" @mouseleave="hideHint('cin')">
                 <label for="cin">CIN</label>
                 <input
+                  id="cin"
                   type="text"
                   v-model.trim="formData.cin"
-                  id="cin"
-                  placeholder="Entrez votre CIN"
-                  :class="{ 'input-error': errors.cin, 'input-valid': formData.cin && isValidField('cin') }"
-                  required
+                  placeholder="8 chiffres"
                   maxlength="8"
                   inputmode="numeric"
+                  :class="inputClass('cin')"
                   @input="validateField('cin')"
+                  required
                 />
-                <span class="error-message" v-if="errors.cin">{{ errors.cin }}</span>
-                <span class="hint-message" v-if="hints.cin">Le CIN doit contenir exactement 8 chiffres</span>
-                <span class="valid-icon" v-if="formData.cin && isValidField('cin')">✓</span>
+                <span v-if="errors.cin" class="error-message">{{ errors.cin }}</span>
+                <span v-else-if="hints.cin" class="hint-message">Le CIN doit contenir exactement 8 chiffres</span>
+                <span v-if="formData.cin && validFields.cin" class="valid-icon">✓</span>
               </div>
-              
-              <div class="input-group" @mouseenter="showHint('phone')" @mouseleave="hideHint('phone')">
-                <label for="phone">Numéro de téléphone</label>
+
+              <!-- PHONE -->
+              <div class="form-group" @mouseenter="showHint('phone')" @mouseleave="hideHint('phone')">
+                <label for="phone">Téléphone</label>
                 <input
+                  id="phone"
                   type="tel"
                   v-model.trim="formData.phone"
-                  id="phone"
-                  placeholder="Votre numéro de téléphone"
-                  :class="{ 'input-error': errors.phone, 'input-valid': formData.phone && isValidField('phone') }"
-                  required
+                  placeholder="8 chiffres"
                   maxlength="8"
                   inputmode="tel"
                   autocomplete="tel"
+                  :class="inputClass('phone')"
                   @input="validateField('phone')"
+                  required
                 />
-                <span class="error-message" v-if="errors.phone">{{ errors.phone }}</span>
-                <span class="hint-message" v-if="hints.phone">Le numéro de téléphone doit contenir exactement 8 chiffres</span>
-                <span class="valid-icon" v-if="formData.phone && isValidField('phone')">✓</span>
+                <span v-if="errors.phone" class="error-message">{{ errors.phone }}</span>
+                <span v-else-if="hints.phone" class="hint-message">Numéro sans indicatif, 8 chiffres</span>
+                <span v-if="formData.phone && validFields.phone" class="valid-icon">✓</span>
               </div>
             </div>
 
-            <div class="form-grid">
-              <div class="input-group" @mouseenter="showHint('date_naissance')" @mouseleave="hideHint('date_naissance')">
+            <!-- DATE & PLACE OF BIRTH -->
+            <div class="grid two-columns">
+              <!-- DATE -->
+              <div class="form-group" @mouseenter="showHint('date_naissance')" @mouseleave="hideHint('date_naissance')">
                 <label for="date_naissance">Date de naissance</label>
                 <input
+                  id="date_naissance"
                   type="date"
                   v-model="formData.date_naissance"
-                  id="date_naissance"
                   :max="maxDate"
-                  :class="{ 
-                    'input-error': errors.date_naissance, 
-                    'input-valid': formData.date_naissance && isValidField('date_naissance') && !errors.date_naissance 
-                  }"
-                  required
-                  autocomplete="bday"
+                  :class="inputClass('date_naissance')"
                   @input="validateField('date_naissance')"
+                  autocomplete="bday"
+                  required
                 />
-                <span class="error-message" v-if="errors.date_naissance">{{ errors.date_naissance }}</span>
-                <span class="hint-message" v-if="hints.date_naissance">Vous devez avoir au moins 18 ans</span>
-                <span class="valid-icon" v-if="formData.date_naissance && isValidField('date_naissance') && !errors.date_naissance">✓</span>
+                <span v-if="errors.date_naissance" class="error-message">{{ errors.date_naissance }}</span>
+                <span v-else-if="hints.date_naissance" class="hint-message">Vous devez avoir au moins 18 ans</span>
+                <span v-if="formData.date_naissance && validFields.date_naissance" class="valid-icon">✓</span>
               </div>
-              
-              <div class="input-group" @mouseenter="showHint('lieudenaissance')" @mouseleave="hideHint('lieudenaissance')">
+
+              <!-- LIEU -->
+              <div class="form-group" @mouseenter="showHint('lieudenaissance')" @mouseleave="hideHint('lieudenaissance')">
                 <label for="lieudenaissance">Lieu de naissance</label>
                 <input
+                  id="lieudenaissance"
                   type="text"
                   v-model.trim="formData.lieudenaissance"
-                  id="lieudenaissance"
                   placeholder="Ville / Commune"
-                  :class="{ 'input-error': errors.lieudenaissance, 'input-valid': formData.lieudenaissance && isValidField('lieudenaissance') }"
-                  required
-                  autocomplete="address-level2"
+                  :class="inputClass('lieudenaissance')"
                   @input="validateField('lieudenaissance')"
+                  autocomplete="address-level2"
+                  required
                 />
-                <span class="error-message" v-if="errors.lieudenaissance">{{ errors.lieudenaissance }}</span>
-                <span class="hint-message" v-if="hints.lieudenaissance">Entrez une ville ou commune valide</span>
-                <span class="valid-icon" v-if="formData.lieudenaissance && isValidField('lieudenaissance')">✓</span>
+                <span v-if="errors.lieudenaissance" class="error-message">{{ errors.lieudenaissance }}</span>
+                <span v-else-if="hints.lieudenaissance" class="hint-message">Entrez une ville ou commune valide</span>
+                <span v-if="formData.lieudenaissance && validFields.lieudenaissance" class="valid-icon">✓</span>
               </div>
             </div>
+          </fieldset>
 
-            <button type="submit" class="btn-submit" :disabled="loading || !isFormValid">
-              <span v-if="loading" class="loading-spinner"></span>
-              <span>{{ loading ? 'Traitement en cours...' : 'S\'inscrire' }}</span>
+          <!-- STEP 3: CONFIRMATION -->
+          <fieldset class="form-fieldset" v-else>
+            <legend>Confirmer votre inscription</legend>
+            <div class="summary-container">
+              <h3 class="summary-title">Résumé de vos informations</h3>
+              <!-- PERSONAL SUMMARY -->
+              <div class="summary-section">
+                <h4>Informations personnelles</h4>
+                <div class="summary-grid">
+                  <div class="summary-item"><label>Nom :</label><span>{{ formData.nom }}</span></div>
+                  <div class="summary-item"><label>Prénom :</label><span>{{ formData.prenom }}</span></div>
+                  <div class="summary-item"><label>Email :</label><span>{{ formData.email }}</span></div>
+                </div>
+              </div>
+              <!-- ADMIN SUMMARY -->
+              <div class="summary-section">
+                <h4>Détails administratifs</h4>
+                <div class="summary-grid">
+                  <div class="summary-item"><label>CIN :</label><span>{{ formData.cin }}</span></div>
+                  <div class="summary-item"><label>Téléphone :</label><span>+212 {{ formData.phone }}</span></div>
+                  <div class="summary-item"><label>Date de naissance :</label><span>{{ formatDate(formData.date_naissance) }}</span></div>
+                  <div class="summary-item"><label>Lieu de naissance :</label><span>{{ formData.lieudenaissance }}</span></div>
+                </div>
+              </div>
+
+              <!-- TERMS -->
+              <div class="terms-checkbox">
+                <input id="termsAccepted" type="checkbox" v-model="termsAccepted" />
+                <label for="termsAccepted">
+                  J'accepte les <a href="#" @click.prevent="showTerms = true">conditions d'utilisation</a>
+                  et la <a href="#" @click.prevent="showPrivacy = true">politique de confidentialité</a>.
+                </label>
+              </div>
+              <small v-if="errors.terms" class="error-bubble">{{ errors.terms }}</small>
+            </div>
+          </fieldset>
+
+          <!-- ACTION BUTTONS -->
+          <div class="form-actions">
+            <button v-if="currentStep > 0" type="button" class="btn-secondary" @click="previousStep">
+              <i class="fas fa-arrow-left"></i> Précédent
             </button>
-          </form>
-        </div>
+            <button type="submit" class="btn-primary" :disabled="!canProceed">
+              <template v-if="currentStep < steps.length - 1">
+                Suivant <i class="fas fa-arrow-right"></i>
+              </template>
+              <template v-else>
+                <span v-if="loading" class="spinner"></span>
+                {{ loading ? 'Inscription...' : 'S\'inscrire' }}
+              </template>
+            </button>
+          </div>
 
-        <div v-else class="auth-box success-box">
-          <div class="success-icon">✓</div>
-          <h2 class="auth-title">Inscription réussie !</h2>
-          <p>Votre compte a été créé avec succès.</p>
-          <button @click="goToCompteCandidat" class="btn-submit">
-            Accéder à votre compte
-          </button>
-        </div>
+          <!-- NOTIFICATIONS -->
+          <transition name="fade">
+            <div v-if="success" class="notification success">
+              <p>Inscription réussie ! <router-link to="/LoginCandidat">Connectez‑vous</router-link></p>
+            </div>
+          </transition>
+          <transition name="fade">
+            <div v-if="serverError" class="notification error">
+              <p>{{ serverError }}</p>
+            </div>
+          </transition>
+        </form>
       </div>
     </div>
   </div>
@@ -196,556 +347,588 @@
 import { ref, reactive, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import api from '@/axios';
-import hiringImage from '../../assets/Rejoignez-nous.png';
+// import hiringImage from '../..assets/rec';
 
+// === STATE ===
 const router = useRouter();
-const isSubmitted = ref(false);
 const loading = ref(false);
+const success = ref(false);
+const serverError = ref('');
 const showPassword = ref(false);
-const validFields = reactive({
-  nom: false,
-  prenom: false,
-  email: false,
-  password: false,
-  cin: false,
-  phone: false,
-  date_naissance: false,
-  lieudenaissance: false
-});
+const showTerms = ref(false);
+const showPrivacy = ref(false);
+const termsAccepted = ref(false);
+const currentStep = ref(0);
 
-const formData = reactive({
-  nom: '',
-  prenom: '',
-  email: '',
-  password: '',
-  cin: '',
-  phone: '',
-  date_naissance: '',
-  lieudenaissance: ''
-});
-
-const errors = reactive({});
+// === UI HELPERS ===
 const hints = reactive({
   nom: false,
   prenom: false,
   email: false,
   password: false,
+  confirmpassword: false,
   cin: false,
   phone: false,
   date_naissance: false,
-  lieudenaissance: false
-});
-
-// Validation en temps réel de tous les champs lors de la saisie
-watch(formData, (newVal) => {
-  Object.keys(newVal).forEach(field => {
-    if (newVal[field]) {
-      validateField(field);
-    }
-  });
-}, { deep: true });
-
-const isFormValid = computed(() => {
-  return Object.values(validFields).every(valid => valid) && 
-        Object.keys(formData).every(field => !!formData[field]);
-});
-
-function isValidField(field) {
-  return validFields[field];
-}
-
-const passwordStrengthClass = computed(() => {
-  if (!formData.password) return '';
-  if (formData.password.length < 8) return 'faible';
-  
-  const hasUpperCase = /[A-Z]/.test(formData.password);
-  const hasLowerCase = /[a-z]/.test(formData.password);
-  const hasNumbers = /[0-9]/.test(formData.password);
-  const hasSpecialChars = /[^A-Za-z0-9\s]/.test(formData.password);
-  
-  if (hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChars) {
-    return 'fort';
-  } else if ((hasUpperCase || hasLowerCase) && hasNumbers) {
-    return 'moyen';
-  }
-  return 'faible';
-});
-
-const passwordStrengthText = computed(() => {
-  if (!formData.password) return '';
-  switch (passwordStrengthClass.value) {
-    case 'faible': return 'Faible';
-    case 'moyen': return 'Moyen';
-    case 'fort': return 'Fort';
-    default: return '';
-  }
-});
-
-const maxDate = computed(() => {
-  const today = new Date();
-  today.setFullYear(today.getFullYear() - 18);
-  return today.toISOString().split('T')[0];
+  lieudenaissance: false,
 });
 
 function showHint(field) {
   hints[field] = true;
 }
-
 function hideHint(field) {
   hints[field] = false;
+}
+
+const steps = [
+  { label: 'Informations personnelles' },
+  { label: 'Détails administratifs' },
+  { label: 'Confirmation' },
+];
+
+// === FORM DATA ===
+const formData = reactive({
+  nom: '',
+  prenom: '',
+  email: '',
+  password: '',
+  confirmpassword: '',
+  cin: '',
+  phone: '',
+  date_naissance: '',
+  lieudenaissance: '',
+});
+
+const errors = reactive({});
+const validFields = reactive({
+  nom: false,
+  prenom: false,
+  email: false,
+  password: false,
+  confirmpassword: false,
+  cin: false,
+  phone: false,
+  date_naissance: false,
+  lieudenaissance: false,
+});
+
+// === VALIDATION CONSTANTS ===
+const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ'\-\s]+$/;
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// === COMPUTEDS ===
+const maxDate = computed(() => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - 18);
+  return d.toISOString().split('T')[0];
+});
+
+const isStepValid = computed(() => {
+  const { value: step } = currentStep;
+  return (
+    (step === 0 && validFields.nom && validFields.prenom && validFields.email && validFields.password && validFields.confirmpassword) ||
+    (step === 1 && validFields.cin && validFields.phone && validFields.date_naissance && validFields.lieudenaissance) ||
+    (step === 2 && termsAccepted.value)
+  );
+});
+
+const canProceed = computed(() => (currentStep.value === steps.length - 1 ? isStepValid.value && !loading.value : isStepValid.value));
+
+const progressWidth = computed(() => `${(currentStep.value / (steps.length - 1)) * 100}%`);
+
+// === VALIDATION ===
+function validateField(field) {
+  delete errors[field];
+  let valid = false;
+  const val = formData[field];
+
+  switch (field) {
+    case 'nom':
+    case 'prenom':
+    case 'lieudenaissance':
+      valid = nameRegex.test(val);
+      if (!valid) errors[field] = 'Format invalide';
+      break;
+    case 'email':
+      valid = emailRegex.test(val);
+      if (!valid) errors[field] = 'Email invalide';
+      break;
+    case 'password':
+      valid = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(val);
+      if (!valid) errors[field] = 'Mot de passe trop faible';
+      break;
+    case 'confirmpassword':
+      valid = val === formData.password;
+      if (!valid) errors[field] = 'Les mots de passe ne correspondent pas';
+      break;
+    case 'cin':
+    case 'phone':
+      valid = /^\d{8}$/.test(val);
+      if (!valid) errors[field] = '8 chiffres requis';
+      break;
+    case 'date_naissance':
+      if (val) {
+        const age = (Date.now() - new Date(val).getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+        valid = age >= 18;
+        if (!valid) errors[field] = 'Âge minimum : 18 ans';
+      }
+      break;
+    default:
+      valid = !!val;
+  }
+
+  validFields[field] = valid;
+}
+
+function inputClass(field) {
+  return {
+    input: true,
+    'input-error': errors[field],
+    'input-valid': formData[field] && validFields[field],
+  };
+}
+
+// === NAVIGATION ===
+function nextStep() {
+  if (currentStep.value === steps.length - 1) {
+    if (!termsAccepted.value) {
+      errors.terms = "Vous devez accepter les conditions d'utilisation.";
+      return;
+    }
+    register();
+    return;
+  }
+
+  if (isStepValid.value) {
+    currentStep.value += 1;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    // force validation display
+    Object.keys(validFields).forEach((f) => validateField(f));
+  }
+}
+
+function previousStep() {
+  if (currentStep.value > 0) {
+    currentStep.value -= 1;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function goToStep(index) {
+  if (index <= currentStep.value) currentStep.value = index;
+}
+
+// === HELPERS ===
+function formatDate(dateString) {
+  return dateString ? new Date(dateString).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
 }
 
 function togglePassword() {
   showPassword.value = !showPassword.value;
 }
 
-function validateField(field) {
-  // Effacer l'erreur spécifique du champ
-  if (errors[field]) {
-    delete errors[field];
-  }
-  
-  const nameRegex = /^[a-zA-ZÀ-ſ0-9\s'-]+$/;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  
-  switch (field) {
-    case 'nom':
-      validFields.nom = !!formData.nom && nameRegex.test(formData.nom);
-      if (!validFields.nom && formData.nom) {
-        errors.nom = 'Nom invalide';
-      }
-      break;
-      
-    case 'prenom':
-      validFields.prenom = !!formData.prenom && nameRegex.test(formData.prenom);
-      if (!validFields.prenom && formData.prenom) {
-        errors.prenom = 'Prénom invalide';
-      }
-      break;
-      
-    case 'email':
-      validFields.email = !!formData.email && emailRegex.test(formData.email);
-      if (!validFields.email && formData.email) {
-        errors.email = 'Email invalide';
-      }
-      break;
-      
-    case 'password':
-      const hasUpperCase = /[A-Z]/.test(formData.password);
-      const hasLowerCase = /[a-z]/.test(formData.password);
-      const hasNumbers = /[0-9]/.test(formData.password);
-      const hasSpecialChars = /[^A-Za-z0-9\s]/.test(formData.password);
-      
-      validFields.password = formData.password.length >= 8 && 
-                            hasUpperCase && hasLowerCase && 
-                            hasNumbers && hasSpecialChars;
-                            
-      if (!validFields.password && formData.password) {
-        if (formData.password.length < 8) {
-          errors.password = 'Mot de passe trop court';
-        } else {
-          errors.password = 'Le mot de passe doit contenir majuscules, minuscules, chiffres et caractères spéciaux';
-        }
-      }
-      break;
-      
-    case 'cin':
-      validFields.cin = /^\d{8}$/.test(formData.cin);
-      if (!validFields.cin && formData.cin) {
-        errors.cin = 'CIN invalide (8 chiffres requis)';
-      }
-      break;
-      
-    case 'phone':
-      validFields.phone = /^\d{8}$/.test(formData.phone);
-      if (!validFields.phone && formData.phone) {
-        errors.phone = 'Téléphone invalide (8 chiffres requis)';
-      }
-      break;
-      
-    case 'date_naissance':
-      if (formData.date_naissance) {
-        const birth = new Date(formData.date_naissance);
-        const today = new Date();
-
-        let age = today.getFullYear() - birth.getFullYear();
-        const m = today.getMonth() - birth.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-
-        console.log("Date de naissance:", formData.date_naissance);
-        console.log("Âge calculé:", age);
-        
-        validFields.date_naissance = age >= 18;
-        console.log("Est valide:", validFields.date_naissance);
-
-        if (!validFields.date_naissance) {
-          errors.date_naissance = 'Vous devez avoir au moins 18 ans';
-          console.log("Erreur définie:", errors.date_naissance);
-        } else {
-          delete errors.date_naissance;
-        }
-      } else {
-        validFields.date_naissance = false;
-      }
-      break;
-
-    case 'lieudenaissance':
-      validFields.lieudenaissance = !!formData.lieudenaissance && nameRegex.test(formData.lieudenaissance);
-      if (!validFields.lieudenaissance && formData.lieudenaissance) {
-        errors.lieudenaissance = 'Lieu de naissance invalide';
-      }
-      break;
-  }
-}
-
-function validateForm() {
-  Object.keys(formData).forEach(field => {
-    validateField(field);
-  });
-  
-  return Object.values(validFields).every(valid => valid);
-}
-
+// === API ===
 async function register() {
-  console.log("Formulaire soumis", formData);  // Vérifier si la méthode est bien appelée
-  if (!validateForm()) return;
   loading.value = true;
+  serverError.value = '';
   try {
     await api.get('/sanctum/csrf-cookie');
-    const payload = {
-      nom: formData.nom,
-      prenom: formData.prenom,
-      email: formData.email,
-      password: formData.password,
-      role: 'candidat',
-      cin: formData.cin,
-      phone: formData.phone,
-      date_naissance: formData.date_naissance,
-      lieudenaissance: formData.lieudenaissance
-    };
-    console.log('Payload : ', payload);  // Vérifier les données envoyées
-    const response = await api.post('/api/register', payload);
-    console.log('Response : ', response);  // Vérifier la réponse du serveur
-    const { user, token } = response.data;
-
-    sessionStorage.setItem('userSession', JSON.stringify({
-      token,
-      ...user
-    }));
-    router.push('/LoginCandidat');
-
-    console.log('userSession :', sessionStorage.getItem('userSession'));
-
-    isSubmitted.value = true;  // Mettre à jour l'état de soumission
-  } catch (error) {
-    console.error(error);  // Vérifier si une erreur se produit
-    if (error.response && error.response.data && error.response.data.errors) {
-      const serverErrors = error.response.data.errors;
-      Object.keys(serverErrors).forEach(key => {
-        errors[key] = serverErrors[key][0];
-        validFields[key] = false;
-      });
+    await api.post('/api/register', { ...formData, role: 'candidat' });
+    success.value = true;
+    setTimeout(() => router.push('/LoginCandidat'), 2000);
+  } catch (e) {
+    if (e.response?.status === 422) {
+      const v = e.response.data?.errors;
+      if (v?.email?.length) {
+        errors.email = 'Cet email est déjà utilisé';
+        currentStep.value = 0;
+      } else {
+        serverError.value = e.response.data.message || 'Erreur de validation';
+      }
     } else {
-      alert("Erreur serveur lors de l'inscription");
+      serverError.value = e.response?.data?.message || 'Erreur serveur';
     }
   } finally {
     loading.value = false;
   }
 }
 
-function goToCompteCandidat() {
-  router.push('/LoginCandidat');
-}
+watch(termsAccepted, (val) => {
+  if (val) delete errors.terms;
+});
 </script>
 
+
 <style scoped>
-.auth-container {
+/* Reset de base */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html {
+  font-size: 16px;
+  font-family: 'Inter', sans-serif;
+  background-color: #F7FAFC;
+  color: #1F2937;
+  line-height: 1.6;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+}
+a {
+  color: #2A9D8F;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+/* Conteneur et carte */
+.register-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #e0ecff, #f4f7fc);
-  padding: 1rem;
-}
-
-.auth-content {
-  display: flex;
-  flex-direction: row;
-  width: 90%;
-  max-width: 1200px;
-  background-color: #fff;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  transition: transform 0.3s ease;
-}
-
-.image-section {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 2rem;
-  align-items: flex-start;
-  background: linear-gradient(135deg, #f0f8ff, #dceeff);
-  border-right: 1px solid #e0e0e0;
+  background: #F7FAFC;
 }
-
-.hiring-image {
+.register-card {
+  display: flex;
+  margin-top: 50px;
+  background: #FFFFFF;
+  border-radius: 24px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  max-width: 900px;
   width: 100%;
-  margin-top: 10rem;
-  max-width: 500px;
-  height: auto;
+}
+
+/* Section image */
+.image-section {
+  position: relative;
+  flex: 0 0 40%;
+  min-height: 500px;
+  background: #3D90D7;
+}
+.register-image {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 12px;
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
-  transition: transform 0.4s ease;
-  max-width: 550px; 
-  max-height: 480px; 
 }
-
-.hiring-image:hover {
-  transform: scale(1.05);
-}
-
-.form-section {
-  flex: 1;
-  padding: 2rem 2.5rem;
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.7));
   display: flex;
   flex-direction: column;
   justify-content: center;
-  margin-top: 40px;
-}
-
-.auth-title {
-  font-size: 28px;
-  font-weight: 700;
-  margin-bottom: 25px;
-  color: #222;
+  align-items: center;
+  color: white;
   text-align: center;
+  padding: 2rem;
+}
+.brand-text h2 {
+  font-size: 2rem;
+  margin-bottom: .5rem;
+}
+.brand-text p {
+  font-size: 1rem;
 }
 
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+/* Section formulaire */
+.form-section {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+}
+.form-title {
+  text-align: center;
+  font-size: 1.75rem;
+  color: #3D90D7;
+  margin-bottom: 1.5rem;
+}
+
+/* Stepper */
+.stepper {
+  display: flex;
   gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.step {
+  flex: 1;
+  text-align: center;
+  cursor: pointer;
+}
+.step-icon {
+  margin: 0 auto .5rem;
+  width: 48px;
+  height: 48px;
+  border: 2px solid #6B7280;
+  border-radius: 50%;
+  background: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .3s ease;
+}
+.step.active .step-icon {
+  border-color: #3D90D7;
+  background: #3D90D7;
+  color: white;
+}
+.step.completed .step-icon {
+  border-color: #4EDA92;
+  background: #4EDA92;
+  color: white;
+}
+.step-label {
+  font-size: .875rem;
+  color: #6B7280;
+  transition: color .3s ease;
+}
+.step.active .step-label,
+.step.completed .step-label {
+  color: #3D90D7;
+  font-weight: 600;
+}
+
+.password-fields-container {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+}
+
+.password-fields-container .form-group {
+  flex: 1;
+}
+
+/* Barre de progression */
+.progress-container {
+  width: 100%;
+  height: 6px;
+  background: #6B7280;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+.progress-bar {
+  height: 100%;
+  background: #3D90D7;
+  width: 0;
+  transition: width .4s ease;
+}
+
+/* Fieldsets */
+.form-fieldset {
+  border: none;
+  animation: fadeIn .4s ease;
+  margin-bottom: 2rem;
+}
+.form-fieldset legend {
+  font-size: 1.25rem;
+  border-bottom: 2px solid #6B7280;
+  padding-bottom: .5rem;
   margin-bottom: 1rem;
 }
 
-.input-group {
+/* Grilles */
+.grid {
+  display: grid;
+  gap: 1.5rem;
+}
+.two-columns {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+/* Inputs & labels */
+.form-group {
   display: flex;
   flex-direction: column;
   position: relative;
-  margin-bottom: 0.5rem;
 }
-
-.input-group label {
-  margin-bottom: 6px;
+.form-group label {
+  margin-bottom: .5rem;
   font-weight: 500;
-  color: #333;
 }
-
-.input-group input {
-  padding: 12px;
-  padding-right: 40px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 15px;
-  transition: all 0.3s ease;
+.input {
+  padding: 1rem;
+  border: 2px solid #6B7280;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: border-color .3s ease, box-shadow .3s ease;
 }
-
-.input-group input:focus {
-  border-color: #0056d2;
-  box-shadow: 0 0 0 4px rgba(0, 86, 210, 0.15);
+.input:focus {
+  border-color: #3D90D7;
+  box-shadow: 0 0 0 3px rgba(61,144,215,0.2);
   outline: none;
 }
-
 .input-error {
-  border-color: #dc3545 !important;
+  border-color: #E63946 !important;
 }
-
-.input-error:focus {
-  box-shadow: 0 0 0 4px rgba(220, 53, 69, 0.2) !important;
-}
-
 .input-valid {
-  border-color: #28a745 !important;
+  border-color: #4EDA92 !important;
 }
 
-.input-valid:focus {
-  box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.2) !important;
-}
-
-.error-message {
-  color: #dc3545;
-  font-size: 12px;
-  margin-top: 5px;
-  animation: fadeIn 0.3s ease;
-}
-
+/* Messages d’aide et d’erreur */
 .hint-message {
-  color: #0056d2;
-  font-size: 12px;
-  margin-top: 5px;
-  font-style: italic;
-  animation: fadeIn 0.3s ease;
+  font-size: .875rem;
+  color: #6B7280;
+  margin-top: .25rem;
+}
+.error-message {
+  font-size: .875rem;
+  color: #E63946;
+  margin-top: .25rem;
 }
 
+/* Icônes de validité */
 .valid-icon {
   position: absolute;
-  right: 10px;
-  top: 40px;
-  color: #28a745;
-  font-weight: bold;
-  animation: fadeIn 0.3s ease;
+  right: 1rem;
+  top: 2.5rem;
+  color: #4EDA92;
+  font-size: 1.125rem;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.password-input-container {
-  position: relative;
-  width: 100%;
+/* Boutons */
+.form-actions {
   display: flex;
-  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2rem;
 }
-
-.password-input-container input {
+.btn-primary, .btn-secondary {
   flex: 1;
-  padding-right: 40px;
-}
-
-.toggle-password {
-  position: absolute;
-  top: 50%;
-  right: 30px;
-  transform: translateY(-50%);
-  background: none;
+  padding: .75rem 1.5rem;
   border: none;
-  font-size: 18px;
+  border-radius: 12px;
+  font-weight: 600;
   cursor: pointer;
-  color: #666;
-  padding: 0;
-  height: 100%;
-  display: flex;
-  align-items: center;
-}
-
-.btn-submit {
-  margin-top: 20px;
-  padding: 14px;
-  width: 100%;
-  font-size: 16px;
-  font-weight: bold;
-  color: white;
-  background-color: #007BFF;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.3s ease;
+  transition: transform .15s ease, box-shadow .15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: .5rem;
 }
-
-.btn-submit:hover {
-  background-color: #0056d2;
+.btn-primary {
+  background: #2A9D8F;
+  color: white;
 }
-
-.btn-submit:disabled {
-  background-color: #bbb;
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+}
+.btn-primary:disabled {
+  opacity: .6;
   cursor: not-allowed;
 }
+.btn-primary:focus {
+  outline: 3px solid rgba(42,157,143,0.5);
+}
+.btn-secondary {
+  background: #3D90D7;
+  color: white;
+}
 
-.loading-spinner {
-  margin-right: 8px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
-  border-top: 3px solid white;
+/* Spinner */
+.spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
   border-radius: 50%;
-  width: 16px;
-  height: 16px;
   animation: spin 1s linear infinite;
 }
 
+/* Notifications */
+.notification {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-radius: 12px;
+  font-size: .875rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.notification.success {
+  background: rgba(78,218,146,0.15);
+  border-left: 4px solid #4EDA92;
+  color: #4EDA92;
+}
+.notification.error {
+  background: rgba(230,57,70,0.15);
+  border-left: 4px solid #E63946;
+  color: #E63946;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 @keyframes spin {
-  0% { transform: rotate(0); }
-  100% { transform: rotate(360deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* Force du mot de passe */
-.password-strength {
-  margin-top: 10px;
-  font-size: 13px;
-  color: #444;
+/* Responsive */
+@media (max-width: 768px) {
+  .register-card { flex-direction: column; }
+  .image-section { flex: none; height: 200px; }
+  .two-columns { grid-template-columns: 1fr; }
+}
+/* Confirmation summary */
+.summary-container {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
 }
 
-.strength-bar {
-  height: 8px;
-  border-radius: 5px;
-  background: #e0e0e0;
-  margin-top: 5px;
-  transition: background-color 0.3s ease, width 0.3s ease;
-  position: relative;
-}
-
-.strength-bar.faible {
-  background-color: #dc3545;
-  width: 33%;
-}
-
-.strength-bar.moyen {
-  background-color: #ffc107;
-  width: 66%;
-}
-
-.strength-bar.fort {
-  background-color: #28a745;
-  width: 100%;
-}
-
-/* Succès */
-.success-box {
+.summary-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2A9D8F;
   text-align: center;
+  margin-bottom: 1rem;
 }
 
-.success-icon {
-  font-size: 48px;
-  color: #28a745;
-  background: rgba(40, 167, 69, 0.1);
-  border-radius: 50%;
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 20px;
+.summary-section {
+  background: #ffffff;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.summary-section h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #3D90D7;
+  margin-bottom: 1rem;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.summary-item {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
 }
 
-/* Responsivité */
-@media (max-width: 992px) {
-  .auth-content {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .image-section {
-    display: none;
-  }
+.summary-item label {
+  font-size: 0.875rem;
+  color: #6B7280;
 }
 
-@media (max-width: 576px) {
-  .form-section {
-    padding: 1.5rem;
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .btn-submit {
-    font-size: 15px;
-  }
+.summary-item span {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #1F2937;
+  margin-top: 0.25rem;
 }
+
 </style>

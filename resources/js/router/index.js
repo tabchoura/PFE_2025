@@ -80,6 +80,8 @@ const routes = [
     { path: '', name: 'VoirCv', component: Voircv }
   ]},
  
+
+  
   
     {
     path: '/modifiercv/:id',          // segment dynamique
@@ -102,19 +104,14 @@ const routes = [
   // { path: '/CreateLettre', component: CompteCandidat, meta: { requiresAuth: true }, children: [
   //   { path: '', name: 'CreateLettre', component: CreateLettre }
   // ]},
-  { path: '/Test', component: CompteCandidat, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'Test', component: Test }
+  { path: '/voirdetails/:id' , component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Voirdetails', component: Voirdetails }
   ]},
-  { path: '/Mesnotifications', component: CompteCandidat, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'Mesnotifications', component: Mesnotifications }
-  ]}, {
-    path: '/postuler/:id',
-    name: 'Postuler',
-    component: Postuler,
-    props: true,
-    meta: { requiresAuth: true }
-  },
-  
+
+
+  { path: '/postuler/:id', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Postuler', component: Postuler }
+  ]}, 
   { path: '/LoginCandidat', name: 'LoginCandidat', component: LoginCandidat },
   { path: '/LoginRecruteur', name: 'LoginRecruteur', component: LoginRecruteur },
 
@@ -140,7 +137,6 @@ const routes = [
   ]},
 
   // Détails de l'offre
-  { path: '/voirdetails/:id', component: Voirdetails, meta: { requiresAuth: true }, props: true },
 
   // Catch-all
   { path: '/:pathMatch(.*)*', redirect: '/' }

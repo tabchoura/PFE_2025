@@ -1,3 +1,4 @@
+
 <template>
   <div class="candidatures-container">
     <h1>Candidatures Reçues</h1>

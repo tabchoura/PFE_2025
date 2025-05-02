@@ -1,3 +1,4 @@
+
 <template>
   <div class="offer-details">
     <h1>{{ offer.titre }}</h1>

@@ -36,19 +36,7 @@
         >
           Mes offres enregistrées
         </li>
-<!-- 
-        Mes CV (seulement si on a un cvId)
-        <li
-          v-if="cvId"
-          @click="navigateTo(`/mescv`)"
-          :class="{ active: isActive(`/mescv`) }"
-          role="button"
-          tabindex="0"
-        >
-          Mes CV
-        </li> 
-        
-         -->
+
         
         
         <li
@@ -61,30 +49,7 @@
           Mes CV
         </li>
 
-        <!-- <li
-          @click="navigateTo('/create-lettre')"
-          :class="{ active: isActive('/create-lettre') }"
-          role="button"
-          tabindex="0"
-        >
-          Créer Lettre
-        </li> -->
-        <!-- <li
-          @click="navigateTo('/test')"
-          :class="{ active: isActive('/test') }"
-          role="button"
-          tabindex="0"
-        >
-          Mes Tests
-        </li> -->
-        <!-- <li
-          @click="navigateTo('/notifications')"
-          :class="{ active: isActive('/notifications') }"
-          role="button"
-          tabindex="0"
-        >
-          Mes Notifications
-        </li> -->
+
         <li
           @click="logout"
           class="logout-item"
@@ -174,79 +139,193 @@ async function logout() {
 }
 </script>
 
+
 <style scoped>
+/* Styles pour l'ensemble du composant */
 .mon-espace {
-  display: flex;
   min-height: 100vh;
-  background-color: #f4f6f9;
-  font-family: "Segoe UI", sans-serif;
+  font-family: "Roboto", sans-serif;
+  background-color: #f5f7fa;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  position: relative;
+  padding: 0;
 }
+
+/* Barre Latérale */
 .sidebar {
-  width: 250px;
+  width: 280px;
+  background: linear-gradient(135deg, #1a365d 0%, #0055a5 100%);
+  padding: 30px 20px;
+  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
   position: fixed;
-  top: 55px;
+  top: 0;
   left: 0;
-  height: calc(100vh - 55px);
-  background: #fff;
-  padding: 30px;
-  box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-  border-right: 1px solid #e1e1e1;
-  z-index: 10;
+  height: 100vh;
+  z-index: 100;
+  color: #fff;
+  overflow-y: auto;
+  margin-top:60px ;
+
+
+  transition: all 0.3s ease;
 }
+
 .sidebar h2 {
+  margin-bottom: 30px;
+  font-size: 1.5rem;
+  color: #ffffff;
+  font-weight: 600;
   text-align: center;
-  color: #0055a5;
-  margin-bottom: 20px;
-  font-weight: 700;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.5px;
 }
+
 .sidebar ul {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 10px 0;
 }
+
 .sidebar li {
-  margin-bottom: 12px;
-  padding: 15px;
+  padding: 14px 16px;
   cursor: pointer;
-  text-align: center;
   border-radius: 8px;
-  transition: background-color .3s, color .3s, transform .3s;
+  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  position: relative;
+  font-weight: 500;
+  letter-spacing: 0.3px;
 }
-.sidebar li:hover,
+
+.sidebar li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background-color: transparent;
+  border-radius: 0 4px 4px 0;
+  transition: all 0.2s ease;
+}
+
 .sidebar li.active {
-  background: #cce0ff;
-  color: #0055a5;
-  transform: translateX(5px);
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
 }
+
+.sidebar li.active::before {
+  background-color: #4ac5ff;
+}
+
+.sidebar li:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  transform: translateX(3px);
+}
+
 .logout-item {
-  margin-top: 30px;
-  border-top: 1px solid #e1e1e1;
-  padding-top: 18px;
-  color: #e74c3c;
-  font-weight: 600;
+  margin-top: 40px !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  background-color: rgba(231, 76, 60, 0.15);
+  transition: all 0.2s ease;
 }
+
+.logout-item:hover {
+  background-color: rgba(231, 76, 60, 0.25) !important;
+  color: #ffffff !important;
+}
+
+/* Contenu principal */
 .content {
-  margin-left: 250px;
   flex: 1;
-  padding: 60px;
-  background: #fff;
-  border-radius: 9px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  min-height: 100vh;
+  background: #ffffff;
+  overflow-y: auto;
+  margin-left: 280px;
+  padding: 40px;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.03);
 }
-@media (max-width: 768px) {
-  .mon-espace { flex-direction: column; }
+
+@media (max-width: 1024px) {
   .sidebar {
-    position: relative;
+    width: 240px;
+  }
+  
+  .content {
+    margin-left: 240px;
+    padding: 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .mon-espace {
+    flex-direction: column;
+  }
+
+  .sidebar {
     width: 100%;
     height: auto;
-    top: 0;
-    border-right: none;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: relative;
+    padding: 15px;
+    border-radius: 0 0 15px 15px;
   }
+
+  .sidebar h2 {
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+
+  .sidebar ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .sidebar li {
+    padding: 10px 15px;
+    flex: 0 0 auto;
+    min-width: auto;
+    width: calc(50% - 10px);
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+    justify-content: center;
+  }
+
+  .sidebar li::before {
+    display: none;
+  }
+
+  .logout-item {
+    width: 100%;
+    margin-top: 10px !important;
+  }
+
   .content {
     margin-left: 0;
-    margin-top: 300px;
-    padding: 20px;
+    padding: 25px 15px;
+    border-radius: 15px 15px 0 0;
+    margin-top: -15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar li {
+    width: 100%;
+  }
+  
+  .content {
+    padding: 20px 12px;
   }
 }
 </style>

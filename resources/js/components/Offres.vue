@@ -54,81 +54,126 @@
         
         <!-- Login Form -->
         <div class="auth-container">
-          <div class="login-layout">
-            <div class="image-container">
-              <img :src="recrutlogin" alt="Plateforme de recrutement" />
+    <div class="login-layout">
+      <!-- VISUEL GAUCHE -->
+      <div class="image-container">
+        <!-- L'image est volontairement remplacée par un dégradé pour une première impression plus légère -->
+        <div class="image-overlay">
+          <h1 class="platform-name">Jobgo</h1>
+          <p class="platform-slogan">Connectez talents et opportunités</p>
+        </div>
+      </div>
+             <div class="form-container">
+        <div v-if="page === 'login'" class="auth-box">
+          <!-- Logo -->
+          <div class="logo-container">
+            <i class="fas fa-briefcase logo-icon"></i>
+          </div>
+
+          <h2>Connexion à votre espace</h2>
+
+          <div class="toggle-container">
+            <span :class="{ active: !isRecruteur }">Candidat</span>
+            <label class="switch">
+              <input type="checkbox" v-model="isRecruteur" aria-label="Basculer le type de compte" />
+              <span class="slider"></span>
+            </label>
+            <span :class="{ active: isRecruteur }">Recruteur</span>
+          </div>
+          <form @submit.prevent="login" novalidate>
+            <!-- Email -->
+            <div class="input-group">
+              <label for="email">Email</label>
+              <div class="input-with-icon">
+                <i class="fas fa-envelope input-icon"></i>
+                <input
+                  id="email"
+                  type="email"
+                  placeholder="votre@email.com"
+                  v-model.trim="email"
+                  :class="{ error: emailError }"
+                  @input="emailError = false"
+                  required
+                />
+              </div>
+              <p v-if="emailError" class="error-message">
+                <i class="fas fa-exclamation-circle"></i> Email invalide
+              </p>
             </div>
 
-            <div class="form-container">
-              <div class="auth-box" v-if="page === 'login'">
-                <h2>Connexion à votre espace</h2>
+            <!-- Mot de passe -->
+            <div class="input-group">
+              <label for="password">Mot de passe</label>
+              <div class="input-with-icon">
+                <i class="fas fa-lock input-icon"></i>
+                <input
+                  id="password"
+                  :type="showPassword ? 'text' : 'password'"
+                  v-model.trim="password"
+                  placeholder="Votre mot de passe"
+                  :class="{ error: passwordError }"
+                  @input="passwordError = false"
+                  required
+                />
+                <button
+                type="button"
+                class="toggle-password"
+                @click="togglePassword"
+                :aria-label="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+              >
+                <span v-if="showPassword">
+                  <!-- Eye Off Icon SVG -->
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/>
+                  </svg>
+                </span>
+                <span v-else>
+                  <!-- Eye Icon SVG -->
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+                    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/>
+                    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                </span>
+              </button>
+              </div>
+              <p v-if="passwordError" class="error-message">
+                <i class="fas fa-exclamation-circle"></i> Mot de passe requis (min. 6 caractères)
+              </p>
+            </div>
 
-                <div class="toggle-container">
-                  <span :class="{ active: !isRecruteur }">Candidat</span>
-                  <label class="switch">
-                    <input type="checkbox" v-model="isRecruteur" />
-                    <span class="slider"></span>
-                  </label>
-                  <span :class="{ active: isRecruteur }">Recruteur</span>
-                </div>
+            <!-- Souvenir / lien mdp -->
+            <div class="remember-forgot">
+              <label class="remember-me">
+                <input type="checkbox" v-model="rememberMe" />
+                <span class="checkmark"></span>
+                Se souvenir de moi
+              </label>
+              <a href="#" class="forgot-password">Mot de passe oublié&nbsp;?</a>
+            </div>
 
-                <form @submit.prevent="login">
-                  <div class="input-group">
-                    <label for="email">Email</label>
-                    <input
-                      type="email"
-                      v-model="email"
-                      id="email"
-                      required
-                      :class="{ error: emailError }"
-                      @input="emailError = false"
-                    />
-                    <p v-if="emailError" class="error-message">L'email est invalide</p>
-                  </div>
+            <!-- Bouton connexion -->
+            <button :disabled="isLoading" type="submit" class="btn-submit">
+              <span v-if="isLoading" class="loading-spinner"></span>
+              <span v-else><i class="fas fa-sign-in-alt"></i> Se connecter</span>
+            </button>
 
-                  <div class="input-group">
-                    <label for="password">Mot de passe</label>
-                    <div class="input-with-icon">
-                      <input
-                        :type="showPassword ? 'text' : 'password'"
-                        v-model="password"
-                        id="password"
-                        required
-                        :class="{ error: passwordError }"
-                        @input="passwordError = false"
-                      />
-                      <button
-                        type="button"
-                        class="toggle-password"
-                        @click="showPassword = !showPassword"
-                      >
-                        <i :class="showPassword ? 'fa fa-eye-slash' : 'fa fa-eye'"></i>
-                      </button>
-                    </div>
-                    <p v-if="passwordError" class="error-message">Le mot de passe est requis</p>
-                  </div>
+            <!-- Séparateur -->
+            <div class="or-divider"><span>OU</span></div>
 
-                  <div class="remember-forgot">
-                    <label class="remember-me">
-                      <input type="checkbox" v-model="rememberMe" />
-                      Se souvenir de moi
-                    </label>
-                    <a href="#" class="forgot-password">Mot de passe oublié?</a>
-                  </div>
-
-                  <button type="submit" class="btn-submit" :disabled="isLoading">
-                    <span v-if="isLoading" class="loading-spinner"></span>
-                    <span v-else>Se connecter</span>
-                  </button>
-
-                  <h2 class="inscrit-title">
-                    Vous voulez vous inscrire en tant que
-                    <span class="highlight">{{ isRecruteur ? "Recruteur" : "Candidat" }}</span> ?
-                  </h2>
-                  <button class="btn-create" @click.prevent="goToSignup">
-                    {{ isRecruteur ? "Créer un compte recruteur" : "Créer un compte candidat" }}
-                  </button>
-                </form>
+            <!-- Création compte -->
+            <div class="signup-prompt">
+              <h3>
+                Vous n'avez pas de compte
+                <span class="highlight">{{ isRecruteur ? 'Recruteur' : 'Candidat' }}</span>&nbsp;?
+              </h3>
+              <button class="btn-create" @click.prevent="goToSignup">
+                <i class="fas fa-user-plus"></i> Créer un compte
+              </button>
+            </div>
+          </form>
               </div>
             </div>
           </div>
@@ -162,6 +207,7 @@ const emailError = ref(false);
 const passwordError = ref(false);
 const showPassword = ref(false);
 const rememberMe = ref(false);
+const togglePassword = () => (showPassword.value = !showPassword.value);
 
 // Fonction pour récupérer les offres depuis l'API
 const getOffres = async () => {
@@ -328,30 +374,70 @@ const goToSignup = () => {
   margin-top: 20px;
 }
 
-/* Cartes d'offres */
 .offer-card {
   background-color: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s, box-shadow 0.3s;
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
-  min-height: 220px;
+  min-height: 250px;
+  position: relative;
+  overflow: hidden;
+  border: none;
+  /* Remplacer le border-top par un design plus subtil */
+  border-left: 4px solid #3498db;
 }
 
 .offer-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(52, 152, 219, 0.15);
+}
+
+/* Badge pour mettre en valeur des informations clés */
+.offer-badge {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background-color: rgba(52, 152, 219, 0.1);
+  color: #3498db;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Style amélioré pour le titre de l'offre */
+.offer-card-header h3 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0 0 15px 0;
+  line-height: 1.3;
+  /* Ajout d'un dégradé subtil */
+  background: linear-gradient(to right, #2c3e50, #4a6785);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.offer-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.offer-card-header {
+  margin-bottom: 15px;
 }
 
 .offer-card-header h3 {
   font-size: 1.3rem;
-  font-weight: bold;
+  font-weight: 700;
   color: #2c3e50;
-  margin-top: 0;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
 }
 
 .offer-card-body {
@@ -493,75 +579,114 @@ const goToSignup = () => {
   background-color: rgba(255, 255, 255, 1);
 }
 
-/* Styles de base pour l'authentification */
+/* --- Layout général --- */
 .auth-container {
+  min-height: 100vh;
   display: flex;
-  justify-content: center;
   align-items: center;
-  padding: 20px;
-  margin-top: 0;
-  text-align: left;
-  min-height: unset;
+  justify-content: center;
+  background: #f7f9fc;
+  font-family: 'Inter', sans-serif;
 }
 
-/* Layout principal */
 .login-layout {
   display: flex;
-  max-width: 900px;
-  width: 100%;
-  margin: 0 auto;
-  gap: 20px;
+  width: 960px;
+  max-width: 100%;
+  background: #ffffff;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
 }
 
-.image-container,
+/* --- Visuel gauche --- */
+.image-container {
+  flex: 1;
+  position: relative;
+  background: linear-gradient(135deg, #1f3d7a 0%, #3c64c8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.image-overlay {
+  text-align: center;
+  color: #ffffff;
+}
+
+.platform-name {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.platform-slogan {
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  opacity: 0.9;
+  max-width: 20ch;
+  margin-inline: auto;
+}
+
+/* --- Formulaire --- */
 .form-container {
   flex: 1;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  padding: 2.5rem 2rem;
 }
 
-.image-container img {
-  max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-/* Boîte de formulaire */
 .auth-box {
-  background: #fff;
-  border-radius: 8px;
-  width: 100%;
-  padding: 25px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  width: min(100%, 380px);
 }
 
-.auth-box h2 {
-  font-size: 1.6rem;
-  margin-bottom: 15px;
-  color: #333;
-  font-weight: 600;
+.logo-container {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1rem auto;
+  border-radius: 50%;
+  /* background: #0468BF; */
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+}
+
+.logo-icon {
+  font-size: 1.75rem;
+}
+
+h2 {
+  font-size: 1.5rem;
   text-align: center;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
 }
 
-/* Toggle Candidat / Recruteur */
+/* Bascule rôle */
 .toggle-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin-bottom: 20px;
-  background-color: #f8f9fa;
-  border-radius: 25px;
-  padding: 6px 10px;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.toggle-container span {
+  transition: 0.3s;
+  user-select: none;
+}
+
+.toggle-container span.active {
+  color: #0468BF;
 }
 
 .switch {
   position: relative;
   display: inline-block;
-  width: 45px;
-  height: 23px;
+  width: 46px;
+  height: 24px;
 }
 
 .switch input {
@@ -572,248 +697,256 @@ const goToSignup = () => {
 
 .slider {
   position: absolute;
+  inset: 0;
+  background: #d9d9d9;
+  border-radius: 24px;
   cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  transition: 0.3s;
-  border-radius: 23px;
+  transition: 0.4s;
 }
 
-.slider:before {
+.slider::before {
+  content: '';
   position: absolute;
-  content: "";
-  height: 17px;
-  width: 17px;
+  height: 18px;
+  width: 18px;
   left: 3px;
   bottom: 3px;
-  background-color: white;
-  transition: 0.3s;
+  background: #ffffff;
   border-radius: 50%;
+  transition: 0.4s;
 }
 
 input:checked + .slider {
-  background-color: #2980b9;
+  background: #1f3d7a;
 }
 
-input:checked + .slider:before {
+input:checked + .slider::before {
   transform: translateX(22px);
 }
 
-.toggle-container span {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #777;
-  transition: color 0.3s;
-  padding: 4px 8px;
-}
-
-.toggle-container span.active {
-  color: #2980b9;
-  font-weight: 600;
-}
-
-/* Formulaire */
+/* Champs texte */
 .input-group {
-  margin-bottom: 15px;
-  text-align: left;
+  margin-bottom: 1.25rem;
 }
 
 .input-group label {
   display: block;
-  font-weight: 500;
-  margin-bottom: 6px;
-  color: #333;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
 }
 
 .input-with-icon {
   position: relative;
 }
 
-input[type="email"],
-input[type="password"],
-input[type="text"] {
-  width: 100%;
-  padding: 12px 15px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 1rem;
-  transition: border-color 0.3s, box-shadow 0.3s;
-  box-sizing: border-box;
-}
-
-input[type="email"]:focus,
-input[type="password"]:focus,
-input[type="text"]:focus {
-  outline: none;
-  border-color: #2980b9;
-  box-shadow: 0 0 0 2px rgba(41, 128, 185, 0.2);
+.input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
 }
 
 .input-with-icon input {
-  padding-right: 40px;
+  width: 100%;
+  padding: 0.65rem 0.75rem 0.65rem 40px;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-with-icon input:focus {
+  border-color: #1f3d7a;
+  box-shadow: 0 0 0 3px rgba(31, 61, 122, 0.15);
+}
+
+.input-with-icon input.error {
+  border-color: #e11d48;
 }
 
 .error-message {
-  margin-top: 4px;
-  color: #e74c3c;
-  font-size: 0.85rem;
+  margin-top: 0.3rem;
+  color: #e11d48;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .toggle-password {
   position: absolute;
+  right: 12px;
   top: 50%;
-  right: 10px;
   transform: translateY(-50%);
   background: none;
   border: none;
   cursor: pointer;
-  color: #777;
+  color: #9ca3af;
+  padding: 0 4px;
 }
 
-.toggle-password:hover {
-  color: #333;
-}
-
+/* Souvenir & mdp oublié */
 .remember-forgot {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin: 15px 0 20px;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  font-size: 0.875rem;
 }
 
 .remember-me {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.9rem;
-  color: #555;
-}
-
-.forgot-password {
-  font-size: 0.9rem;
-  color: #2980b9;
-  text-decoration: none;
-}
-
-.forgot-password:hover {
-  text-decoration: underline;
-}
-
-.btn-submit {
-  width: 100%;
-  padding: 12px;  
-  background-color: #2980b9;
-  color: #fff;
-  font-size: 1.1rem;
-  font-weight: 500;
-  border: none;
-  border-radius: 6px;
+  gap: 0.5rem;
   cursor: pointer;
-  transition: background-color 0.3s;
+  user-select: none;
   position: relative;
 }
 
+.remember-me input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.checkmark {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #d1d5db;
+  border-radius: 3px;
+  background: #ffffff;
+  display: inline-block;
+}
+
+.remember-me input:checked + .checkmark {
+  background: #1f3d7a;
+  border-color: #1f3d7a;
+}
+
+.remember-me input:checked + .checkmark::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 0;
+  width: 4px;
+  height: 8px;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.forgot-password {
+  color: #1f3d7a;
+  text-decoration: none;
+}
+
+/* Boutons */
+.btn-submit {
+  width: 100%;
+  padding: 0.75rem;
+  background: #0468BF;
+  color: #ffffff;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
 .btn-submit:disabled {
-  background-color: #b3b3b3;
+  background: #9ca3af;
   cursor: not-allowed;
 }
 
 .btn-submit:hover:not(:disabled) {
-  background-color: #21618c;
+  background: #0468BF;
+  transform: translateY(-2px);
 }
 
 .loading-spinner {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  width: 18px;
+  height: 18px;
+  border: 3px solid #fff;
+  border-top-color: transparent;
   border-radius: 50%;
-  border-top-color: #fff;
-  animation: spin 1s ease-in-out infinite;
-  vertical-align: middle;
+  animation: spin 1s linear infinite;
 }
 
-.btn-create {
-  width: 100%;
-  padding: 12px;
-  background-color: #29a4b9;
-  color: #fff;
-  font-size: 1.1rem;
-  font-weight: 500;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  margin-top: 10px;
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.btn-create:hover {
-  background-color: #2491a4;
+/* Séparateur */
+.or-divider {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
 }
 
-.inscrit-title {
+.or-divider::before,
+.or-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.or-divider span {
+  margin: 0 0.75rem;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+/* Création compte */
+.signup-prompt {
   text-align: center;
-  font-size: 1.1rem;
-  margin: 20px 0 15px;
-  color: #555;
+}
+
+.signup-prompt h3 {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .highlight {
-  font-weight: bold;
-  color: #2980b9;
+  color: #0468BF;
+  font-weight: 700;
 }
 
-/* Animation */
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.btn-create {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  border: 2px solid #1f3d7a;
+  background: transparent;
+  color: #0468BF;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
 }
 
-/* Media Queries pour le responsive */
+.btn-create:hover {
+  background: #0468BF;
+  color: #ffffff;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   .login-layout {
     flex-direction: column;
   }
-  
-  .image-container {
-    display: none; /* Masquer l'image sur mobile */
-  }
-  
-  .modal-content {
-    width: 95%;
-  }
-  
-  .offers-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .header-actions {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  
-  .auth-box {
-    padding: 20px 15px;
-  }
-  
-  .remember-forgot {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  
-  .forgot-password {
-    margin-left: 0;
-  }
-}
 
-@media (min-width: 769px) and (max-width: 1024px) {
-  .offers-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .image-container {
+    height: 200px;
   }
 }
 </style> 

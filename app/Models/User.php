@@ -54,4 +54,8 @@ public function cvs()
     {
         return $this->hasMany(Cv::class); // Un utilisateur peut avoir plusieurs CVs
     }
+    public function candidatures()
+    {
+        return $this->hasMany(Candidature::class);  // Un utilisateur a plusieurs candidatures
+    }
 }

@@ -118,21 +118,32 @@ class OfferController extends Controller
     // Validation des données
     $request->validate([
         'cv_id' => 'required|exists:cvs,id', // Le CV doit exister dans la table `cvs`
-        'message' => 'nullable|string|max:1000', // Le message est facultatif
+        // 'message' => 'nullable|string|max:1000', // Le message est facultatif
     ]);
 
     // Récupération de l'offre avec l'ID
-    $offre = Offre::findOrFail($id); // Récupérer l'offre en utilisant l'ID ou échouer
-
+    // $user_id=auth()->id();    
+    
     // Créer une nouvelle candidature pour l'offre
     $candidature = new Candidature();
-    $candidature->offre_id = $offre->id; // Lier l'offre à la candidature
+    $candidature->offre_id = $id; // Lier l'offre à la candidature
     $candidature->cv_id = $request->cv_id; // Lier le CV à la candidature
-    $candidature->message = $request->message; // Ajouter le message de motivation
-    $candidature->save(); // Sauvegarder la candidature dans la base de données
+  $candidature->user_id =auth()->id();   
+$candidature->save(); // Sauvegarder la candidature dans la base de données
 
     return response()->json([
         'message' => '✅ Candidature envoyée avec succès.'
     ]);
 }
+public function show($id)
+{
+    $offre = Offre::find($id);
+    
+    if (!$offre) {
+        return response()->json(['message' => 'Offre non trouvée'], 404);
+    }
+
+    return response()->json($offre);
+}
+
 }

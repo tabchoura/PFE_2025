@@ -239,7 +239,7 @@ async function deleteCv() {
 .cv-left-column {
   flex: 1;
   min-width: 260px;
-  background: linear-gradient(to bottom, #2c3e50, #34495e);
+  background: #0f3164;
   color: white;
 }
 .cv-right-column {
@@ -299,31 +299,63 @@ ul li::before {
 /* Deux colonnes */
 .two-columns { display: flex; gap: 2rem; }
 
-/* Boutons d'actions */
 .form-actions {
-  display: flex; justify-content: center; gap: 1rem;
-  padding: 1.5rem; background: #f8f9fa; border-top: 1px solid #eee;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-top: 1px solid #eee;
 }
 .action-btn {
-  display: flex; align-items: center; gap: 0.5rem;
-  padding: 0.8rem 1.5rem; border: none; border-radius: 4px;
-  font-weight: 600; cursor: pointer; transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
-.download-btn { background: #27ae60; color: white; }
-.download-btn:hover { background: #219653; transform: translateY(-2px); }
-.edit-btn     { background: #3498db; color: white; }
-.edit-btn:hover     { background: #2980b9; transform: translateY(-2px); }
-.btn-delete   { background: #e74c3c; color: white; }
-.btn-delete:hover   { background: #c0392b; transform: translateY(-2px); }
 
-/* Print */
-.printing .cv-left-column { background: #2c3e50 !important; }
+.download-btn {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-color);
+}
+.download-btn:hover {
+  background: var(--btn-primary-hover);
+  transform: translateY(-2px);
+}
+
+.edit-btn {
+  background: var(--btn-edit-bg);
+  color: var(--btn-edit-color);
+}
+.edit-btn:hover {
+  background: var(--btn-edit-hover);
+  transform: translateY(-2px);
+}
+
+.btn-delete {
+  background: var(--btn-delete-bg);
+  color: var(--btn-delete-color);
+}
+.btn-delete:hover {
+  background: var(--btn-delete-hover);
+  transform: translateY(-2px);
+}
+
+/* Impression PDF */
+.printing .cv-left-column { background: #0f3164 !important; }
 
 /* Responsive */
 @media (max-width: 768px) {
   .cv-form.preview-form { flex-direction: column; }
   .two-columns { flex-direction: column; }
   .form-actions { flex-wrap: wrap; }
-  .action-btn { flex: 1; }
+  .action-btn { flex: 1; text-align: center; }
 }
 </style>

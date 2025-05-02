@@ -16,11 +16,13 @@ return new class extends Migration
             $table->foreignId('offre_id')->constrained('offres')->onDelete('cascade'); // Clé étrangère vers offres
             $table->foreignId('cv_id')->constrained('cvs')->onDelete('cascade');       // Clé étrangère vers cvs
             $table->text('message')->nullable(); // Facultatif
-            $table->string('satut')->nullable(); // Facultatif
+            $table->string('statut')->nullable(); // Facultatif
 
+            $table->unsignedBigInteger('user_id'); // Assurez-vous que user_id est non nullable
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade'); // Clé étrangère vers users
 
             $table->timestamps(); // created_at et updated_at
-            });
+        });
     }
 
     /**

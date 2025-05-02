@@ -20,7 +20,7 @@ class CvController extends Controller
         $data = $request->validate([
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
-            'email' => 'nullable|email|unique:cvs,email',
+            'email' => 'nullable|email|',
             'date_naissance' => 'nullable|date',
             'adresse' => 'nullable|string',
             'presentation' => 'nullable|string',

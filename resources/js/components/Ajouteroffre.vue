@@ -1,22 +1,56 @@
 <template>
-  <div>
+  <div class="form-container">
     <form @submit.prevent="ajouter">
-      <h1>Ajouter une offre de travail :</h1>
-
-      <label for="titre">Titre</label>
-      <input type="text" name="titre" id="titre" v-model="formdata.titre" />
-
-      <label for="description">Description</label>
-      <input type="text" name="description" id="description" v-model="formdata.description" />
-
-      <label for="salaire">Salaire</label>
-      <input type="text" name="salaire" id="salaire" v-model="formdata.salaire" />
-      <label for="details">Details</label>
-      <input type="text" name="details" id="details" v-model="formdata.details" />
-
+      <h1>Ajouter une offre de travail</h1>
       
-
-      <button type="submit">Enregistrer</button>
+      <div class="form-group">
+        <label for="titre">Titre</label>
+        <input 
+          type="text" 
+          name="titre" 
+          id="titre" 
+          v-model="formdata.titre" 
+          placeholder="Ex: Développeur Full Stack"
+        />
+      </div>
+      
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea 
+          name="description" 
+          id="description" 
+          v-model="formdata.description" 
+          placeholder="Décrivez brièvement le poste"
+          rows="3"
+        ></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="salaire">Salaire</label>
+        <input 
+          type="text" 
+          name="salaire" 
+          id="salaire" 
+          v-model="formdata.salaire" 
+          placeholder="Ex: 45 000 € - 55 000 €"
+        />
+      </div>
+      
+      <div class="form-group">
+        <label for="details">Détails</label>
+        <textarea 
+          name="details" 
+          id="details" 
+          v-model="formdata.details" 
+          placeholder="Informations complémentaires, avantages, etc."
+          rows="5"
+        ></textarea>
+      </div>
+            
+      <button type="submit">
+        <span>Enregistrer</span>
+        <i class="icon">➔</i>
+      </button>
     </form>
   </div>
 </template>
@@ -30,17 +64,17 @@ const formdata = reactive({
   titre: '',
   description: '',
   salaire: '',
-  details:''
+  details: ''
 });
 
 const router = useRouter();
 const ajouter = () => {
   // Validation basique
-  if (!formdata.titre || !formdata.description || !formdata.salaire || !formdata.details ) {
+  if (!formdata.titre || !formdata.description || !formdata.salaire || !formdata.details) {
     alert("Tous les champs doivent être remplis!");
     return;
   }
-
+  
   // Ajouter l'offre
   axios.post('/api/offres', formdata)
     .then((response) => {
@@ -54,51 +88,122 @@ const ajouter = () => {
 </script>
 
 <style scoped>
-/* Styles basiques pour le formulaire */
+.form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
 form {
-  max-width: 500px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #f7f7f7;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
 }
 
 h1 {
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #2c3e50;
   text-align: center;
-  color: #333;
+  position: relative;
+}
+
+h1:after {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 3px;
+  background-color: #3498db;
+  margin: 10px auto 0;
+  border-radius: 2px;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
 }
 
 label {
   display: block;
-  margin-bottom: 8px;
-  font-weight: bold;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #2c3e50;
+  font-size: 0.95rem;
 }
 
-input {
+input, textarea {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 20px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 0.8rem 1rem;
+  border: 1px solid #e1e5ee;
+  border-radius: 8px;
   font-size: 1rem;
+  transition: all 0.2s ease;
+  background-color: #f8fafc;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
+  background-color: #fff;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #a0aec0;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
 }
 
 button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
-  padding: 12px;
-  background-color: #2ecc71;
+  padding: 0.9rem;
+  margin-top: 1rem;
+  background-color: #3498db;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 button:hover {
-  background-color: #27ae60;
+  background-color: #2980b9;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
-/* Temporarily force the visibility of the input */
 
+button:active {
+  transform: translateY(0);
+}
 
+.icon {
+  margin-left: 8px;
+  transition: transform 0.2s ease;
+}
+
+button:hover .icon {
+  transform: translateX(4px);
+}
+
+@media (max-width: 768px) {
+  .form-container {
+    padding: 1rem;
+  }
+  
+  form {
+    padding: 1.5rem;
+  }
+}
 </style>

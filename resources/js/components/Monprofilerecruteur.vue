@@ -351,12 +351,13 @@ onMounted(() => {
   padding: 4rem;
   background: #ffffff;
   border-radius: 1.25rem;
+  border-top: 60%;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   font-family: "Roboto", sans-serif;
   transition: all 0.3s ease;
-  margin: 2px auto; /* Centre le contenu */
+  margin: auto; /* Centre le contenu */
+  margin-top: 60px; /* Espace ajouté entre la barre de navigation et le conteneur */
 }
-
 .profil-container:hover {
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
 }

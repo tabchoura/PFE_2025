@@ -33,7 +33,13 @@
             </div>
             <div class="input-group">
               <label for="prenom">Prénom</label>
-              <input id="prenom" v-model="form.prenom" type="text" placeholder="Prénom" required />
+              <input
+                id="prenom"
+                v-model="form.prenom"
+                type="text"
+                placeholder="Prénom"
+                required
+              />
               <span v-if="errors.prenom" class="error">{{ errors.prenom }}</span>
             </div>
           </div>
@@ -43,7 +49,15 @@
         <div class="section">
           <div class="input-group">
             <label for="date_naissance">Date de naissance</label>
-            <input id="date_naissance" v-model="form.date_naissance" type="date" />
+            <input
+              id="date_naissance"
+              v-model="form.date_naissance"
+              type="date"
+              :max="maxDate"
+            />
+            <span v-if="errors.date_naissance" class="error">{{
+              errors.date_naissance
+            }}</span>
           </div>
           <div class="input-group">
             <label for="adresse">Adresse</label>
@@ -59,20 +73,29 @@
         <!-- Compétences -->
         <div class="section">
           <h3 class="section-title">Compétences</h3>
-          <div v-for="(comp, i) in form.competences" :key="`comp-${i}`" class="dynamic-field">
+          <div
+            v-for="(comp, i) in form.competences"
+            :key="`comp-${i}`"
+            class="dynamic-field"
+          >
             <input
               v-model="form.competences[i]"
               type="text"
               placeholder="Ex : Python, Excel…"
             />
-            <button 
-              v-if="form.competences.length > 1 || i > 0" 
-              type="button" 
-              @click="removeItem('competences', i)" 
+            <button
+              v-if="form.competences.length > 1 || i > 0"
+              type="button"
+              @click="removeItem('competences', i)"
               class="delete-btn"
-              aria-label="Supprimer cette compétence">✕</button>
+              aria-label="Supprimer cette compétence"
+            >
+              ✕
+            </button>
           </div>
-          <button type="button" class="add-btn" @click="addItem('competences')">+ Ajouter une compétence</button>
+          <button type="button" class="add-btn" @click="addItem('competences')">
+            + Ajouter une compétence
+          </button>
         </div>
 
         <!-- Langues -->
@@ -80,14 +103,19 @@
           <h3 class="section-title">Langues</h3>
           <div v-for="(lang, i) in form.langues" :key="`lang-${i}`" class="dynamic-field">
             <input v-model="form.langues[i]" type="text" placeholder="Français (C2)" />
-            <button 
-              v-if="form.langues.length > 1 || i > 0" 
-              type="button" 
-              @click="removeItem('langues', i)" 
+            <button
+              v-if="form.langues.length > 1 || i > 0"
+              type="button"
+              @click="removeItem('langues', i)"
               class="delete-btn"
-              aria-label="Supprimer cette langue">✕</button>
+              aria-label="Supprimer cette langue"
+            >
+              ✕
+            </button>
           </div>
-          <button type="button" class="add-btn" @click="addItem('langues')">+ Ajouter une langue</button>
+          <button type="button" class="add-btn" @click="addItem('langues')">
+            + Ajouter une langue
+          </button>
         </div>
       </div>
 
@@ -96,59 +124,98 @@
         <!-- Présentation -->
         <div class="section">
           <h3 class="section-title">Présentation</h3>
-          <textarea id="presentation" v-model="form.presentation" rows="4" placeholder="Quelques lignes pour vous présenter…" />
+          <textarea
+            id="presentation"
+            v-model="form.presentation"
+            rows="4"
+            placeholder="Quelques lignes pour vous présenter…"
+          />
         </div>
 
         <!-- Expériences -->
         <div class="section">
           <h3 class="section-title">Expériences professionnelles</h3>
-          <div v-for="(exp, i) in form.experiences" :key="`exp-${i}`" class="dynamic-field">
-            <textarea v-model="form.experiences[i]" rows="3" placeholder="2023 | Entreprise ● Poste…" />
-            <button 
-              v-if="form.experiences.length > 1 || i > 0" 
-              type="button" 
-              @click="removeItem('experiences', i)" 
+          <div
+            v-for="(exp, i) in form.experiences"
+            :key="`exp-${i}`"
+            class="dynamic-field"
+          >
+            <textarea
+              v-model="form.experiences[i]"
+              rows="3"
+              placeholder="2023 | Entreprise ● Poste…"
+            />
+            <button
+              v-if="form.experiences.length > 1 || i > 0"
+              type="button"
+              @click="removeItem('experiences', i)"
               class="delete-btn"
-              aria-label="Supprimer cette expérience">✕</button>
+              aria-label="Supprimer cette expérience"
+            >
+              ✕
+            </button>
           </div>
-          <button type="button" class="add-btn" @click="addItem('experiences')">+ Ajouter une expérience</button>
+          <button type="button" class="add-btn" @click="addItem('experiences')">
+            + Ajouter une expérience
+          </button>
         </div>
 
         <!-- Éducation -->
         <div class="section">
           <h3 class="section-title">Éducation & Formation</h3>
-          <div v-for="(edu, i) in form.educations_formations" :key="`edu-${i}`" class="dynamic-field">
-            <textarea v-model="form.educations_formations[i]" rows="3" placeholder="2020-2024 | Université ● Diplôme…" />
-            <button 
-              v-if="form.educations_formations.length > 1 || i > 0" 
-              type="button" 
-              @click="removeItem('educations_formations', i)" 
+          <div
+            v-for="(edu, i) in form.educations_formations"
+            :key="`edu-${i}`"
+            class="dynamic-field"
+          >
+            <textarea
+              v-model="form.educations_formations[i]"
+              rows="3"
+              placeholder="2020-2024 | Université ● Diplôme…"
+            />
+            <button
+              v-if="form.educations_formations.length > 1 || i > 0"
+              type="button"
+              @click="removeItem('educations_formations', i)"
               class="delete-btn"
-              aria-label="Supprimer cette formation">✕</button>
+              aria-label="Supprimer cette formation"
+            >
+              ✕
+            </button>
           </div>
-          <button type="button" class="add-btn" @click="addItem('educations_formations')">+ Ajouter une formation</button>
+          <button type="button" class="add-btn" @click="addItem('educations_formations')">
+            + Ajouter une formation
+          </button>
         </div>
 
         <!-- Projets -->
         <div class="section">
           <h3 class="section-title">Projets</h3>
           <div v-for="(proj, i) in form.projets" :key="`proj-${i}`" class="dynamic-field">
-            <textarea v-model="form.projets[i]" rows="2" placeholder="Projet personnel / académique…" />
-            <button 
-              v-if="form.projets.length > 1 || i > 0" 
-              type="button" 
-              @click="removeItem('projets', i)" 
+            <textarea
+              v-model="form.projets[i]"
+              rows="2"
+              placeholder="Projet personnel / académique…"
+            />
+            <button
+              v-if="form.projets.length > 1 || i > 0"
+              type="button"
+              @click="removeItem('projets', i)"
               class="delete-btn"
-              aria-label="Supprimer ce projet">✕</button>
+              aria-label="Supprimer ce projet"
+            >
+              ✕
+            </button>
           </div>
-          <button type="button" class="add-btn" @click="addItem('projets')">+ Ajouter un projet</button>
+          <button type="button" class="add-btn" @click="addItem('projets')">
+            + Ajouter un projet
+          </button>
         </div>
 
         <div class="form-actions">
           <button type="submit" class="submit-btn" :disabled="isSubmitting">
-            {{ isSubmitting ? 'Création...' : 'Générer mon CV' }}
+            {{ isSubmitting ? "Création..." : "Générer mon CV" }}
           </button>
-          <button type="button" class="next-btn" @click="goNext" :disabled="isSubmitting">Suivant</button>
         </div>
       </div>
     </form>
@@ -156,192 +223,156 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue'
-import axios from 'axios'
-import { useToast } from 'vue-toastification'
-import { useRoute, useRouter } from 'vue-router'
+import { reactive, ref, onMounted, computed } from "vue";
+import axios from "axios";
+import { useToast } from "vue-toastification";
+import { useRoute, useRouter } from "vue-router";
 
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
+const maxDate = computed(() => {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - 18);
+  return d.toISOString().split("T")[0];
+});
 interface CvForm {
-  nom: string
-  prenom: string
-  email: string
-  date_naissance: string
-  adresse: string
-  presentation: string
-  competences: string[]
-  langues: string[]
-  experiences: string[]
-  educations_formations: string[]
-  projets: string[]
-  image: string
+  nom: string;
+  prenom: string;
+  email: string;
+  date_naissance: string;
+  adresse: string;
+  presentation: string;
+  competences: string[];
+  langues: string[];
+  experiences: string[];
+  educations_formations: string[];
+  projets: string[];
+  image: string;
 }
 
-const toast = useToast()
-/* --- Données réactives --- */
+const toast = useToast();
 const form = reactive<CvForm>({
-  nom: '',
-  prenom: '',
-  email: '',
-  date_naissance: '',
-  adresse: '',
-  presentation: '',
-  competences: [''],
-  langues: [''],
-  experiences: [''],
-  educations_formations: [''],
-  projets: [''],
-  image: '',
-})
+  nom: "",
+  prenom: "",
+  email: "",
+  date_naissance: "",
+  adresse: "",
+  presentation: "",
+  competences: [""],
+  langues: [""],
+  experiences: [""],
+  educations_formations: [""],
+  projets: [""],
+  image: "",
+});
 
-const profilePicture = ref<string>('')
-const errors = ref<Record<string, string>>({})
-const isSubmitting = ref(false)
+const profilePicture = ref<string>("");
+const errors = ref<Record<string, string>>({});
+const isSubmitting = ref(false);
 
-/* --- Nettoyage et initialisation --- */
 onMounted(() => {
-  // Effacer les toasts existants au chargement
-  toast.clear()
-})
+  toast.clear();
+});
 
-/* --- Validation du formulaire --- */
 function validateForm() {
-  const newErrors: Record<string, string> = {}
-  
-  if (!form.nom.trim()) newErrors.nom = "Le nom est requis"
-  if (!form.prenom.trim()) newErrors.prenom = "Le prénom est requis"
-  
+  const newErrors: Record<string, string> = {};
+
+  if (!form.nom.trim()) newErrors.nom = "Le nom est requis";
+  if (!form.prenom.trim()) newErrors.prenom = "Le prénom est requis";
+
   if (!form.email.trim()) {
-    newErrors.email = "L'email est requis"
+    newErrors.email = "L'email est requis";
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-    newErrors.email = "Veuillez entrer un email valide"
+    newErrors.email = "Veuillez entrer un email valide";
   }
-  
-  errors.value = newErrors
-  return Object.keys(newErrors).length === 0
+
+  const birthDate = new Date(form.date_naissance);
+  const today = new Date();
+  const age = today.getFullYear() - birthDate.getFullYear();
+  if (age < 18) {
+    newErrors.date_naissance = "L'âge doit être supérieur ou égal à 18 ans";
+  }
+
+  errors.value = newErrors;
+  return Object.keys(newErrors).length === 0;
 }
 
-/* --- Helpers dynamiques --- */
 function addItem(field: keyof CvForm) {
-  (form[field] as string[]).push('')
+  (form[field] as string[]).push("");
 }
 
 function removeItem(field: keyof CvForm, index: number) {
-  const list = form[field] as string[]
-  list.splice(index, 1)
-  if (!list.length) list.push('')
+  const list = form[field] as string[];
+  list.splice(index, 1);
+  if (!list.length) list.push("");
 }
 
-/* --- Navigation --- */
-function goNext() {
-  if (isSubmitting.value) return
-  
-  // Récupérer l'ID de l'offre depuis les paramètres de route
-  const offerId = route.params.id
-  if (offerId) {
-    // Rediriger vers la page de confirmation avec l'ID de l'offre
-    router.push({ name: 'Confirmationpostuler', params: { offerId } })
-  } else {
-    // Gérer le cas où l'ID n'est pas disponible
-    toast.error("Impossible de continuer : identifiant de l'offre manquant")
-  }
-}
-
-/* --- Upload image --- */
 async function handleImage(e: Event) {
-  const input = e.target as HTMLInputElement
-  const file = input.files?.[0]
-  if (!file) return
-  
-  // Nettoyer les toasts existants
-  toast.clear()
-  
-  // Vérifier la taille et le format
-  if (file.size > 5 * 1024 * 1024) { // 5MB
-    errors.value.image = "L'image ne doit pas dépasser 5MB"
-    toast.error("L'image ne doit pas dépasser 5MB")
-    return
-  }
-  
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg']
-  if (!allowedTypes.includes(file.type)) {
-    errors.value.image = "Format d'image non supporté (JPG ou PNG uniquement)"
-    toast.error("Format d'image non supporté (JPG ou PNG uniquement)")
-    return
-  }
-  
-  // Prévisualisation immédiate
-  profilePicture.value = URL.createObjectURL(file)
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
 
-  // Upload au serveur
-  const fd = new FormData()
-  fd.append('image', file)
-  
+  toast.clear();
+
+  if (file.size > 5 * 1024 * 1024) {
+    errors.value.image = "L'image ne doit pas dépasser 5MB";
+    toast.error("L'image ne doit pas dépasser 5MB");
+    return;
+  }
+
+  const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+  if (!allowedTypes.includes(file.type)) {
+    errors.value.image = "Format d'image non supporté (JPG ou PNG uniquement)";
+    toast.error("Format d'image non supporté (JPG ou PNG uniquement)");
+    return;
+  }
+
+  profilePicture.value = URL.createObjectURL(file);
+
+  const fd = new FormData();
+  fd.append("image", file);
+
   try {
-    const { data } = await axios.post('/api/ajouterimage', fd, {
+    const { data } = await axios.post("/api/ajouterimage", fd, {
       headers: {
-        'Content-Type': 'multipart/form-data'
+        "Content-Type": "multipart/form-data",
       },
-      timeout: 30000 // Augmenter le timeout à 30 secondes
-    })
-    
-    // Stocker l'URL retournée dans le formulaire
-    form.image = data.image_url
-    toast.success('Image téléchargée avec succès')
-    // Effacer les erreurs précédentes
-    delete errors.value.image
+    });
+
+    form.image = data.image_url;
+    toast.success("Image téléchargée avec succès");
+    delete errors.value.image;
   } catch (err: any) {
-    console.error('Erreur upload image:', err)
-    errors.value.image = err.response?.data?.message || "Échec d'upload de l'image"
-    toast.error(errors.value.image)
+    console.error("Erreur upload image:", err);
+    errors.value.image = err.response?.data?.message || "Échec d'upload de l'image";
+    toast.error(errors.value.image);
   }
 }
 
-/* --- Soumission --- */
 async function submitCv() {
-  // Vérifier si déjà en cours de soumission
-  if (isSubmitting.value) return
-  
-  // Nettoyer les toasts existants
-  toast.clear()
-  
-  // Validation
+  if (isSubmitting.value) return;
+  toast.clear();
+
   if (!validateForm()) {
-    toast.error('Veuillez corriger les erreurs dans le formulaire')
-    return
+    toast.error("Veuillez corriger les erreurs dans le formulaire");
+    return;
   }
-  
-  isSubmitting.value = true
-  
+
+  isSubmitting.value = true;
+
   try {
-    const { data } = await axios.post('/api/cv', form, {
-      timeout: 30000 // Augmenter le timeout à 30 secondes
-    })
-    
-    toast.success('CV créé avec succès !')
-    
-    // Attendre un peu avant de rediriger
-    setTimeout(() => {
-      const from = route.query.from
-      
-      if (from === 'mescv') {
-        router.push('/mescv') // Revenir sur la liste Mes CV
-      } else {
-        // S'assurer que l'ID est un string avant de l'utiliser dans la route
-        router.push({ 
-          name: 'Aftercvpostuler', 
-          params: { id: String(data.id) } 
-        })
-      }
-    }, 1000)
+    const { data } = await axios.post("/api/cv", form, {
+      timeout: 30000,
+    });
+
+    toast.success("CV créé avec succès !");
+    router.push({ name: "Aftercvpostuler", params: { id: data.id } });
   } catch (err: any) {
-    console.error('Erreur création CV:', err)
-    const errorMessage = err.response?.data?.message || 'Erreur de création du CV'
-    toast.error(errorMessage)
+    console.error("Erreur création CV:", err);
+    toast.error("Erreur lors de la création du CV");
   } finally {
-    isSubmitting.value = false
+    isSubmitting.value = false;
   }
 }
 </script>
@@ -365,10 +396,9 @@ async function submitCv() {
 .cv-title {
   position: absolute;
   top: 0;
-  left: 0;
+  right: 150px;
   width: 100%;
-  background-color: #2c3e50;
-  color: #fff;
+  color: #2c3e50;
   text-align: center;
   padding: 1rem;
   margin: 0;
@@ -380,7 +410,7 @@ async function submitCv() {
 .cv-left-column {
   flex: 1;
   min-width: 300px;
-  background-color: #2c3e50;
+  background-color: #0f3164;
   color: #fff;
   padding: 6rem 2rem 2rem;
 }
@@ -528,7 +558,9 @@ textarea {
   justify-content: center;
 }
 
-.submit-btn, .download-btn, .next-btn {
+.submit-btn,
+.download-btn,
+.next-btn {
   padding: 1rem 2rem;
   color: #fff;
   border: none;
@@ -551,7 +583,9 @@ textarea {
   background-color: #9b59b6;
 }
 
-.submit-btn:hover, .download-btn:hover, .next-btn:hover {
+.submit-btn:hover,
+.download-btn:hover,
+.next-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
@@ -568,7 +602,8 @@ textarea {
   background-color: #8e44ad;
 }
 
-.submit-btn:disabled, .next-btn:disabled {
+.submit-btn:disabled,
+.next-btn:disabled {
   background-color: #95a5a6;
   cursor: not-allowed;
   transform: none;
@@ -642,12 +677,14 @@ textarea {
     width: 100%;
     padding-top: 5rem;
   }
-  
+
   .form-actions {
     flex-direction: column;
   }
-  
-  .submit-btn, .download-btn, .next-btn {
+
+  .submit-btn,
+  .download-btn,
+  .next-btn {
     width: 100%;
   }
 }

@@ -109,44 +109,31 @@ const formatDate = (dateStr: string) => {
   const date = new Date(dateStr)
   return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 }
-
-// Récupération de l'offre
 onMounted(async () => {
   try {
-    const res = await axios.get(`/api/offres/${route.params.id}`)
-    offer.value = res.data
-  } catch (e) {
-    console.error(e)
-  }
-})
-
-// Charger le CV
-async function loadCv() {
-  isLoading.value = true
-  error.value = null
-  try {
-    const { data } = await axios.get(`/api/cv/${route.params.id}`)
-    cv.value = {
-      ...data,
-      experiences: data.experiences || [],
-      educations_formations: data.educations_formations || [],
-      competences: data.competences || [],
-      langues: data.langues || [],
-      projets: data.projets || []
+    const res = await axios.get(`/api/offres/${route.params.id}`);
+    offer.value = res.data;
+  } catch (error) {
+    console.error('Erreur lors de la récupération de l\'offre:', error);
+    if (error.response && error.response.status === 404) {
+      error.value = 'Offre non trouvée.';
+    } else {
+      error.value = 'Une erreur est survenue lors de la récupération de l\'offre.';
     }
-  } catch (e: any) {
-    error.value = e.response?.data?.message || 'Impossible de charger le CV'
-  } finally {
-    isLoading.value = false
   }
-}
-onMounted(loadCv)
 
-// Style de l'image de profil
-const DEFAULT_PROFILE = '/assets/default-profile.png'
-const profileImageStyle = computed(() => ({
-  backgroundImage: `url(${cv.value?.image || DEFAULT_PROFILE})`
-}))
+  try {
+    const res = await axios.get(`/api/cv/${route.params.id}`);
+    cv.value = res.data;
+  } catch (error) {
+    console.error('Erreur lors de la récupération du CV:', error);
+    if (error.response && error.response.status === 404) {
+      error.value = 'CV non trouvé.';
+    } else {
+      error.value = 'Une erreur est survenue lors de la récupération du CV.';
+    }
+  }
+});
 
 // Télécharger en PDF
 function downloadPdf() {

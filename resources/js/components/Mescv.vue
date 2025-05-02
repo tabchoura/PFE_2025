@@ -72,8 +72,8 @@ const constulercv = (id) => {
 };
 
 </script>
-
 <style scoped>
+/* Styles pour la section Mes CV */
 .mes-cv-container {
   max-width: 800px;
   margin: 2rem auto;

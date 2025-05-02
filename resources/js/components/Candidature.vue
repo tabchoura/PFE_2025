@@ -1,6 +1,5 @@
 <template>
   <div class="candidatures-container">
-    <!-- Titre de la section des candidatures avec icône -->
     <div class="header-actions">
       <h2><i class="fas fa-user-check"></i> Mes candidatures</h2>
     </div>
@@ -13,7 +12,9 @@
     <!-- Gestion des erreurs -->
     <div v-else-if="error" class="error-state">
       <p>{{ error }}</p>
-      <button @click="getCandidatures" class="btn-retry"><i class="fas fa-redo-alt"></i> Réessayer</button>
+      <button @click="getCandidatures" class="btn-retry">
+        <i class="fas fa-redo-alt"></i> Réessayer
+      </button>
     </div>
 
     <!-- Affichage quand il n'y a pas de candidatures -->
@@ -23,14 +24,30 @@
 
     <!-- Affichage des candidatures -->
     <ul v-else class="candidature-grid">
-      <li class="candidature-item" v-for="candidature in candidatures" :key="candidature.id">
+      <li
+        class="candidature-item"
+        v-for="candidature in candidatures"
+        :key="candidature.id"
+      >
         <div class="candidature-info">
-          <h3 class="title-offre">{{ candidature.offre.titre }}</h3>
+          <!-- Vérifier que l'offre est définie avant d'afficher -->
+          <h3 class="title-offre" v-if="candidature.offre">
+            {{ candidature.offre.titre }}
+          </h3>
+          <p v-else>Aucune offre associée</p>
         </div>
         <div class="candidature-card-body">
-          <p><strong>Description :</strong> {{ truncateText(candidature.offre.description, 100) }}</p>
-          <p><strong>Salaire :</strong> {{ candidature.offre.salaire }}</p>
-          <p><strong>Message envoyé :</strong> {{ truncateText(candidature.message, 120) }}</p>
+          <p v-if="candidature.offre">
+            <strong>Description :</strong>
+            {{ truncateText(candidature.offre.description, 100) }}
+          </p>
+          <p v-if="candidature.offre">
+            <strong>Salaire :</strong> {{ candidature.offre.salaire }}
+          </p>
+          <p><strong>Statut :</strong> {{ candidature.statut || "En attente" }}</p>
+          <p>
+            <strong>Message envoyé :</strong> {{ truncateText(candidature.message, 120) }}
+          </p>
         </div>
         <div class="candidature-card-footer">
           <button class="voir-button" @click="voirDetails(candidature.id)">
@@ -43,9 +60,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import axios from 'axios';
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import axios from "axios";
 
 const router = useRouter();
 const candidatures = ref([]);
@@ -54,15 +71,13 @@ const error = ref(null);
 
 // Fonction pour tronquer le texte
 const truncateText = (text, maxLength) => {
-  if (!text) return '';
-  return text.length > maxLength 
-    ? text.substring(0, maxLength) + '...' 
-    : text;
+  if (!text) return "";
+  return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 };
 
 // Fonction pour voir les détails d'une candidature
 const voirDetails = (id) => {
-  router.push(`/details-candidature/${id}`);
+  router.push(`/detailscandidature/${id}`);
 };
 
 // Fonction pour récupérer les candidatures depuis l'API
@@ -71,11 +86,39 @@ const getCandidatures = async () => {
   error.value = null;
 
   try {
-    const response = await axios.get('/api/candidatures');
+    await axios.get("/sanctum/csrf-cookie"); // Générer le cookie CSRF
+
+    const response = await axios.get("/api/mescandidatures", {
+      withCredentials: true, // Important pour envoyer les cookies d'authentification
+      headers: {
+        "X-Requested-With": "XMLHttpRequest", // Important pour Sanctum
+        Accept: "application/json",
+      },
+    });
+
+    console.log("Réponse API:", response.data);
     candidatures.value = response.data;
   } catch (err) {
-    error.value = 'Erreur lors de la récupération des candidatures. Veuillez réessayer.';
-    console.error('Erreur lors de la récupération des candidatures:', err);
+    console.error("Erreur lors de la récupération des candidatures:", err);
+
+    if (err.response) {
+      // L'API a répondu avec un statut d'erreur
+      if (err.response.status === 401) {
+        error.value = "Vous devez être connecté pour voir vos candidatures.";
+      } else {
+        error.value = `Erreur: ${
+          err.response.data.message || "Problème lors de la récupération des candidatures"
+        }`;
+      }
+    } else if (err.request) {
+      // La requête a été faite mais pas de réponse
+      error.value =
+        "Impossible de contacter le serveur. Vérifiez votre connexion internet.";
+    } else {
+      // Erreur lors de la configuration de la requête
+      error.value =
+        "Erreur lors de la récupération des candidatures. Veuillez réessayer.";
+    }
   } finally {
     loading.value = false;
   }
@@ -87,7 +130,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Styles pour la section des candidatures */
 .candidatures-container {
   max-width: 900px;
   margin: 2rem auto;
@@ -99,38 +141,63 @@ onMounted(() => {
 }
 
 .header-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #eaeaea;
+  margin-bottom: 2rem;
 }
 
 .header-actions h2 {
-  margin: 0;
   color: #2c3e50;
-  font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-/* Grille de candidatures */
+.loading-state,
+.error-state,
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #7f8c8d;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.error-state {
+  color: #e74c3c;
+}
+
+.btn-retry {
+  margin-top: 1rem;
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 0.7rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.btn-retry:hover {
+  background: #2980b9;
+}
+
 .candidature-grid {
+  list-style: none;
+  padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
 }
 
-/* Cartes de candidatures */
 .candidature-item {
   background: white;
-  margin-bottom: 1.5rem;
   padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .candidature-info h3 {
@@ -139,21 +206,15 @@ onMounted(() => {
   font-size: 1.3rem;
 }
 
-.candidature-card-body {
-  flex-grow: 1;
-}
-
 .candidature-card-body p {
-  font-size: 0.95rem;
-  color: #555;
-  margin-bottom: 10px;
-  line-height: 1.4;
+  margin: 0.5rem 0;
+  color: #34495e;
 }
 
 .candidature-card-footer {
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
 }
 
 .voir-button {
@@ -165,75 +226,16 @@ onMounted(() => {
   font-weight: 600;
   cursor: pointer;
   transition: background 0.3s;
-}
-
-.voir-button i {
-  margin-right: 5px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .voir-button:hover {
   background: #2980b9;
 }
 
-/* États de chargement et d'erreur */
-.loading-state, .error-state, .empty-state {
-  padding: 40px;
-  text-align: center;
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.loading-state:after {
-  content: "";
-  width: 40px;
-  height: 40px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #2980b9;
-  border-radius: 50%;
-  display: block;
-  margin: 15px auto;
-  animation: spin 1s linear infinite;
-}
-
-.btn-retry {
-  margin-top: 15px;
-  padding: 8px 20px;
-  background-color: #2980b9;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-retry:hover {
-  background-color: #3498db;
-}
-
-/* Animation de chargement */
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Media Queries pour le responsive */
-@media (max-width: 768px) {
-  .candidature-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .header-actions {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-
-  .candidature-item {
-    padding: 15px;
-  }
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
+@media (min-width: 768px) {
   .candidature-grid {
     grid-template-columns: repeat(2, 1fr);
   }
