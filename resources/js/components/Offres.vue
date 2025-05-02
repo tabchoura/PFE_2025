@@ -29,151 +29,199 @@
         </div>
 
         <div class="offer-card-body">
-          <p class="description"><strong>Description :</strong> {{ truncateText(offer.description, 100) }}</p>
+          <p class="description">
+            <strong>Description :</strong> {{ truncateText(offer.description, 100) }}
+          </p>
           <div class="offer-details">
-            <p class="salaire"><strong>Salaire :</strong> {{ formatSalaire(offer.salaire) }}</p>
-               
+            <p class="salaire">
+              <strong>Salaire :</strong> {{ formatSalaire(offer.salaire) }}
+            </p>
           </div>
         </div>
 
-
-        <div>
-     </div>
+        <div></div>
 
         <!-- Bouton Voir plus pour afficher le modal d'authentification -->
-        <button class="btn-see-more" @click="checkAuthentication(offer.id)">Voir plus</button>
+        <button class="btn-see-more" @click="checkAuthentication(offer.id)">
+          Voir plus
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Modal pour l'authentification -->
   <Teleport to="body">
-    <div v-if="authModalVisible" class="modal-overlay" :class="{ 'showing': modalShowing }" @click.self="closeAuthModal">
-      <div class="modal-content" :class="{ 'showing': modalShowing }">
+    <div
+      v-if="authModalVisible"
+      class="modal-overlay"
+      :class="{ showing: modalShowing }"
+      @click.self="closeAuthModal"
+    >
+      <div class="modal-content" :class="{ showing: modalShowing }">
         <button class="close-button" @click="closeAuthModal">×</button>
-        
+
         <!-- Login Form -->
         <div class="auth-container">
-    <div class="login-layout">
-      <!-- VISUEL GAUCHE -->
-      <div class="image-container">
-        <!-- L'image est volontairement remplacée par un dégradé pour une première impression plus légère -->
-        <div class="image-overlay">
-          <h1 class="platform-name">Jobgo</h1>
-          <p class="platform-slogan">Connectez talents et opportunités</p>
-        </div>
-      </div>
-             <div class="form-container">
-        <div v-if="page === 'login'" class="auth-box">
-          <!-- Logo -->
-          <div class="logo-container">
-            <i class="fas fa-briefcase logo-icon"></i>
-          </div>
-
-          <h2>Connexion à votre espace</h2>
-
-          <div class="toggle-container">
-            <span :class="{ active: !isRecruteur }">Candidat</span>
-            <label class="switch">
-              <input type="checkbox" v-model="isRecruteur" aria-label="Basculer le type de compte" />
-              <span class="slider"></span>
-            </label>
-            <span :class="{ active: isRecruteur }">Recruteur</span>
-          </div>
-          <form @submit.prevent="login" novalidate>
-            <!-- Email -->
-            <div class="input-group">
-              <label for="email">Email</label>
-              <div class="input-with-icon">
-                <i class="fas fa-envelope input-icon"></i>
-                <input
-                  id="email"
-                  type="email"
-                  placeholder="votre@email.com"
-                  v-model.trim="email"
-                  :class="{ error: emailError }"
-                  @input="emailError = false"
-                  required
-                />
+          <div class="login-layout">
+            <!-- VISUEL GAUCHE -->
+            <div class="image-container">
+              <!-- L'image est volontairement remplacée par un dégradé pour une première impression plus légère -->
+              <div class="image-overlay">
+                <h1 class="platform-name">Jobgo</h1>
+                <p class="platform-slogan">Connectez talents et opportunités</p>
               </div>
-              <p v-if="emailError" class="error-message">
-                <i class="fas fa-exclamation-circle"></i> Email invalide
-              </p>
             </div>
+            <div class="form-container">
+              <div v-if="page === 'login'" class="auth-box">
+                <!-- Logo -->
+                <div class="logo-container">
+                  <i class="fas fa-briefcase logo-icon"></i>
+                </div>
 
-            <!-- Mot de passe -->
-            <div class="input-group">
-              <label for="password">Mot de passe</label>
-              <div class="input-with-icon">
-                <i class="fas fa-lock input-icon"></i>
-                <input
-                  id="password"
-                  :type="showPassword ? 'text' : 'password'"
-                  v-model.trim="password"
-                  placeholder="Votre mot de passe"
-                  :class="{ error: passwordError }"
-                  @input="passwordError = false"
-                  required
-                />
-                <button
-                type="button"
-                class="toggle-password"
-                @click="togglePassword"
-                :aria-label="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
-              >
-                <span v-if="showPassword">
-                  <!-- Eye Off Icon SVG -->
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
-                    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"/>
-                  </svg>
-                </span>
-                <span v-else>
-                  <!-- Eye Icon SVG -->
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
-                    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/>
-                    <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                  </svg>
-                </span>
-              </button>
-              </div>
-              <p v-if="passwordError" class="error-message">
-                <i class="fas fa-exclamation-circle"></i> Mot de passe requis (min. 6 caractères)
-              </p>
-            </div>
+                <h2>Connexion à votre espace</h2>
 
-            <!-- Souvenir / lien mdp -->
-            <div class="remember-forgot">
-              <label class="remember-me">
-                <input type="checkbox" v-model="rememberMe" />
-                <span class="checkmark"></span>
-                Se souvenir de moi
-              </label>
-              <a href="#" class="forgot-password">Mot de passe oublié&nbsp;?</a>
-            </div>
+                <div class="toggle-container">
+                  <span :class="{ active: !isRecruteur }">Candidat</span>
+                  <label class="switch">
+                    <input
+                      type="checkbox"
+                      v-model="isRecruteur"
+                      aria-label="Basculer le type de compte"
+                    />
+                    <span class="slider"></span>
+                  </label>
+                  <span :class="{ active: isRecruteur }">Recruteur</span>
+                </div>
+                <form @submit.prevent="login" novalidate>
+                  <!-- Email -->
+                  <div class="input-group">
+                    <label for="email">Email</label>
+                    <div class="input-with-icon">
+                      <i class="fas fa-envelope input-icon"></i>
+                      <input
+                        id="email"
+                        type="email"
+                        placeholder="votre@email.com"
+                        v-model.trim="email"
+                        :class="{ error: emailError }"
+                        @input="emailError = false"
+                        required
+                      />
+                    </div>
+                    <p v-if="emailError" class="error-message">
+                      <i class="fas fa-exclamation-circle"></i> Email invalide
+                    </p>
+                  </div>
 
-            <!-- Bouton connexion -->
-            <button :disabled="isLoading" type="submit" class="btn-submit">
-              <span v-if="isLoading" class="loading-spinner"></span>
-              <span v-else><i class="fas fa-sign-in-alt"></i> Se connecter</span>
-            </button>
+                  <!-- Mot de passe -->
+                  <div class="input-group">
+                    <label for="password">Mot de passe</label>
+                    <div class="input-with-icon">
+                      <i class="fas fa-lock input-icon"></i>
+                      <input
+                        id="password"
+                        :type="showPassword ? 'text' : 'password'"
+                        v-model.trim="password"
+                        placeholder="Votre mot de passe"
+                        :class="{ error: passwordError }"
+                        @input="passwordError = false"
+                        required
+                      />
+                      <button
+                        type="button"
+                        class="toggle-password"
+                        @click="togglePassword"
+                        :aria-label="
+                          showPassword
+                            ? 'Masquer le mot de passe'
+                            : 'Afficher le mot de passe'
+                        "
+                      >
+                        <span v-if="showPassword">
+                          <!-- Eye Off Icon SVG -->
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            width="20"
+                            height="20"
+                          >
+                            <path
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88"
+                            />
+                          </svg>
+                        </span>
+                        <span v-else>
+                          <!-- Eye Icon SVG -->
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            width="20"
+                            height="20"
+                          >
+                            <path
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"
+                            />
+                            <path
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                          </svg>
+                        </span>
+                      </button>
+                    </div>
+                    <p v-if="passwordError" class="error-message">
+                      <i class="fas fa-exclamation-circle"></i> Mot de passe requis (min.
+                      6 caractères)
+                    </p>
+                  </div>
 
-            <!-- Séparateur -->
-            <div class="or-divider"><span>OU</span></div>
+                  <!-- Souvenir / lien mdp -->
+                  <div class="remember-forgot">
+                    <label class="remember-me">
+                      <input type="checkbox" v-model="rememberMe" />
+                      <span class="checkmark"></span>
+                      Se souvenir de moi
+                    </label>
+                    <a href="#" class="forgot-password">Mot de passe oublié&nbsp;?</a>
+                  </div>
 
-            <!-- Création compte -->
-            <div class="signup-prompt">
-              <h3>
-                Vous n'avez pas de compte
-                <span class="highlight">{{ isRecruteur ? 'Recruteur' : 'Candidat' }}</span>&nbsp;?
-              </h3>
-              <button class="btn-create" @click.prevent="goToSignup">
-                <i class="fas fa-user-plus"></i> Créer un compte
-              </button>
-            </div>
-          </form>
+                  <!-- Bouton connexion -->
+                  <button :disabled="isLoading" type="submit" class="btn-submit">
+                    <span v-if="isLoading" class="loading-spinner"></span>
+                    <span v-else><i class="fas fa-sign-in-alt"></i> Se connecter</span>
+                  </button>
+
+                  <!-- Séparateur -->
+                  <div class="or-divider"><span>OU</span></div>
+
+                  <!-- Création compte -->
+                  <div class="signup-prompt">
+                    <h3>
+                      Vous n'avez pas de compte
+                      <span class="highlight">{{
+                        isRecruteur ? "Recruteur" : "Candidat"
+                      }}</span
+                      >&nbsp;?
+                    </h3>
+                    <button class="btn-create" @click.prevent="goToSignup">
+                      <i class="fas fa-user-plus"></i> Créer un compte
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           </div>
@@ -184,9 +232,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import axios from 'axios';
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import axios from "axios";
 import recrutlogin from "../../assets/authentification.jpg";
 
 const router = useRouter();
@@ -198,10 +246,10 @@ const modalShowing = ref(false);
 const selectedOfferId = ref(null);
 
 // Auth variables
-const email = ref('');
-const password = ref('');
+const email = ref("");
+const password = ref("");
 const isRecruteur = ref(false);
-const page = ref('login');
+const page = ref("login");
 const isLoading = ref(false);
 const emailError = ref(false);
 const passwordError = ref(false);
@@ -215,11 +263,11 @@ const getOffres = async () => {
   error.value = null;
 
   try {
-    const response = await axios.get('/api/offres');
+    const response = await axios.get("/api/offres");
     offres.value = response.data;
   } catch (err) {
-    error.value = 'Erreur lors de la récupération des offres. Veuillez réessayer.';
-    console.error('Erreur lors de la récupération des offres:', err);
+    error.value = "Erreur lors de la récupération des offres. Veuillez réessayer.";
+    console.error("Erreur lors de la récupération des offres:", err);
   } finally {
     loading.value = false;
   }
@@ -231,19 +279,20 @@ onMounted(() => {
 
 // Fonction pour tronquer le texte (pour la description)
 const truncateText = (text, maxLength) => {
-  if (!text) return '';
-  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+  if (!text) return "";
+  return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 };
 
 // Fonction pour formater le salaire (si nécessaire)
 const formatSalaire = (salaire) => {
-  if (!salaire) return 'Non précisé';
+  if (!salaire) return "Non précisé";
   return salaire;
 };
 
 const checkAuthentication = (offerId) => {
-  const userSession = localStorage.getItem('userSession') || sessionStorage.getItem('userSession');
-  
+  const userSession =
+    localStorage.getItem("userSession") || sessionStorage.getItem("userSession");
+
   if (!userSession) {
     // Ouvrir le modal d'authentification au lieu de rediriger
     openAuthModal(offerId);
@@ -251,7 +300,7 @@ const checkAuthentication = (offerId) => {
     // Si l'utilisateur est connecté, rediriger vers les détails de l'offre
     router.push(`/voirdetails/${offerId}`);
   }
-}
+};
 
 // Fonction pour ouvrir le modal d'authentification avec animation
 const openAuthModal = (offerId) => {
@@ -262,8 +311,6 @@ const openAuthModal = (offerId) => {
     modalShowing.value = true;
   }, 10);
 };
-
-
 
 // Fonction pour fermer le modal d'authentification avec animation
 const closeAuthModal = () => {
@@ -291,16 +338,22 @@ const login = async () => {
     await axios.get("/sanctum/csrf-cookie");
 
     // ✅ Appel login avec email & password uniquement
-    const response = await axios.post("/api/login", {
-      email: email.value,
-      password: password.value
-    }, {
-      withCredentials: true
-    });
+    const response = await axios.post(
+      "/api/login",
+      {
+        email: email.value,
+        password: password.value,
+      },
+      {
+        withCredentials: true,
+      }
+    );
 
     // ✅ Vérification du type de compte
-    if ((isRecruteur.value && response.data.type !== 'recruteur') ||
-        (!isRecruteur.value && response.data.type !== 'candidat')) {
+    if (
+      (isRecruteur.value && response.data.type !== "recruteur") ||
+      (!isRecruteur.value && response.data.type !== "candidat")
+    ) {
       alert("❌ Vous avez sélectionné le mauvais type de compte.");
       isLoading.value = false;
       return;
@@ -319,12 +372,10 @@ const login = async () => {
 
     // Vérifiez si l'ID de l'offre est bien récupéré avant de rediriger
     if (targetId) {
-  router.replace(`/voirdetails/${targetId}`);
-} else {
-  alert("❌ Offre introuvable.");
-}
-
-
+      router.replace(`/voirdetails/${targetId}`);
+    } else {
+      alert("❌ Offre introuvable.");
+    }
   } catch (error) {
     alert("❌ Identifiants incorrects ou utilisateur non trouvé");
     console.error("Erreur lors de la connexion:", error);
@@ -335,7 +386,9 @@ const login = async () => {
 // Fonction pour aller à la page d'inscription
 const goToSignup = () => {
   page.value = isRecruteur.value ? "registerRecruteur" : "registerCandidat";
-  router.push(page.value === "registerRecruteur" ? "/registerRecruteur" : "/registerCandidat");
+  router.push(
+    page.value === "registerRecruteur" ? "/registerRecruteur" : "/registerCandidat"
+  );
 };
 </script>
 
@@ -474,7 +527,9 @@ const goToSignup = () => {
 }
 
 /* États de chargement et d'erreur */
-.loading-state, .error-state, .empty-state {
+.loading-state,
+.error-state,
+.empty-state {
   padding: 40px;
   text-align: center;
   background-color: #fff;
@@ -536,7 +591,7 @@ const goToSignup = () => {
   background-color: #fff;
   border-radius: 12px;
   width: 90%;
-  max-width: 900px;  
+  max-width: 900px;
   max-height: 90vh;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
   border: 1px solid #ddd;
@@ -586,7 +641,7 @@ const goToSignup = () => {
   align-items: center;
   justify-content: center;
   background: #f7f9fc;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .login-layout {
@@ -679,7 +734,7 @@ h2 {
 }
 
 .toggle-container span.active {
-  color: #0468BF;
+  color: #0468bf;
 }
 
 .switch {
@@ -705,7 +760,7 @@ h2 {
 }
 
 .slider::before {
-  content: '';
+  content: "";
   position: absolute;
   height: 18px;
   width: 18px;
@@ -825,7 +880,7 @@ input:checked + .slider::before {
 }
 
 .remember-me input:checked + .checkmark::after {
-  content: '';
+  content: "";
   position: absolute;
   left: 4px;
   top: 0;
@@ -845,7 +900,7 @@ input:checked + .slider::before {
 .btn-submit {
   width: 100%;
   padding: 0.75rem;
-  background: #0468BF;
+  background: #0468bf;
   color: #ffffff;
   border: none;
   border-radius: 0.5rem;
@@ -865,7 +920,7 @@ input:checked + .slider::before {
 }
 
 .btn-submit:hover:not(:disabled) {
-  background: #0468BF;
+  background: #0468bf;
   transform: translateY(-2px);
 }
 
@@ -893,7 +948,7 @@ input:checked + .slider::before {
 
 .or-divider::before,
 .or-divider::after {
-  content: '';
+  content: "";
   flex: 1;
   height: 1px;
   background: #e5e7eb;
@@ -916,7 +971,7 @@ input:checked + .slider::before {
 }
 
 .highlight {
-  color: #0468BF;
+  color: #0468bf;
   font-weight: 700;
 }
 
@@ -927,7 +982,7 @@ input:checked + .slider::before {
   padding: 0.65rem 1.25rem;
   border: 2px solid #1f3d7a;
   background: transparent;
-  color: #0468BF;
+  color: #0468bf;
   border-radius: 0.5rem;
   font-weight: 600;
   cursor: pointer;
@@ -935,7 +990,7 @@ input:checked + .slider::before {
 }
 
 .btn-create:hover {
-  background: #0468BF;
+  background: #0468bf;
   color: #ffffff;
 }
 
@@ -949,4 +1004,4 @@ input:checked + .slider::before {
     height: 200px;
   }
 }
-</style> 
+</style>

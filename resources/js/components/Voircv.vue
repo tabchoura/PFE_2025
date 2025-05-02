@@ -28,9 +28,7 @@
           <p v-if="cv.email" class="info">
             📧 <a :href="`mailto:${cv.email}`">{{ cv.email }}</a>
           </p>
-          <p v-if="cv.adresse" class="info">
-            📍 {{ cv.adresse }}
-          </p>
+          <p v-if="cv.adresse" class="info">📍 {{ cv.adresse }}</p>
         </div>
       </div>
 
@@ -79,102 +77,103 @@
       <button @click="downloadPdf" class="action-btn download-btn">
         📥 Télécharger PDF
       </button>
-      <button @click="modifyCv" class="action-btn edit-btn">
-        ✏️ Modifier
-      </button>
-      <button @click="deleteCv" class="action-btn btn-delete">
-        🗑️ Supprimer
-      </button>
+      <button @click="modifyCv" class="action-btn edit-btn">✏️ Modifier</button>
+      <button @click="deleteCv" class="action-btn btn-delete">🗑️ Supprimer</button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
-import html2pdf from 'html2pdf.js'
+import { ref, onMounted, computed } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import axios from "axios";
+import html2pdf from "html2pdf.js";
 
-const route = useRoute()
-const router = useRouter()
-const cv = ref(null)
-const isLoading = ref(true)
-const error = ref(null)
-const cvElement = ref(null)
+const route = useRoute();
+const router = useRouter();
+const cv = ref(null);
+const isLoading = ref(true);
+const error = ref(null);
+const cvElement = ref(null);
 
 // Charger le CV
 async function loadCv() {
-  const id = route.params.id 
-  isLoading.value = true
-  error.value = null
+  const id = route.params.id;
+  isLoading.value = true;
+  error.value = null;
   try {
-    const { data } = await axios.get(`/api/cv/${id}`)
+    const { data } = await axios.get(`/api/cv/${id}`);
     cv.value = {
       ...data,
       experiences: data.experiences || [],
       educations_formations: data.educations_formations || [],
       competences: data.competences || [],
       langues: data.langues || [],
-      projets: data.projets || []
-    }
+      projets: data.projets || [],
+    };
   } catch (e) {
-    error.value = e.response?.data?.message || 'Impossible de charger le CV'
+    error.value = e.response?.data?.message || "Impossible de charger le CV";
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
 }
-onMounted(loadCv)
+onMounted(loadCv);
 
 // Image de profil
-const DEFAULT_PROFILE = '/assets/default-profile.png'
+const DEFAULT_PROFILE = "/assets/default-profile.png";
 const profileImageStyle = computed(() => ({
-  backgroundImage: `url(${cv.value?.image || DEFAULT_PROFILE})`
-}))
+  backgroundImage: `url(${cv.value?.image || DEFAULT_PROFILE})`,
+}));
 
 // Formatage de date FR
 function formatDate(d) {
-  return new Date(d).toLocaleDateString('fr-FR', {
-    day: 'numeric', month: 'long', year: 'numeric'
-  })
+  return new Date(d).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 }
 
 // Télécharger en PDF
 function downloadPdf() {
-  if (!cvElement.value) return
-  cvElement.value.classList.add('printing')
+  if (!cvElement.value) return;
+  cvElement.value.classList.add("printing");
   html2pdf()
     .set({
       margin: 10,
       filename: `CV_${cv.value.prenom}_${cv.value.nom}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
+      image: { type: "jpeg", quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
     })
     .from(cvElement.value)
     .save()
-    .then(() => cvElement.value?.classList.remove('printing'))
+    .then(() => cvElement.value?.classList.remove("printing"));
 }
 
 // Modifier
 function modifyCv() {
-  const id = route.params.id 
-   router.push({ name: 'Modifiercv', params: { id } })
+  const id = route.params.id;
+  router.push({ name: "Modifiercv", params: { id } });
 }
 
 // Supprimer
 async function deleteCv() {
-  const id = route.params.id 
-  if (!confirm(`Confirmez-vous la suppression du CV de ${cv.value.prenom} ${cv.value.nom} ?`)) return
+  const id = route.params.id;
+  if (
+    !confirm(
+      `Confirmez-vous la suppression du CV de ${cv.value.prenom} ${cv.value.nom} ?`
+    )
+  )
+    return;
   try {
-    await axios.delete(`/api/cv/${id}`)
-    router.push('/monprofile')
+    await axios.delete(`/api/cv/${id}`);
+    router.push("/mescv");
   } catch (e) {
-    alert(e.response?.data?.message || 'Erreur lors de la suppression')
+    alert(e.response?.data?.message || "Erreur lors de la suppression");
   }
 }
 </script>
-
-
 
 <style scoped>
 /* Container général */
@@ -182,7 +181,7 @@ async function deleteCv() {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   max-width: 900px;
   margin: 2rem auto;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   border-radius: 8px;
   overflow: hidden;
   background: white;
@@ -190,18 +189,30 @@ async function deleteCv() {
 
 /* Loader */
 .loading-container {
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: 3rem;
 }
 .loader {
   border: 4px solid #f3f3f3;
   border-top: 4px solid #3498db;
-  border-radius: 50%; width: 40px; height: 40px;
-  animation: spin 1s linear infinite; margin-bottom: 1rem;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
-.loading-text { color: #555; font-size: 1.1rem; }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.loading-text {
+  color: #555;
+  font-size: 1.1rem;
+}
 
 /* Erreur */
 .error-message {
@@ -221,7 +232,9 @@ async function deleteCv() {
   border-radius: 4px;
   cursor: pointer;
 }
-.retry-btn:hover { background: #a93226; }
+.retry-btn:hover {
+  background: #a93226;
+}
 
 /* Aperçu */
 .cv-form.preview-form {
@@ -230,7 +243,14 @@ async function deleteCv() {
   min-height: 100vh;
   animation: fadeIn 0.5s;
 }
-@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 
 .cv-left-column,
 .cv-right-column {
@@ -254,37 +274,58 @@ async function deleteCv() {
   margin-bottom: 1.5rem;
 }
 .profile-picture {
-  width: 150px; height: 150px;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
   background-position: center;
   background-size: cover;
   border: 4px solid #3498db;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   margin: 0 auto;
   transition: transform 0.3s;
 }
-.profile-picture:hover { transform: scale(1.05); }
+.profile-picture:hover {
+  transform: scale(1.05);
+}
 
 /* Titres & infos */
-.cv-title-preview { text-align: center; font-size: 2rem; margin-bottom: 0.5rem; }
-.info {
-  display: flex; align-items: center;
-  font-size: 0.95rem; margin-bottom: 0.8rem;
+.cv-title-preview {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
 }
-.info a { color: #3498db; text-decoration: none; }
-.info a:hover { text-decoration: underline; }
+.info {
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+  margin-bottom: 0.8rem;
+}
+.info a {
+  color: #3498db;
+  text-decoration: none;
+}
+.info a:hover {
+  text-decoration: underline;
+}
 
 /* Sections */
-.section { margin-bottom: 2rem; }
+.section {
+  margin-bottom: 2rem;
+}
 .section-title {
-  font-size: 1.4rem; font-weight: 600;
-  color: #2c3e50; margin-bottom: 1rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1rem;
   border-bottom: 2px solid #3498db;
   padding-bottom: 0.5rem;
 }
 
 /* Listes */
-ul { list-style: none; padding: 0; }
+ul {
+  list-style: none;
+  padding: 0;
+}
 ul li {
   position: relative;
   padding-left: 1.2rem;
@@ -292,12 +333,17 @@ ul li {
 }
 ul li::before {
   content: "•";
-  position: absolute; left: 0;
-  color: #3498db; font-weight: bold;
+  position: absolute;
+  left: 0;
+  color: #3498db;
+  font-weight: bold;
 }
 
 /* Deux colonnes */
-.two-columns { display: flex; gap: 2rem; }
+.two-columns {
+  display: flex;
+  gap: 2rem;
+}
 
 .form-actions {
   display: flex;
@@ -318,7 +364,7 @@ ul li::before {
   font-size: 0.95rem;
   cursor: pointer;
   transition: background 0.3s ease, transform 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .download-btn {
@@ -349,13 +395,24 @@ ul li::before {
 }
 
 /* Impression PDF */
-.printing .cv-left-column { background: #0f3164 !important; }
+.printing .cv-left-column {
+  background: #0f3164 !important;
+}
 
 /* Responsive */
 @media (max-width: 768px) {
-  .cv-form.preview-form { flex-direction: column; }
-  .two-columns { flex-direction: column; }
-  .form-actions { flex-wrap: wrap; }
-  .action-btn { flex: 1; text-align: center; }
+  .cv-form.preview-form {
+    flex-direction: column;
+  }
+  .two-columns {
+    flex-direction: column;
+  }
+  .form-actions {
+    flex-wrap: wrap;
+  }
+  .action-btn {
+    flex: 1;
+    text-align: center;
+  }
 }
 </style>

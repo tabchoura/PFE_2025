@@ -221,7 +221,6 @@
     </form>
   </div>
 </template>
-
 <script setup lang="ts">
 import { reactive, ref, onMounted, computed } from "vue";
 import axios from "axios";
@@ -230,12 +229,14 @@ import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
 const router = useRouter();
+const toast = useToast();
 
 const maxDate = computed(() => {
   const d = new Date();
   d.setFullYear(d.getFullYear() - 18);
   return d.toISOString().split("T")[0];
 });
+
 interface CvForm {
   nom: string;
   prenom: string;
@@ -251,7 +252,6 @@ interface CvForm {
   image: string;
 }
 
-const toast = useToast();
 const form = reactive<CvForm>({
   nom: "",
   prenom: "",
@@ -317,14 +317,14 @@ async function handleImage(e: Event) {
 
   if (file.size > 5 * 1024 * 1024) {
     errors.value.image = "L'image ne doit pas dépasser 5MB";
-    toast.error("L'image ne doit pas dépasser 5MB");
+    toast.error(errors.value.image);
     return;
   }
 
   const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
   if (!allowedTypes.includes(file.type)) {
     errors.value.image = "Format d'image non supporté (JPG ou PNG uniquement)";
-    toast.error("Format d'image non supporté (JPG ou PNG uniquement)");
+    toast.error(errors.value.image);
     return;
   }
 
@@ -335,11 +335,8 @@ async function handleImage(e: Event) {
 
   try {
     const { data } = await axios.post("/api/ajouterimage", fd, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+      headers: { "Content-Type": "multipart/form-data" },
     });
-
     form.image = data.image_url;
     toast.success("Image téléchargée avec succès");
     delete errors.value.image;
@@ -349,7 +346,6 @@ async function handleImage(e: Event) {
     toast.error(errors.value.image);
   }
 }
-
 async function submitCv() {
   if (isSubmitting.value) return;
   toast.clear();
@@ -360,14 +356,32 @@ async function submitCv() {
   }
 
   isSubmitting.value = true;
+  const from = route.query.from;
+  const offreId = route.query.offreId;
 
   try {
-    const { data } = await axios.post("/api/cv", form, {
-      timeout: 30000,
-    });
-
+    const { data } = await axios.post("/api/cv", form, { timeout: 30000 });
     toast.success("CV créé avec succès !");
-    router.push({ name: "Aftercvpostuler", params: { id: data.id } });
+
+    if (from === "postuler" && offreId) {
+      // Candidat vient du bouton postuler, on envoie la candidature automatiquement
+      try {
+        await axios.post(`/api/offres/${offreId}/postuler`, {
+          cv_id: data.id,
+          message: null,
+          statut: "En attente",
+        });
+        toast.success("Candidature envoyée automatiquement !");
+        router.push("/candidature"); // Redirection vers les candidatures
+        return;
+      } catch (postulerError) {
+        console.error("Erreur lors de la candidature automatique:", postulerError);
+        toast.error("CV créé, mais erreur lors de la candidature.");
+      }
+    }
+
+    // Sinon, c'est juste un ajout de CV → retour à la page "mes CV"
+    router.push("/mescv");
   } catch (err: any) {
     console.error("Erreur création CV:", err);
     toast.error("Erreur lors de la création du CV");

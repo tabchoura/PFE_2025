@@ -1,6 +1,6 @@
 <template>
   <!-- Détails de l'offre -->
-  <div class="offer-details" v-if="offer">
+  <div v-if="offer" class="offer-details">
     <h1>{{ offer.titre }}</h1>
     <p><strong>Description:</strong> {{ offer.description }}</p>
     <p><strong>Salaire:</strong> {{ offer.salaire }}</p>
@@ -12,23 +12,24 @@
     <!-- Loader -->
     <div v-if="isLoading" class="loading-container">
       <div class="loader"></div>
-      <p class="loading-text">Chargement du CV…</p>
+      <p class="loading-text">Chargement du CV et de l'offre…</p>
     </div>
 
     <!-- Message d'erreur -->
     <div v-else-if="error" class="error-message">
       <p>{{ error }}</p>
-      <button @click="loadCv" class="retry-btn">Réessayer</button>
+      <button @click="loadData" class="retry-btn">Réessayer</button>
     </div>
 
-    <!-- Contenu du CV -->
+    <!-- Contenu du CV et de l'offre -->
     <div v-else ref="cvElement" class="cv-form preview-form">
       <div class="cv-left-column">
         <div class="profile-section">
           <div class="profile-picture-container">
-            <div class="profile-picture" :style="profileImageStyle" />
+            <div class="profile-picture" :style="profileImageStyle"></div>
           </div>
         </div>
+
         <div class="section">
           <h1 class="cv-title-preview">{{ cv.prenom }} {{ cv.nom }}</h1>
           <p v-if="cv.date_naissance" class="info">
@@ -37,9 +38,7 @@
           <p v-if="cv.email" class="info">
             📧 <a :href="`mailto:${cv.email}`">{{ cv.email }}</a>
           </p>
-          <p v-if="cv.adresse" class="info">
-            📍 {{ cv.adresse }}
-          </p>
+          <p v-if="cv.adresse" class="info">📍 {{ cv.adresse }}</p>
         </div>
       </div>
 
@@ -85,70 +84,94 @@
 
     <!-- Boutons d'actions -->
     <div v-if="cv && !isLoading" class="form-actions">
-      <button @click="downloadPdf" class="action-btn download-btn">📥 Télécharger PDF</button>
+      <button @click="downloadPdf" class="action-btn download-btn">
+        📥 Télécharger PDF
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
-import axios from 'axios'
-import html2pdf from 'html2pdf.js'
+import { ref, onMounted, computed } from "vue";
+import { useRoute } from "vue-router";
+import axios from "axios";
+import html2pdf from "html2pdf.js";
 
-const route = useRoute()
-const cv = ref<any>(null)
-const offer = ref<any>(null)
-const isLoading = ref(true)
-const error = ref<string | null>(null)
-const cvElement = ref<HTMLElement | null>(null)
+const route = useRoute();
+const cv = ref<any>(null);
+const offer = ref<any>(null);
+const offerId = route.params.offerId as string;
+const cvId = route.params.cvId as string;
+const isLoading = ref(true);
+const error = ref<string | null>(null);
+const cvElement = ref<HTMLElement | null>(null);
 
-// Fonction pour formater les dates
-const formatDate = (dateStr: string) => {
-  if (!dateStr) return 'Date inconnue'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
-}
-onMounted(async () => {
-  try {
-    const res = await axios.get(`/api/offres/${route.params.id}`);
-    offer.value = res.data;
-  } catch (error) {
-    console.error('Erreur lors de la récupération de l\'offre:', error);
-    if (error.response && error.response.status === 404) {
-      error.value = 'Offre non trouvée.';
-    } else {
-      error.value = 'Une erreur est survenue lors de la récupération de l\'offre.';
-    }
+const profileImageStyle = computed(() => {
+  if (cv.value?.profilePictureUrl) {
+    return {
+      backgroundImage: `url(${cv.value.profilePictureUrl})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+    };
   }
-
-  try {
-    const res = await axios.get(`/api/cv/${route.params.id}`);
-    cv.value = res.data;
-  } catch (error) {
-    console.error('Erreur lors de la récupération du CV:', error);
-    if (error.response && error.response.status === 404) {
-      error.value = 'CV non trouvé.';
-    } else {
-      error.value = 'Une erreur est survenue lors de la récupération du CV.';
-    }
-  }
+  return { backgroundColor: "#ccc" };
 });
 
-// Télécharger en PDF
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return "Date inconnue";
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+};
+
+async function loadData() {
+  isLoading.value = true;
+  error.value = null;
+
+  try {
+    const offerResponse = await axios.get(`/api/offres/${offerId}`);
+    offer.value = offerResponse.data;
+  } catch (error) {
+    console.error("Erreur lors de la récupération de l'offre:", error);
+    error.value = "Offre non trouvée.";
+  }
+
+  try {
+    const cvResponse = await axios.get(`/api/cv/${cvId}`);
+    cv.value = {
+      ...cvResponse.data,
+      experiences: cvResponse.data.experiences || [],
+      educations_formations: cvResponse.data.educations_formations || [],
+      competences: cvResponse.data.competences || [],
+      langues: cvResponse.data.langues || [],
+      projets: cvResponse.data.projets || [],
+    };
+  } catch (e) {
+    console.error("Erreur lors de la récupération du CV:", e);
+    error.value = "CV non trouvé.";
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+onMounted(loadData);
+
 function downloadPdf() {
-  if (!cvElement.value) return
-  cvElement.value.classList.add('printing')
+  if (!cvElement.value) return;
+  cvElement.value.classList.add("printing");
   html2pdf()
     .set({
       margin: 10,
       filename: `CV_${cv.value.prenom}_${cv.value.nom}.pdf`,
       html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
     })
     .from(cvElement.value)
     .save()
-    .finally(() => cvElement.value?.classList.remove('printing'))
+    .finally(() => cvElement.value?.classList.remove("printing"));
 }
 </script>
 
@@ -217,20 +240,30 @@ strong {
   font-weight: 600;
 }
 
-.offer-details p:first-child { margin-top: 0; }
-.offer-details p:last-child { margin-bottom: 0; }
+.offer-details p:first-child {
+  margin-top: 0;
+}
+.offer-details p:last-child {
+  margin-bottom: 0;
+}
 
 @media (max-width: 768px) {
-  .offer-details { padding: 20px; }
-  h1 { font-size: 1.8rem; }
-  p { font-size: 1rem; }
+  .offer-details {
+    padding: 20px;
+  }
+  h1 {
+    font-size: 1.8rem;
+  }
+  p {
+    font-size: 1rem;
+  }
 }
 
 .cv-container {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   max-width: 900px;
   margin: 2rem auto;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   border-radius: 8px;
   overflow: hidden;
   background: white;
@@ -244,8 +277,10 @@ strong {
 }
 
 .loading-container {
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: 3rem;
 }
 
@@ -273,37 +308,60 @@ strong {
 }
 
 .profile-picture {
-  width: 150px; height: 150px;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
   background-position: center;
   background-size: cover;
   border: 4px solid #3498db;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   margin: 0 auto;
   transition: transform 0.3s;
 }
 
-.profile-picture:hover { transform: scale(1.05); }
-.cv-title-preview { text-align: center; font-size: 2rem; margin-bottom: 0.5rem; }
-
-.info {
-  display: flex; align-items: center;
-  font-size: 0.95rem; margin-bottom: 0.8rem;
+.profile-picture:hover {
+  transform: scale(1.05);
 }
 
-.info a { color: #3498db; text-decoration: none; }
-.info a:hover { text-decoration: underline; }
+.cv-title-preview {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
 
-.section { margin-bottom: 2rem; }
+.info {
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+  margin-bottom: 0.8rem;
+}
+
+.info a {
+  color: #3498db;
+  text-decoration: none;
+}
+
+.info a:hover {
+  text-decoration: underline;
+}
+
+.section {
+  margin-bottom: 2rem;
+}
 
 .section-title {
-  font-size: 1.4rem; font-weight: 600;
-  color: #2c3e50; margin-bottom: 1rem;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 1rem;
   border-bottom: 2px solid #3498db;
   padding-bottom: 0.5rem;
 }
 
-ul { list-style: none; padding: 0; }
+ul {
+  list-style: none;
+  padding: 0;
+}
 
 ul li {
   position: relative;
@@ -313,42 +371,74 @@ ul li {
 
 ul li::before {
   content: "•";
-  position: absolute; left: 0;
-  color: #3498db; font-weight: bold;
+  position: absolute;
+  left: 0;
+  color: #3498db;
+  font-weight: bold;
 }
 
-.two-columns { display: flex; gap: 2rem; }
+.two-columns {
+  display: flex;
+  gap: 2rem;
+}
 
-/* Boutons d'actions */
 .form-actions {
-  display: flex; justify-content: center; gap: 1rem;
-  padding: 1.5rem; background: #f8f9fa; border-top: 1px solid #eee;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-top: 1px solid #eee;
 }
 
 .action-btn {
-  display: flex; align-items: center; gap: 0.5rem;
-  padding: 0.8rem 1.5rem; border: none; border-radius: 4px;
-  font-weight: 600; cursor: pointer; transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
 }
 
-.download-btn { background: #27ae60; color: white; }
+.download-btn {
+  background: #27ae60;
+  color: white;
+}
 
-.download-btn:hover { background: #219653; transform: translateY(-2px); }
+.download-btn:hover {
+  background: #219653;
+  transform: translateY(-2px);
+}
 
-.printing .cv-left-column { background: #2c3e50 !important; }
+.printing .cv-left-column {
+  background: #2c3e50 !important;
+}
 
 @media (max-width: 768px) {
-  .cv-form.preview-form { flex-direction: column; }
-  .two-columns { flex-direction: column; }
-  .form-actions { flex-wrap: wrap; }
-  .action-btn { flex: 1; }
+  .cv-form.preview-form {
+    flex-direction: column;
+  }
+  .two-columns {
+    flex-direction: column;
+  }
+  .form-actions {
+    flex-wrap: wrap;
+  }
+  .action-btn {
+    flex: 1;
+  }
 }
 
 .loader {
   border: 4px solid #f3f3f3;
   border-top: 4px solid #3498db;
-  border-radius: 50%; width: 40px; height: 40px;
-  animation: spin 1s linear infinite; margin-bottom: 1rem;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
 }
-
 </style>

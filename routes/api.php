@@ -16,7 +16,6 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
 // Public route for viewing offer details
-Route::get('/offres/{id}', [OfferController::class, 'voirdetails']);
 
 // Middleware for authenticated routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -35,6 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/offres/{id}', [OfferController::class, 'update']);
     Route::delete('/offres/{id}', [OfferController::class, 'destroy']);
     Route::post('/offres/{id}/postuler', [OfferController::class, 'postuler']); // Postuler route
+    Route::get('/offres/{id}', [OfferController::class, 'show']);
 
     // CV-related routes
     Route::apiResource('cv', CvController::class);

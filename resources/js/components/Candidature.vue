@@ -4,12 +4,10 @@
       <h2><i class="fas fa-user-check"></i> Mes candidatures</h2>
     </div>
 
-    <!-- Gestion des états de chargement -->
     <div v-if="loading" class="loading-state">
       <p>Chargement des candidatures...</p>
     </div>
 
-    <!-- Gestion des erreurs -->
     <div v-else-if="error" class="error-state">
       <p>{{ error }}</p>
       <button @click="getCandidatures" class="btn-retry">
@@ -17,12 +15,10 @@
       </button>
     </div>
 
-    <!-- Affichage quand il n'y a pas de candidatures -->
     <div v-else-if="candidatures.length === 0" class="empty-state">
       <p>Aucune candidature faite pour le moment</p>
     </div>
 
-    <!-- Affichage des candidatures -->
     <ul v-else class="candidature-grid">
       <li
         class="candidature-item"
@@ -30,7 +26,6 @@
         :key="candidature.id"
       >
         <div class="candidature-info">
-          <!-- Vérifier que l'offre est définie avant d'afficher -->
           <h3 class="title-offre" v-if="candidature.offre">
             {{ candidature.offre.titre }}
           </h3>
@@ -50,16 +45,17 @@
           </p>
         </div>
         <div class="candidature-card-footer">
-          <button class="voir-button" @click="voirDetails(candidature.id)">
-            <i class="fas fa-eye"></i> Voir détails
-          </button>
+          <button
+            @click="voirDetails(candidature.offre?.id, candidature.cv?.id)"
+            class="voir-button"
+          ></button>
         </div>
       </li>
     </ul>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
@@ -69,40 +65,42 @@ const candidatures = ref([]);
 const loading = ref(true);
 const error = ref(null);
 
-// Fonction pour tronquer le texte
 const truncateText = (text, maxLength) => {
   if (!text) return "";
   return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 };
 
-// Fonction pour voir les détails d'une candidature
-const voirDetails = (id) => {
-  router.push(`/detailscandidature/${id}`);
-};
+function voirDetails(offerId?: number, cvId?: number) {
+  if (!offerId || !cvId) {
+    console.error("ID manquant pour la redirection vers les détails de la candidature.");
+    return;
+  }
+  router.push({
+    name: "DetailsCandidature",
+    params: {
+      offerId: offerId.toString(),
+      cvId: cvId.toString(),
+    },
+  });
+}
 
-// Fonction pour récupérer les candidatures depuis l'API
 const getCandidatures = async () => {
   loading.value = true;
   error.value = null;
 
   try {
-    await axios.get("/sanctum/csrf-cookie"); // Générer le cookie CSRF
-
+    await axios.get("/sanctum/csrf-cookie");
     const response = await axios.get("/api/mescandidatures", {
-      withCredentials: true, // Important pour envoyer les cookies d'authentification
+      withCredentials: true,
       headers: {
-        "X-Requested-With": "XMLHttpRequest", // Important pour Sanctum
+        "X-Requested-With": "XMLHttpRequest",
         Accept: "application/json",
       },
     });
-
-    console.log("Réponse API:", response.data);
     candidatures.value = response.data;
   } catch (err) {
     console.error("Erreur lors de la récupération des candidatures:", err);
-
     if (err.response) {
-      // L'API a répondu avec un statut d'erreur
       if (err.response.status === 401) {
         error.value = "Vous devez être connecté pour voir vos candidatures.";
       } else {
@@ -111,11 +109,9 @@ const getCandidatures = async () => {
         }`;
       }
     } else if (err.request) {
-      // La requête a été faite mais pas de réponse
       error.value =
         "Impossible de contacter le serveur. Vérifiez votre connexion internet.";
     } else {
-      // Erreur lors de la configuration de la requête
       error.value =
         "Erreur lors de la récupération des candidatures. Veuillez réessayer.";
     }
@@ -124,9 +120,7 @@ const getCandidatures = async () => {
   }
 };
 
-onMounted(() => {
-  getCandidatures();
-});
+onMounted(getCandidatures);
 </script>
 
 <style scoped>
@@ -136,8 +130,9 @@ onMounted(() => {
   padding: 2rem;
   background: #f9f9f9;
   border-radius: 10px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
 }
 
 .header-actions {
@@ -149,6 +144,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-size: 1.6rem;
 }
 
 .loading-state,
@@ -159,11 +155,12 @@ onMounted(() => {
   color: #7f8c8d;
   background: white;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .error-state {
   color: #e74c3c;
+  font-weight: bold;
 }
 
 .btn-retry {
@@ -175,7 +172,7 @@ onMounted(() => {
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background 0.3s ease;
 }
 
 .btn-retry:hover {
@@ -194,16 +191,23 @@ onMounted(() => {
   background: white;
   padding: 1.5rem;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.candidature-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
 }
 
 .candidature-info h3 {
   margin: 0;
   color: #3498db;
   font-size: 1.3rem;
+  font-weight: 600;
 }
 
 .candidature-card-body p {
@@ -225,7 +229,7 @@ onMounted(() => {
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: background 0.3s ease, transform 0.2s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -233,11 +237,25 @@ onMounted(() => {
 
 .voir-button:hover {
   background: #2980b9;
+  transform: translateY(-2px);
+}
+
+.voir-button i {
+  font-size: 1.1rem;
 }
 
 @media (min-width: 768px) {
   .candidature-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .header-actions h2 {
+    font-size: 1.4rem;
+  }
+  .candidature-item {
+    padding: 1rem;
   }
 }
 </style>

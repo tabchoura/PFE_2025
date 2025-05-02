@@ -94,25 +94,29 @@ class OfferController extends Controller
     //     $offer->save(); // Sauvegarder les modifications
     
     //     return response()->json(['message' => 'Détails ajoutés avec succès'], 200);
-    public function voirdetails($id)
-    {
-        // Vérification de l'utilisateur authentifié
-        $user = auth()->user();
-        if (!$user) {
-            return response()->json(['message' => 'Utilisateur non authentifié'], 401);
-        }
+    // public function voirdetails($id)
+    // {
+    //     // Vérification de l'utilisateur authentifié
+    //     $user = auth()->user();
+    //     if (!$user) {
+    //         return response()->json(['message' => 'Utilisateur non authentifié'], 401);
+    //     }
     
-        // Chercher l'offre par son ID
-        $offre = Offre::find($id);
+    //     // Afficher l'ID pour vérifier qu'il est bien passéou
+    //      dd($id);
     
-        // Si l'offre n'existe pas, retourner une erreur 404
-        if (!$offre) {
-            return response()->json(['message' => 'Offre non trouvée'], 404);
-        }
+    //     // Chercher l'offre par son ID
+    //     $offre = Offre::find($id);
     
-        // Retourner les détails de l'offre
-        return response()->json($offre, 200);
-    }
+    //     // Si l'offre n'existe pas, retourner une erreur 404
+    //     if (!$offre) {
+    //         return response()->json(['message' => 'Offre non trouvée'], 404);
+    //     }
+    
+    //     // Retourner les détails de l'offre
+    //     return response()->json($offre, 200);
+    // }
+    
     public function postuler(Request $request, $id)
 {
     // Validation des données

@@ -29,7 +29,7 @@ import Modifiercv from '../components/Modifiercv.vue';
 import Mescv from '../components/Mescv.vue';
 import Confirmationpostuler from '../components/Confirmationpostuler.vue';
 import Creercv from '../components/Creercv.vue';
-import Aftercvpostuler from '../components/Aftercvpostuler.vue'
+// import Aftercvpostuler from '../components/Aftercvpostuler.vue'
 import DetailsCandidature from '../components/DetailsCandidature.vue';
 
 
@@ -70,12 +70,29 @@ const routes = [
     { path: '', name: 'CreerCv', component: Creercv }
   ]},
 
-  { path: '/aftercvpostuler', component: CompteCandidat, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'Aftercvpostuler', component: Aftercvpostuler }
-  ]},
-  { path: '/detailscandidature/:id', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+  // { path: '/aftercvpostuler', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+  //   { path: '', name: 'Aftercvpostuler', component: Aftercvpostuler }
+  // ]},
+ // Pour le candidat
+{
+  path:'/detailscandidature/offre/:offerId/cv/:cvId',
+  component: CompteCandidat,
+  meta: { requiresAuth: true },
+  children: [
+    { path: '', name: 'DetailsCandidatureCandidat', component: DetailsCandidature }
+  ]
+},
+
+{
+  path: '/detailscandidature/offre/:offerId/cv/:cvId',
+  component: CompteRecruteur,
+  children: [
     { path: '', name: 'DetailsCandidature', component: DetailsCandidature }
-  ]},
+  ]
+}
+,
+
+  
   { path: '/voircv/:id', component: CompteCandidat, meta: { requiresAuth: true }, children: [
     { path: '', name: 'VoirCv', component: Voircv }
   ]},
@@ -107,7 +124,6 @@ const routes = [
   { path: '/voirdetails/:id' , component: CompteCandidat, meta: { requiresAuth: true }, children: [
     { path: '', name: 'Voirdetails', component: Voirdetails }
   ]},
-
 
   { path: '/postuler/:id', component: CompteCandidat, meta: { requiresAuth: true }, children: [
     { path: '', name: 'Postuler', component: Postuler }

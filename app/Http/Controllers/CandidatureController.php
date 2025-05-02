@@ -29,19 +29,16 @@ class CandidatureController extends Controller
     // 🔵 Voir les candidatures de l'utilisateur authentifié
     public function mescandidatures()
     {
-        // Récupérer l'utilisateur authentifié
-        $user = Auth::user();  // Utilisation correcte de Auth::user()
+        $user = Auth::user();
     
         if (!$user) {
             return response()->json(['message' => 'Utilisateur non authentifié'], 401);
         }
-
-        // Filtrer les candidatures associées à l'utilisateur connecté
+    
         $candidatures = Candidature::where('user_id', $user->id)
-                                   ->with(['offre'])  // Charger l'offre associée
+                                   ->with(['offre', 'cv']) // ✅ ajoute la relation vers le CV
                                    ->get();
     
-        // Retourner les candidatures sous forme de réponse JSON
         return response()->json($candidatures);
     }
     

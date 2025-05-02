@@ -21,7 +21,10 @@
           <div
             v-for="(step, index) in steps"
             :key="index"
-            :class="['step', { active: currentStep === index, completed: index < currentStep }]"
+            :class="[
+              'step',
+              { active: currentStep === index, completed: index < currentStep },
+            ]"
             @click="goToStep(index)"
           >
             <div class="step-icon">
@@ -44,7 +47,11 @@
             <legend>Informations personnelles</legend>
             <div class="grid two-columns">
               <!-- NOM -->
-              <div class="form-group" @mouseenter="showHint('nom')" @mouseleave="hideHint('nom')">
+              <div
+                class="form-group"
+                @mouseenter="showHint('nom')"
+                @mouseleave="hideHint('nom')"
+              >
                 <label for="nom">Nom</label>
                 <input
                   id="nom"
@@ -57,12 +64,18 @@
                   required
                 />
                 <span v-if="errors.nom" class="error-message">{{ errors.nom }}</span>
-                <span v-else-if="hints.nom" class="hint-message">Lettres, espaces, apostrophes et tirets uniquement</span>
+                <span v-else-if="hints.nom" class="hint-message"
+                  >Lettres,Chiffres, espaces, apostrophes et tirets uniquement</span
+                >
                 <span v-if="formData.nom && validFields.nom" class="valid-icon">✓</span>
               </div>
 
               <!-- PRENOM -->
-              <div class="form-group" @mouseenter="showHint('prenom')" @mouseleave="hideHint('prenom')">
+              <div
+                class="form-group"
+                @mouseenter="showHint('prenom')"
+                @mouseleave="hideHint('prenom')"
+              >
                 <label for="prenom">Prénom</label>
                 <input
                   id="prenom"
@@ -74,14 +87,24 @@
                   @input="validateField('prenom')"
                   required
                 />
-                <span v-if="errors.prenom" class="error-message">{{ errors.prenom }}</span>
-                <span v-else-if="hints.prenom" class="hint-message">Lettres, espaces, apostrophes et tirets uniquement</span>
-                <span v-if="formData.prenom && validFields.prenom" class="valid-icon">✓</span>
+                <span v-if="errors.prenom" class="error-message">{{
+                  errors.prenom
+                }}</span>
+                <span v-else-if="hints.prenom" class="hint-message"
+                  >Lettres,Chiffres, espaces, apostrophes et tirets uniquement</span
+                >
+                <span v-if="formData.prenom && validFields.prenom" class="valid-icon"
+                  >✓</span
+                >
               </div>
             </div>
 
             <!-- EMAIL -->
-            <div class="form-group" @mouseenter="showHint('email')" @mouseleave="hideHint('email')">
+            <div
+              class="form-group"
+              @mouseenter="showHint('email')"
+              @mouseleave="hideHint('email')"
+            >
               <label for="email">Email</label>
               <input
                 id="email"
@@ -94,98 +117,100 @@
                 required
               />
               <span v-if="errors.email" class="error-message">{{ errors.email }}</span>
-              <span v-else-if="hints.email" class="hint-message">Format attendu : exemple@domaine.com</span>
+              <span v-else-if="hints.email" class="hint-message"
+                >Format attendu : exemple@domaine.com</span
+              >
               <span v-if="formData.email && validFields.email" class="valid-icon">✓</span>
             </div>
 
-                    <!-- GROUPE DE MOTS DE PASSE -->
-<div class="password-fields-container">
-  <!-- PASSWORD -->
-  <div
-    class="form-group"
-    @mouseenter="showHint('password')"
-    @mouseleave="hideHint('password')"
-  >
-    <label for="password">Mot de passe</label>
-    <div class="password-wrapper">
-      <input
-        id="password"
-        :type="showPassword ? 'text' : 'password'"
-        v-model.trim="formData.password"
-        placeholder="••••••••"
-        :class="inputClass('password')"
-        @input="validateField('password')"
-        autocomplete="new-password"
-        required
-      />
-      <button
-        type="button"
-        class="toggle-password"
-        @click="togglePassword"
-        :aria-label="
-          showPassword
-            ? 'Masquer le mot de passe'
-            : 'Afficher le mot de passe'
-        "
-      >
-        <span aria-hidden="true">{{ showPassword ? "🔒" : "👁️" }}</span>
-      </button>
-    </div>
-    <span v-if="errors.password" class="error-message">{{
-      errors.password
-    }}</span>
-    <span v-else-if="hints.password" class="hint-message"
-      >Au moins 8 caractères, majuscules, minuscules, chiffres et
-      spéciaux</span
-    >
-    <span v-if="formData.password && validFields.password" class="valid-icon"
-      >✓</span
-    >
-  </div>
+            <!-- GROUPE DE MOTS DE PASSE -->
+            <div class="password-fields-container">
+              <!-- PASSWORD -->
+              <div
+                class="form-group"
+                @mouseenter="showHint('password')"
+                @mouseleave="hideHint('password')"
+              >
+                <label for="password">Mot de passe</label>
+                <div class="password-wrapper">
+                  <input
+                    id="password"
+                    :type="showPassword ? 'text' : 'password'"
+                    v-model.trim="formData.password"
+                    placeholder="••••••••"
+                    :class="inputClass('password')"
+                    @input="validateField('password')"
+                    autocomplete="new-password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    class="toggle-password"
+                    @click="togglePassword"
+                    :aria-label="
+                      showPassword
+                        ? 'Masquer le mot de passe'
+                        : 'Afficher le mot de passe'
+                    "
+                  >
+                    <span aria-hidden="true">{{ showPassword ? "🔒" : "👁️" }}</span>
+                  </button>
+                </div>
+                <span v-if="errors.password" class="error-message">{{
+                  errors.password
+                }}</span>
+                <span v-else-if="hints.password" class="hint-message"
+                  >Au moins 8 caractères, majuscules, minuscules, chiffres et
+                  spéciaux</span
+                >
+                <span v-if="formData.password && validFields.password" class="valid-icon"
+                  >✓</span
+                >
+              </div>
 
-  <!-- CONFIRM PASSWORD -->
-  <div
-    class="form-group"
-    @mouseenter="showHint('confirmpassword')"
-    @mouseleave="hideHint('confirmpassword')"
-  >
-    <label for="confirmpassword">Confirmez le mot de passe</label>
-    <div class="password-wrapper">
-      <input
-        id="confirmpassword"
-        :type="showPassword ? 'text' : 'password'"
-        v-model.trim="formData.confirmpassword"
-        placeholder="••••••••"
-        :class="inputClass('confirmpassword')"
-        @input="validateField('confirmpassword')"
-        autocomplete="new-password"
-        required
-      />
-      <button
-        type="button"
-        class="toggle-password"
-        @click="togglePassword"
-        :aria-label="
-          showPassword
-            ? 'Masquer le mot de passe'
-            : 'Afficher le mot de passe'
-        "
-      >
-        <span aria-hidden="true">{{ showPassword ? "🔒" : "👁️" }}</span>
-      </button>
-    </div>
-    <span v-if="errors.confirmpassword" class="error-message">{{
-      errors.confirmpassword
-    }}</span>
-    <span v-else-if="hints.confirmpassword" class="hint-message"
-      >Les deux mots de passe doivent correspondre</span
-    >
-    <span
-      v-if="formData.confirmpassword && validFields.confirmpassword"
-      class="valid-icon"
-      >✓</span
-    >
-  </div>
+              <!-- CONFIRM PASSWORD -->
+              <div
+                class="form-group"
+                @mouseenter="showHint('confirmpassword')"
+                @mouseleave="hideHint('confirmpassword')"
+              >
+                <label for="confirmpassword">Confirmez le mot de passe</label>
+                <div class="password-wrapper">
+                  <input
+                    id="confirmpassword"
+                    :type="showPassword ? 'text' : 'password'"
+                    v-model.trim="formData.confirmpassword"
+                    placeholder="••••••••"
+                    :class="inputClass('confirmpassword')"
+                    @input="validateField('confirmpassword')"
+                    autocomplete="new-password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    class="toggle-password"
+                    @click="togglePassword"
+                    :aria-label="
+                      showPassword
+                        ? 'Masquer le mot de passe'
+                        : 'Afficher le mot de passe'
+                    "
+                  >
+                    <span aria-hidden="true">{{ showPassword ? "🔒" : "👁️" }}</span>
+                  </button>
+                </div>
+                <span v-if="errors.confirmpassword" class="error-message">{{
+                  errors.confirmpassword
+                }}</span>
+                <span v-else-if="hints.confirmpassword" class="hint-message"
+                  >Les deux mots de passe doivent correspondre</span
+                >
+                <span
+                  v-if="formData.confirmpassword && validFields.confirmpassword"
+                  class="valid-icon"
+                  >✓</span
+                >
+              </div>
             </div>
           </fieldset>
 
@@ -194,7 +219,11 @@
             <legend>Détails administratifs</legend>
             <div class="grid two-columns">
               <!-- CIN -->
-              <div class="form-group" @mouseenter="showHint('cin')" @mouseleave="hideHint('cin')">
+              <div
+                class="form-group"
+                @mouseenter="showHint('cin')"
+                @mouseleave="hideHint('cin')"
+              >
                 <label for="cin">CIN</label>
                 <input
                   id="cin"
@@ -208,12 +237,18 @@
                   required
                 />
                 <span v-if="errors.cin" class="error-message">{{ errors.cin }}</span>
-                <span v-else-if="hints.cin" class="hint-message">Le CIN doit contenir exactement 8 chiffres</span>
+                <span v-else-if="hints.cin" class="hint-message"
+                  >Le CIN doit contenir exactement 8 chiffres</span
+                >
                 <span v-if="formData.cin && validFields.cin" class="valid-icon">✓</span>
               </div>
 
               <!-- PHONE -->
-              <div class="form-group" @mouseenter="showHint('phone')" @mouseleave="hideHint('phone')">
+              <div
+                class="form-group"
+                @mouseenter="showHint('phone')"
+                @mouseleave="hideHint('phone')"
+              >
                 <label for="phone">Téléphone</label>
                 <input
                   id="phone"
@@ -228,15 +263,23 @@
                   required
                 />
                 <span v-if="errors.phone" class="error-message">{{ errors.phone }}</span>
-                <span v-else-if="hints.phone" class="hint-message">Numéro sans indicatif, 8 chiffres</span>
-                <span v-if="formData.phone && validFields.phone" class="valid-icon">✓</span>
+                <span v-else-if="hints.phone" class="hint-message"
+                  >Numéro sans indicatif, 8 chiffres</span
+                >
+                <span v-if="formData.phone && validFields.phone" class="valid-icon"
+                  >✓</span
+                >
               </div>
             </div>
 
             <!-- DATE & PLACE OF BIRTH -->
             <div class="grid two-columns">
               <!-- DATE -->
-              <div class="form-group" @mouseenter="showHint('date_naissance')" @mouseleave="hideHint('date_naissance')">
+              <div
+                class="form-group"
+                @mouseenter="showHint('date_naissance')"
+                @mouseleave="hideHint('date_naissance')"
+              >
                 <label for="date_naissance">Date de naissance</label>
                 <input
                   id="date_naissance"
@@ -248,13 +291,25 @@
                   autocomplete="bday"
                   required
                 />
-                <span v-if="errors.date_naissance" class="error-message">{{ errors.date_naissance }}</span>
-                <span v-else-if="hints.date_naissance" class="hint-message">Vous devez avoir au moins 18 ans</span>
-                <span v-if="formData.date_naissance && validFields.date_naissance" class="valid-icon">✓</span>
+                <span v-if="errors.date_naissance" class="error-message">{{
+                  errors.date_naissance
+                }}</span>
+                <span v-else-if="hints.date_naissance" class="hint-message"
+                  >Vous devez avoir au moins 18 ans</span
+                >
+                <span
+                  v-if="formData.date_naissance && validFields.date_naissance"
+                  class="valid-icon"
+                  >✓</span
+                >
               </div>
 
               <!-- LIEU -->
-              <div class="form-group" @mouseenter="showHint('lieudenaissance')" @mouseleave="hideHint('lieudenaissance')">
+              <div
+                class="form-group"
+                @mouseenter="showHint('lieudenaissance')"
+                @mouseleave="hideHint('lieudenaissance')"
+              >
                 <label for="lieudenaissance">Lieu de naissance</label>
                 <input
                   id="lieudenaissance"
@@ -266,9 +321,17 @@
                   autocomplete="address-level2"
                   required
                 />
-                <span v-if="errors.lieudenaissance" class="error-message">{{ errors.lieudenaissance }}</span>
-                <span v-else-if="hints.lieudenaissance" class="hint-message">Entrez une ville ou commune valide</span>
-                <span v-if="formData.lieudenaissance && validFields.lieudenaissance" class="valid-icon">✓</span>
+                <span v-if="errors.lieudenaissance" class="error-message">{{
+                  errors.lieudenaissance
+                }}</span>
+                <span v-else-if="hints.lieudenaissance" class="hint-message"
+                  >Entrez une ville ou commune valide</span
+                >
+                <span
+                  v-if="formData.lieudenaissance && validFields.lieudenaissance"
+                  class="valid-icon"
+                  >✓</span
+                >
               </div>
             </div>
           </fieldset>
@@ -282,19 +345,35 @@
               <div class="summary-section">
                 <h4>Informations personnelles</h4>
                 <div class="summary-grid">
-                  <div class="summary-item"><label>Nom :</label><span>{{ formData.nom }}</span></div>
-                  <div class="summary-item"><label>Prénom :</label><span>{{ formData.prenom }}</span></div>
-                  <div class="summary-item"><label>Email :</label><span>{{ formData.email }}</span></div>
+                  <div class="summary-item">
+                    <label>Nom :</label><span>{{ formData.nom }}</span>
+                  </div>
+                  <div class="summary-item">
+                    <label>Prénom :</label><span>{{ formData.prenom }}</span>
+                  </div>
+                  <div class="summary-item">
+                    <label>Email :</label><span>{{ formData.email }}</span>
+                  </div>
                 </div>
               </div>
               <!-- ADMIN SUMMARY -->
               <div class="summary-section">
                 <h4>Détails administratifs</h4>
                 <div class="summary-grid">
-                  <div class="summary-item"><label>CIN :</label><span>{{ formData.cin }}</span></div>
-                  <div class="summary-item"><label>Téléphone :</label><span>+212 {{ formData.phone }}</span></div>
-                  <div class="summary-item"><label>Date de naissance :</label><span>{{ formatDate(formData.date_naissance) }}</span></div>
-                  <div class="summary-item"><label>Lieu de naissance :</label><span>{{ formData.lieudenaissance }}</span></div>
+                  <div class="summary-item">
+                    <label>CIN :</label><span>{{ formData.cin }}</span>
+                  </div>
+                  <div class="summary-item">
+                    <label>Téléphone :</label><span>+212 {{ formData.phone }}</span>
+                  </div>
+                  <div class="summary-item">
+                    <label>Date de naissance :</label
+                    ><span>{{ formatDate(formData.date_naissance) }}</span>
+                  </div>
+                  <div class="summary-item">
+                    <label>Lieu de naissance :</label
+                    ><span>{{ formData.lieudenaissance }}</span>
+                  </div>
                 </div>
               </div>
 
@@ -302,8 +381,14 @@
               <div class="terms-checkbox">
                 <input id="termsAccepted" type="checkbox" v-model="termsAccepted" />
                 <label for="termsAccepted">
-                  J'accepte les <a href="#" @click.prevent="showTerms = true">conditions d'utilisation</a>
-                  et la <a href="#" @click.prevent="showPrivacy = true">politique de confidentialité</a>.
+                  J'accepte les
+                  <a href="#" @click.prevent="showTerms = true"
+                    >conditions d'utilisation</a
+                  >
+                  et la
+                  <a href="#" @click.prevent="showPrivacy = true"
+                    >politique de confidentialité</a
+                  >.
                 </label>
               </div>
               <small v-if="errors.terms" class="error-bubble">{{ errors.terms }}</small>
@@ -312,7 +397,12 @@
 
           <!-- ACTION BUTTONS -->
           <div class="form-actions">
-            <button v-if="currentStep > 0" type="button" class="btn-secondary" @click="previousStep">
+            <button
+              v-if="currentStep > 0"
+              type="button"
+              class="btn-secondary"
+              @click="previousStep"
+            >
               <i class="fas fa-arrow-left"></i> Précédent
             </button>
             <button type="submit" class="btn-primary" :disabled="!canProceed">
@@ -321,7 +411,7 @@
               </template>
               <template v-else>
                 <span v-if="loading" class="spinner"></span>
-                {{ loading ? 'Inscription...' : 'S\'inscrire' }}
+                {{ loading ? "Inscription..." : "S'inscrire" }}
               </template>
             </button>
           </div>
@@ -329,7 +419,10 @@
           <!-- NOTIFICATIONS -->
           <transition name="fade">
             <div v-if="success" class="notification success">
-              <p>Inscription réussie ! <router-link to="/LoginCandidat">Connectez‑vous</router-link></p>
+              <p>
+                Inscription réussie !
+                <router-link to="/LoginCandidat">Connectez‑vous</router-link>
+              </p>
             </div>
           </transition>
           <transition name="fade">
@@ -344,16 +437,16 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch } from 'vue';
-import { useRouter } from 'vue-router';
-import api from '@/axios';
+import { ref, reactive, computed, watch } from "vue";
+import { useRouter } from "vue-router";
+import api from "@/axios";
 // import hiringImage from '../..assets/rec';
 
 // === STATE ===
 const router = useRouter();
 const loading = ref(false);
 const success = ref(false);
-const serverError = ref('');
+const serverError = ref("");
 const showPassword = ref(false);
 const showTerms = ref(false);
 const showPrivacy = ref(false);
@@ -381,22 +474,22 @@ function hideHint(field) {
 }
 
 const steps = [
-  { label: 'Informations personnelles' },
-  { label: 'Détails administratifs' },
-  { label: 'Confirmation' },
+  { label: "Informations personnelles" },
+  { label: "Détails administratifs" },
+  { label: "Confirmation" },
 ];
 
 // === FORM DATA ===
 const formData = reactive({
-  nom: '',
-  prenom: '',
-  email: '',
-  password: '',
-  confirmpassword: '',
-  cin: '',
-  phone: '',
-  date_naissance: '',
-  lieudenaissance: '',
+  nom: "",
+  prenom: "",
+  email: "",
+  password: "",
+  confirmpassword: "",
+  cin: "",
+  phone: "",
+  date_naissance: "",
+  lieudenaissance: "",
 });
 
 const errors = reactive({});
@@ -413,28 +506,43 @@ const validFields = reactive({
 });
 
 // === VALIDATION CONSTANTS ===
-const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ'\-\s]+$/;
+const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ0-9'\-\s]+$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // === COMPUTEDS ===
 const maxDate = computed(() => {
   const d = new Date();
   d.setFullYear(d.getFullYear() - 18);
-  return d.toISOString().split('T')[0];
+  return d.toISOString().split("T")[0];
 });
 
 const isStepValid = computed(() => {
   const { value: step } = currentStep;
   return (
-    (step === 0 && validFields.nom && validFields.prenom && validFields.email && validFields.password && validFields.confirmpassword) ||
-    (step === 1 && validFields.cin && validFields.phone && validFields.date_naissance && validFields.lieudenaissance) ||
+    (step === 0 &&
+      validFields.nom &&
+      validFields.prenom &&
+      validFields.email &&
+      validFields.password &&
+      validFields.confirmpassword) ||
+    (step === 1 &&
+      validFields.cin &&
+      validFields.phone &&
+      validFields.date_naissance &&
+      validFields.lieudenaissance) ||
     (step === 2 && termsAccepted.value)
   );
 });
 
-const canProceed = computed(() => (currentStep.value === steps.length - 1 ? isStepValid.value && !loading.value : isStepValid.value));
+const canProceed = computed(() =>
+  currentStep.value === steps.length - 1
+    ? isStepValid.value && !loading.value
+    : isStepValid.value
+);
 
-const progressWidth = computed(() => `${(currentStep.value / (steps.length - 1)) * 100}%`);
+const progressWidth = computed(
+  () => `${(currentStep.value / (steps.length - 1)) * 100}%`
+);
 
 // === VALIDATION ===
 function validateField(field) {
@@ -443,34 +551,35 @@ function validateField(field) {
   const val = formData[field];
 
   switch (field) {
-    case 'nom':
-    case 'prenom':
-    case 'lieudenaissance':
+    case "nom":
+    case "prenom":
+    case "lieudenaissance":
       valid = nameRegex.test(val);
-      if (!valid) errors[field] = 'Format invalide';
+      if (!valid) errors[field] = "Format invalide";
       break;
-    case 'email':
+    case "email":
       valid = emailRegex.test(val);
-      if (!valid) errors[field] = 'Email invalide';
+      if (!valid) errors[field] = "Email invalide";
       break;
-    case 'password':
+    case "password":
       valid = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(val);
-      if (!valid) errors[field] = 'Mot de passe trop faible';
+      if (!valid) errors[field] = "Mot de passe trop faible";
       break;
-    case 'confirmpassword':
+    case "confirmpassword":
       valid = val === formData.password;
-      if (!valid) errors[field] = 'Les mots de passe ne correspondent pas';
+      if (!valid) errors[field] = "Les mots de passe ne correspondent pas";
       break;
-    case 'cin':
-    case 'phone':
+    case "cin":
+    case "phone":
       valid = /^\d{8}$/.test(val);
-      if (!valid) errors[field] = '8 chiffres requis';
+      if (!valid) errors[field] = "8 chiffres requis";
       break;
-    case 'date_naissance':
+    case "date_naissance":
       if (val) {
-        const age = (Date.now() - new Date(val).getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+        const age =
+          (Date.now() - new Date(val).getTime()) / (1000 * 60 * 60 * 24 * 365.25);
         valid = age >= 18;
-        if (!valid) errors[field] = 'Âge minimum : 18 ans';
+        if (!valid) errors[field] = "Âge minimum : 18 ans";
       }
       break;
     default:
@@ -483,8 +592,8 @@ function validateField(field) {
 function inputClass(field) {
   return {
     input: true,
-    'input-error': errors[field],
-    'input-valid': formData[field] && validFields[field],
+    "input-error": errors[field],
+    "input-valid": formData[field] && validFields[field],
   };
 }
 
@@ -501,7 +610,7 @@ function nextStep() {
 
   if (isStepValid.value) {
     currentStep.value += 1;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   } else {
     // force validation display
     Object.keys(validFields).forEach((f) => validateField(f));
@@ -511,7 +620,7 @@ function nextStep() {
 function previousStep() {
   if (currentStep.value > 0) {
     currentStep.value -= 1;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 }
 
@@ -521,7 +630,13 @@ function goToStep(index) {
 
 // === HELPERS ===
 function formatDate(dateString) {
-  return dateString ? new Date(dateString).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+  return dateString
+    ? new Date(dateString).toLocaleDateString("fr-FR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "";
 }
 
 function togglePassword() {
@@ -531,23 +646,23 @@ function togglePassword() {
 // === API ===
 async function register() {
   loading.value = true;
-  serverError.value = '';
+  serverError.value = "";
   try {
-    await api.get('/sanctum/csrf-cookie');
-    await api.post('/api/register', { ...formData, role: 'candidat' });
+    await api.get("/sanctum/csrf-cookie");
+    await api.post("/api/register", { ...formData, role: "candidat" });
     success.value = true;
-    setTimeout(() => router.push('/LoginCandidat'), 2000);
+    setTimeout(() => router.push("/LoginCandidat"), 2000);
   } catch (e) {
     if (e.response?.status === 422) {
       const v = e.response.data?.errors;
       if (v?.email?.length) {
-        errors.email = 'Cet email est déjà utilisé';
+        errors.email = "Cet email est déjà utilisé";
         currentStep.value = 0;
       } else {
-        serverError.value = e.response.data.message || 'Erreur de validation';
+        serverError.value = e.response.data.message || "Erreur de validation";
       }
     } else {
-      serverError.value = e.response?.data?.message || 'Erreur serveur';
+      serverError.value = e.response?.data?.message || "Erreur serveur";
     }
   } finally {
     loading.value = false;
@@ -558,7 +673,6 @@ watch(termsAccepted, (val) => {
   if (val) delete errors.terms;
 });
 </script>
-
 
 <style scoped>
 /* Reset de base */
@@ -571,16 +685,21 @@ watch(termsAccepted, (val) => {
 }
 html {
   font-size: 16px;
-  font-family: 'Inter', sans-serif;
-  background-color: #F7FAFC;
-  color: #1F2937;
+  font-family: "Inter", sans-serif;
+  background-color: #f7fafc;
+  color: #1f2937;
   line-height: 1.6;
 }
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 600;
 }
 a {
-  color: #2A9D8F;
+  color: #2a9d8f;
   text-decoration: none;
 }
 a:hover {
@@ -594,12 +713,12 @@ a:hover {
   align-items: center;
   min-height: 100vh;
   padding: 2rem;
-  background: #F7FAFC;
+  background: #f7fafc;
 }
 .register-card {
   display: flex;
   margin-top: 50px;
-  background: #FFFFFF;
+  background: #ffffff;
   border-radius: 24px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -612,7 +731,7 @@ a:hover {
   position: relative;
   flex: 0 0 40%;
   min-height: 500px;
-  background: #3D90D7;
+  background: #3d90d7;
 }
 .register-image {
   width: 100%;
@@ -622,7 +741,7 @@ a:hover {
 .overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.7));
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7));
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -633,7 +752,7 @@ a:hover {
 }
 .brand-text h2 {
   font-size: 2rem;
-  margin-bottom: .5rem;
+  margin-bottom: 0.5rem;
 }
 .brand-text p {
   font-size: 1rem;
@@ -648,7 +767,7 @@ a:hover {
 .form-title {
   text-align: center;
   font-size: 1.75rem;
-  color: #3D90D7;
+  color: #3d90d7;
   margin-bottom: 1.5rem;
 }
 
@@ -664,35 +783,35 @@ a:hover {
   cursor: pointer;
 }
 .step-icon {
-  margin: 0 auto .5rem;
+  margin: 0 auto 0.5rem;
   width: 48px;
   height: 48px;
-  border: 2px solid #6B7280;
+  border: 2px solid #6b7280;
   border-radius: 50%;
-  background: #FFFFFF;
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all .3s ease;
+  transition: all 0.3s ease;
 }
 .step.active .step-icon {
-  border-color: #3D90D7;
-  background: #3D90D7;
+  border-color: #3d90d7;
+  background: #3d90d7;
   color: white;
 }
 .step.completed .step-icon {
-  border-color: #4EDA92;
-  background: #4EDA92;
+  border-color: #4eda92;
+  background: #4eda92;
   color: white;
 }
 .step-label {
-  font-size: .875rem;
-  color: #6B7280;
-  transition: color .3s ease;
+  font-size: 0.875rem;
+  color: #6b7280;
+  transition: color 0.3s ease;
 }
 .step.active .step-label,
 .step.completed .step-label {
-  color: #3D90D7;
+  color: #3d90d7;
   font-weight: 600;
 }
 
@@ -710,28 +829,28 @@ a:hover {
 .progress-container {
   width: 100%;
   height: 6px;
-  background: #6B7280;
+  background: #6b7280;
   border-radius: 3px;
   overflow: hidden;
   margin-bottom: 2rem;
 }
 .progress-bar {
   height: 100%;
-  background: #3D90D7;
+  background: #3d90d7;
   width: 0;
-  transition: width .4s ease;
+  transition: width 0.4s ease;
 }
 
 /* Fieldsets */
 .form-fieldset {
   border: none;
-  animation: fadeIn .4s ease;
+  animation: fadeIn 0.4s ease;
   margin-bottom: 2rem;
 }
 .form-fieldset legend {
   font-size: 1.25rem;
-  border-bottom: 2px solid #6B7280;
-  padding-bottom: .5rem;
+  border-bottom: 2px solid #6b7280;
+  padding-bottom: 0.5rem;
   margin-bottom: 1rem;
 }
 
@@ -751,38 +870,38 @@ a:hover {
   position: relative;
 }
 .form-group label {
-  margin-bottom: .5rem;
+  margin-bottom: 0.5rem;
   font-weight: 500;
 }
 .input {
   padding: 1rem;
-  border: 2px solid #6B7280;
+  border: 2px solid #6b7280;
   border-radius: 12px;
   font-size: 1rem;
-  transition: border-color .3s ease, box-shadow .3s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 .input:focus {
-  border-color: #3D90D7;
-  box-shadow: 0 0 0 3px rgba(61,144,215,0.2);
+  border-color: #3d90d7;
+  box-shadow: 0 0 0 3px rgba(61, 144, 215, 0.2);
   outline: none;
 }
 .input-error {
-  border-color: #E63946 !important;
+  border-color: #e63946 !important;
 }
 .input-valid {
-  border-color: #4EDA92 !important;
+  border-color: #4eda92 !important;
 }
 
 /* Messages d’aide et d’erreur */
 .hint-message {
-  font-size: .875rem;
-  color: #6B7280;
-  margin-top: .25rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
 }
 .error-message {
-  font-size: .875rem;
-  color: #E63946;
-  margin-top: .25rem;
+  font-size: 0.875rem;
+  color: #e63946;
+  margin-top: 0.25rem;
 }
 
 /* Icônes de validité */
@@ -790,7 +909,7 @@ a:hover {
   position: absolute;
   right: 1rem;
   top: 2.5rem;
-  color: #4EDA92;
+  color: #4eda92;
   font-size: 1.125rem;
 }
 
@@ -801,36 +920,37 @@ a:hover {
   gap: 1rem;
   margin-top: 2rem;
 }
-.btn-primary, .btn-secondary {
+.btn-primary,
+.btn-secondary {
   flex: 1;
-  padding: .75rem 1.5rem;
+  padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform .15s ease, box-shadow .15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: .5rem;
+  gap: 0.5rem;
 }
 .btn-primary {
-  background: #2A9D8F;
+  background: #2a9d8f;
   color: white;
 }
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 }
 .btn-primary:disabled {
-  opacity: .6;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 .btn-primary:focus {
-  outline: 3px solid rgba(42,157,143,0.5);
+  outline: 3px solid rgba(42, 157, 143, 0.5);
 }
 .btn-secondary {
-  background: #3D90D7;
+  background: #3d90d7;
   color: white;
 }
 
@@ -838,7 +958,7 @@ a:hover {
 .spinner {
   width: 1.25rem;
   height: 1.25rem;
-  border: 2px solid rgba(255,255,255,0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: white;
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -849,34 +969,49 @@ a:hover {
   margin-top: 1.5rem;
   padding: 1rem;
   border-radius: 12px;
-  font-size: .875rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  font-size: 0.875rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 .notification.success {
-  background: rgba(78,218,146,0.15);
-  border-left: 4px solid #4EDA92;
-  color: #4EDA92;
+  background: rgba(78, 218, 146, 0.15);
+  border-left: 4px solid #4eda92;
+  color: #4eda92;
 }
 .notification.error {
-  background: rgba(230,57,70,0.15);
-  border-left: 4px solid #E63946;
-  color: #E63946;
+  background: rgba(230, 57, 70, 0.15);
+  border-left: 4px solid #e63946;
+  color: #e63946;
 }
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .register-card { flex-direction: column; }
-  .image-section { flex: none; height: 200px; }
-  .two-columns { grid-template-columns: 1fr; }
+  .register-card {
+    flex-direction: column;
+  }
+  .image-section {
+    flex: none;
+    height: 200px;
+  }
+  .two-columns {
+    grid-template-columns: 1fr;
+  }
 }
 /* Confirmation summary */
 .summary-container {
@@ -888,14 +1023,14 @@ a:hover {
 .summary-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #2A9D8F;
+  color: #2a9d8f;
   text-align: center;
   margin-bottom: 1rem;
 }
 
 .summary-section {
   background: #ffffff;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -904,7 +1039,7 @@ a:hover {
 .summary-section h4 {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #3D90D7;
+  color: #3d90d7;
   margin-bottom: 1rem;
 }
 
@@ -921,14 +1056,13 @@ a:hover {
 
 .summary-item label {
   font-size: 0.875rem;
-  color: #6B7280;
+  color: #6b7280;
 }
 
 .summary-item span {
   font-size: 1rem;
   font-weight: 500;
-  color: #1F2937;
+  color: #1f2937;
   margin-top: 0.25rem;
 }
-
 </style>

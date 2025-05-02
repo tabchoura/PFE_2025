@@ -1,4 +1,3 @@
-
 <template>
   <div class="candidatures-container">
     <h1>Candidatures Reçues</h1>
@@ -10,49 +9,70 @@
     </div>
 
     <ul v-else>
-      <li v-for="candidature in candidatures" :key="candidature.id" class="candidature-item">
+      <li
+        v-for="candidature in candidatures"
+        :key="candidature.id"
+        class="candidature-item"
+      >
         <div class="candidature-info">
-          <h3>{{ candidature.offre.titre }}</h3>
-          <p>Candidat : {{ candidature.cv.prenom }} {{ candidature.cv.nom }}</p>
+          <h3>{{ candidature.offre?.titre || "Offre inconnue" }}</h3>
+          <p>Candidat : {{ candidature.cv?.prenom }} {{ candidature.cv?.nom }}</p>
           <p>Date de candidature : {{ formatDate(candidature.created_at) }}</p>
         </div>
 
-        <button @click="voirDetails(candidature.id)" class="voir-button">
-  👀 Voir plus
-</button>
+        <button
+          @click="voirDetails(candidature.offre?.id, candidature.cv?.id)"
+          class="voir-button"
+        >
+          👀 Voir plus
+        </button>
       </li>
     </ul>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import axios from 'axios'
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import axios from "axios";
 
-const candidatures = ref<any[]>([])
-const loading = ref(true)
-const router = useRouter()
+const candidatures = ref<any[]>([]);
+const loading = ref(true);
+const router = useRouter();
 
 function formatDate(dateStr: string) {
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 }
 
-function voirDetails(id: number) {
-  router.push(`/detailscandidature/${id}`)
+function voirDetails(offerId?: number, cvId?: number) {
+  if (!offerId || !cvId) {
+    console.error("ID manquant pour la redirection vers les détails de la candidature.");
+    return;
+  }
+  router.push({
+    name: "DetailsCandidature",
+    params: {
+      offerId: offerId.toString(),
+      cvId: cvId.toString(),
+    },
+  });
 }
 
 onMounted(async () => {
   try {
-    const { data } = await axios.get('/api/candidatures') 
-    candidatures.value = data
+    const { data } = await axios.get("/api/candidatures");
+    candidatures.value = data;
   } catch (err) {
-    console.error('Erreur lors du chargement des candidatures', err)
+    console.error("Erreur lors du chargement des candidatures", err);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-})
+});
 </script>
 
 <style scoped>
@@ -72,7 +92,8 @@ h1 {
   color: #2c3e50;
 }
 
-.loading, .empty {
+.loading,
+.empty {
   text-align: center;
   color: #7f8c8d;
   font-style: italic;
