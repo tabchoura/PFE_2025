@@ -16,6 +16,9 @@ class Candidature extends Model
         'message',
         'statut'
     ];
+    protected $attributes = [
+        'statut' => 'En attente',
+    ];
 
     // Relation avec l'offre
     public function offre()

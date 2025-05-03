@@ -33,7 +33,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/offres', [OfferController::class, 'store']);
     Route::put('/offres/{id}', [OfferController::class, 'update']);
     Route::delete('/offres/{id}', [OfferController::class, 'destroy']);
-    Route::post('/offres/{id}/postuler', [OfferController::class, 'postuler']); // Postuler route
     Route::get('/offres/{id}', [OfferController::class, 'show']);
 
     // CV-related routes
@@ -42,6 +41,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Candidature-related routes
     Route::apiResource('candidatures', CandidatureController::class);
     // Route::get('/mescandidatures', [CandidatureController::class, 'mescandidatures']);
+    Route::post('/offres/{id}/postuler', [CandidatureController::class, 'postuler']); // Postuler route
 
     // Interview-related routes
     Route::get('/entretiens', [EntretienController::class, 'index']);

@@ -7,13 +7,17 @@
       <input type="text" name="titre" id="titre" v-model="formdata.titre" />
 
       <label for="description">Description</label>
-      <input type="text" name="description" id="description" v-model="formdata.description" />
+      <input
+        type="text"
+        name="description"
+        id="description"
+        v-model="formdata.description"
+      />
 
       <label for="salaire">Salaire</label>
       <input type="text" name="salaire" id="salaire" v-model="formdata.salaire" />
       <label for="details">details</label>
       <input type="text" name="details" id="details" v-model="formdata.details" />
-
 
       <button type="submit">Enregistrer les modifications</button>
     </form>
@@ -21,9 +25,9 @@
 </template>
 
 <script setup>
-import { reactive, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import axios from 'axios';
+import { reactive, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import axios from "axios";
 
 const route = useRoute();
 const router = useRouter();
@@ -31,11 +35,11 @@ const offerId = route.params.id; // Récupérer l'ID de l'offre de la route
 
 // État réactif pour les données du formulaire
 const formdata = reactive({
-  titre: '',
-  description: '',
-  salaire: '',
-  type: '',
-  details:''
+  titre: "",
+  description: "",
+  salaire: "",
+  type: "",
+  details: "",
 });
 
 // Fonction pour récupérer les données de l'offre à modifier
@@ -45,10 +49,9 @@ const getOffer = async () => {
     formdata.titre = response.data.titre;
     formdata.description = response.data.description;
     formdata.salaire = response.data.salaire;
-    formdata.type = response.data.type;
-    formdata.type=response.data.details;
+    formdata.details = response.data.details;
   } catch (error) {
-    console.error('Erreur lors de la récupération de l\'offre:', error);
+    console.error("Erreur lors de la récupération de l'offre:", error);
   }
 };
 
@@ -58,14 +61,14 @@ onMounted(() => {
 });
 
 // Fonction pour envoyer la demande de modification
-const modifier = async () => {
+async function modifier() {
   try {
     const response = await axios.put(`/api/offres/${offerId}`, formdata);
-    router.push('/offresrecruteur'); // Rediriger vers la liste des offres
+    router.push("/offresrecruteur"); // Rediriger vers la liste des offres
   } catch (error) {
     console.error("Erreur lors de la modification de l'offre:", error);
   }
-};
+}
 </script>
 
 <style scoped>

@@ -8,6 +8,32 @@ use Illuminate\Support\Facades\Auth;  // Ajouter le facade Auth
 
 class CandidatureController extends Controller
 {
+    
+    public function postuler(Request $request, $id)
+{
+    // Validation des données
+    $request->validate([
+        'cv_id' => 'required|exists:cvs,id', // Le CV doit exister dans la table `cvs`
+        // 'message' => 'nullable|string|max:1000', // Le message est facultatif
+    ]);
+
+    // Récupération de l'offre avec l'ID
+    // $user_id=auth()->id();    
+    
+    // Créer une nouvelle candidature pour l'offre
+    $candidature = new Candidature();
+    $candidature->message  = $request   ['message'] ?? null;    // ← ici !
+    $candidature->offre_id = $id; // Lier l'offre à la candidature
+    $candidature->cv_id = $request->cv_id; // Lier le CV à la candidature
+  $candidature->user_id =auth()->id();   
+// Récupère 'statut' ou, si absent, 'En attente'
+$candidature->statut = $request->input('statut', 'En attente');
+$candidature->save(); // Sauvegarder la candidature dans la base de données
+
+    return response()->json([
+        'message' => '✅ Candidature envoyée avec succès.'
+    ]);
+}
     // 🔵 Voir toutes les candidatures (optionnel)
     public function index()
     {

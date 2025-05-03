@@ -5,7 +5,7 @@
     <!-- Chargement -->
     <div v-if="loading" class="loading-container">
       <div class="loader"></div>
-      <p class="loading-text">Chargement de vos CV...</p>
+      <p class="loading-text">Chargement ...</p>
     </div>
 
     <!-- Si pas de CV -->
@@ -24,21 +24,23 @@
         <h3 class="offre-title">{{ detailsoffre.titre }}</h3>
         <p class="offre-company">{{ detailsoffre.description }}</p>
         <p class="offre-location">{{ detailsoffre.salaire }}</p>
-        <p> {{ detailsoffre.details }}</p>
+        <p>{{ detailsoffre.details }}</p>
       </div>
 
       <div class="cv-selection" v-if="cvs.length > 1">
         <h3>Sélectionnez le CV à utiliser</h3>
         <div class="cv-list">
-          <div 
-            v-for="(cv, index) in cvs" 
-            :key="index" 
-            :class="['cv-item', { 'selected': selectedCvId === cv.id }]"
+          <div
+            v-for="(cv, index) in cvs"
+            :key="index"
+            :class="['cv-item', { selected: selectedCvId === cv.id }]"
             @click="selectedCvId = cv.id"
           >
             <div class="cv-item-content">
               <span class="cv-name">{{ cv.nom }} {{ cv.prenom }}</span>
-              <span class="cv-date">Mis à jour: {{ formatDate(cv.updated_at || cv.created_at) }}</span>
+              <span class="cv-date"
+                >Mis à jour: {{ formatDate(cv.updated_at || cv.created_at) }}</span
+              >
             </div>
             <div class="check-indicator" v-if="selectedCvId === cv.id">✓</div>
           </div>
@@ -50,16 +52,27 @@
         <p>Êtes-vous sûr de vouloir postuler à cette offre ?</p>
 
         <div class="motivation-section">
-          <label for="motivation" class="motivation-label">Ajoutez un message (optionnel)</label>
-          <textarea id="motivation" v-model="motivationText" class="motivation-textarea" placeholder="Expliquez brièvement pourquoi ce poste vous intéresse..."></textarea>
+          <label for="motivation" class="motivation-label"
+            >Ajoutez un message (optionnel)</label
+          >
+          <textarea
+            id="motivation"
+            v-model="motivationText"
+            class="motivation-textarea"
+            placeholder="Expliquez brièvement pourquoi ce poste vous intéresse..."
+          ></textarea>
         </div>
       </div>
 
       <div class="action-buttons">
-        <button @click="confirmPostuler" class="primary-button confirm-button" :disabled="submitting">
+        <button
+          @click="confirmPostuler"
+          class="primary-button confirm-button"
+          :disabled="submitting"
+        >
           <span class="button-icon" v-if="!submitting">✓</span>
           <span class="loader small-loader" v-else></span>
-          {{ submitting ? 'Envoi en cours...' : 'Confirmer ma candidature' }}
+          {{ submitting ? "Envoi en cours..." : "Confirmer ma candidature" }}
         </button>
         <button @click="cancel" class="secondary-button">Annuler</button>
       </div>
@@ -77,113 +90,122 @@
       <span class="success-icon">✅</span>
       <p>{{ success }}</p>
       <div class="success-actions">
-        <button @click="goToCandidatures" class="primary-button small-button">Voir mes candidatures</button>
-        <button @click="goToOffers" class="secondary-button small-button">Voir d'autres offres</button>
+        <button @click="goToCandidatures" class="primary-button small-button">
+          Voir mes candidatures
+        </button>
+        <button @click="goToOffers" class="secondary-button small-button">
+          Voir d'autres offres
+        </button>
       </div>
     </div>
   </div>
 </template>
 
-
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
+import { ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import axios from "axios";
 
 // Déclaration des variables réactives
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
-const cvs = ref([]) // Tableau des CVs
-const loading = ref(true) // Variable de chargement
-const error = ref(null) // Message d'erreur
-const success = ref(null) // Message de succès
-const submitting = ref(false) // Indicateur de soumission
-const selectedCvId = ref(null) // ID du CV sélectionné
-const motivationText = ref('') // Texte de la lettre de motivation
-const detailsoffre = ref(null) // Détails de l'offre
+const cvs = ref([]); // Tableau des CVs
+const loading = ref(true); // Variable de chargement
+const error = ref(null); // Message d'erreur
+const success = ref(null); // Message de succès
+const submitting = ref(false); // Indicateur de soumission
+const selectedCvId = ref(null); // ID du CV sélectionné
+const motivationText = ref(""); // Texte de la lettre de motivation
+const detailsoffre = ref(null); // Détails de l'offre
 
 // Fonction pour formater les dates
 function formatDate(dateStr) {
-  if (!dateStr) return 'Date inconnue'
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+  if (!dateStr) return "Date inconnue";
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 }
 
 // Récupération des données au montage du composant
 onMounted(async () => {
   try {
-    const offerId = route.params.id
+    const offerId = route.params.id;
     // Charger les données des offres et des CVs en parallèle
     const [offreResponse, cvsResponse] = await Promise.all([
       axios.get(`/api/offres/${offerId}`),
-      axios.get(`/api/cv`) // Récupérer tous les CVs
-    ])
-    detailsoffre.value = offreResponse.data // Détails de l'offre
-    cvs.value = cvsResponse.data // Liste des CVs
+      axios.get(`/api/cv`), // Récupérer tous les CVs
+    ]);
+    detailsoffre.value = offreResponse.data; // Détails de l'offre
+    cvs.value = cvsResponse.data; // Liste des CVs
 
     // Sélectionner le premier CV s'il existe
     if (cvs.value.length > 0) {
-      selectedCvId.value = cvs.value[0].id
+      selectedCvId.value = cvs.value[0].id;
     }
   } catch (e) {
-    error.value = e.response?.data?.message || 'Impossible de charger les données nécessaires'
+    error.value =
+      e.response?.data?.message || "Impossible de charger les données nécessaires";
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-})
+});
 
 // Fonction pour confirmer la candidature
 async function confirmPostuler() {
-  const offerId = route.params.id
-  const cvId = selectedCvId.value || (cvs.value.length > 0 ? cvs.value[0].id : null)
+  const offerId = route.params.id;
+  const cvId = selectedCvId.value || (cvs.value.length > 0 ? cvs.value[0].id : null);
 
   if (!cvId) {
-    error.value = 'Aucun CV disponible pour postuler'
-    return
+    error.value = "Aucun CV disponible pour postuler";
+    return;
   }
 
-  submitting.value = true
+  submitting.value = true;
 
   try {
     await axios.post(`/api/offres/${offerId}/postuler`, {
       cv_id: cvId,
       message: motivationText.value || null,
-      statut: "En attente" // Statut de la candidature
-    })
-    success.value = 'Votre candidature a été envoyée avec succès!'
-    error.value = null
+      statut: "En attente", // Statut de la candidature
+    });
+    success.value = "Votre candidature a été envoyée avec succès!";
+    error.value = null;
   } catch (e) {
-    error.value = e.response?.data?.message || 'Erreur lors de la candidature'
+    error.value = e.response?.data?.message || "Erreur lors de la candidature";
   } finally {
-    submitting.value = false
+    submitting.value = false;
   }
 }
 
 // Fonction pour créer un CV
 function Creercv() {
-  router.push({ name: 'CreerCv', query: { from: 'postuler', offreId: route.params.id } })
+  router.push({ name: "CreerCv", query: { from: "postuler", offreId: route.params.id } });
 }
 
 // Fonction pour annuler et revenir à la page précédente
 function cancel() {
-  router.back()
+  router.back();
 }
 
 // Fonction pour aller aux candidatures
 function goToCandidatures() {
-  router.push('/candidature')
+  router.push("/candidature");
 }
 
 // Fonction pour voir d'autres offres
 function goToOffers() {
-  router.push({ name: 'Offres' })
+  router.push({ name: "Offres" });
 }
 </script>
 <style scoped>
 .postuler-container {
   max-width: 800px;
-  margin: 6rem auto 2.5rem;   padding: 2.5rem;
+  margin: 6rem auto 2.5rem;
+  padding: 2.5rem;
   background: white;
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
@@ -238,8 +260,12 @@ function goToOffers() {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-text {
@@ -256,8 +282,14 @@ function goToOffers() {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .empty-icon {
@@ -555,8 +587,14 @@ button {
 }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .error-icon {
@@ -609,9 +647,15 @@ button {
 }
 
 @keyframes successPulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 .success-message p {
@@ -634,50 +678,50 @@ button {
     margin: 1rem;
     border-radius: 12px;
   }
-  
+
   .title {
     font-size: 1.8rem;
   }
-  
+
   .title:after {
     width: 80px;
   }
-  
+
   .action-buttons {
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .action-buttons button {
     width: 100%;
   }
-  
+
   .success-actions {
     flex-direction: column;
     width: 100%;
     gap: 0.8rem;
   }
-  
+
   .offre-title {
     font-size: 1.4rem;
   }
-  
+
   .confirmation-message p {
     font-size: 1.2rem;
   }
-  
+
   .empty-state p {
     max-width: 100%;
   }
-  
+
   .empty-icon {
     font-size: 4rem;
   }
-  
+
   .cv-item {
     padding: 1rem;
   }
-  
+
   .motivation-textarea {
     min-height: 120px;
   }
@@ -685,14 +729,18 @@ button {
 
 /* Accessibilité et détails supplémentaires */
 @media (prefers-reduced-motion) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.001s !important;
     transition-duration: 0.001s !important;
   }
 }
 
 /* Style focus pour accessibilité */
-button:focus, .motivation-textarea:focus, .cv-item:focus {
+button:focus,
+.motivation-textarea:focus,
+.cv-item:focus {
   outline: 3px solid rgba(52, 152, 219, 0.4);
   outline-offset: 2px;
 }
@@ -708,66 +756,72 @@ button:focus, .motivation-textarea:focus, .cv-item:focus {
     background: #1a1e25;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
   }
-  
-  .title, .offre-title, .cv-name, .confirmation-message p, .success-message p, .cv-selection h3, .empty-state h3 {
+
+  .title,
+  .offre-title,
+  .cv-name,
+  .confirmation-message p,
+  .success-message p,
+  .cv-selection h3,
+  .empty-state h3 {
     color: #ecf0f1;
   }
-  
+
   .offre-info {
     background: linear-gradient(to right, #2c3e50, #34495e);
     border-left-color: #3498db;
   }
-  
+
   .offre-company {
     color: #bdc3c7;
   }
-  
+
   .cv-item {
     background: #2c3e50;
     border-color: #34495e;
   }
-  
+
   .cv-item:hover {
     background: #34495e;
   }
-  
+
   .cv-item.selected {
     background: #2980b9;
   }
-  
+
   .cv-date {
     color: #bdc3c7;
   }
-  
+
   .confirmation-message {
     background: #2c3e50;
   }
-  
+
   .motivation-textarea {
     background: #2c3e50;
     color: #ecf0f1;
     border-color: #34495e;
   }
-  
+
   .motivation-textarea::placeholder {
     color: #95a5a6;
   }
-  
+
   .secondary-button {
     background: #34495e;
     color: #ecf0f1;
     border-color: #4a6073;
   }
-  
+
   .secondary-button:hover {
     background: #4a6073;
   }
-  
+
   .error-message {
     background: #4e1a17;
     border-left-color: #e74c3c;
   }
-  
+
   .success-message {
     background: #1e5931;
     border-left-color: #2ecc71;

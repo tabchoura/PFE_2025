@@ -18,13 +18,14 @@
           <h3>{{ candidature.offre?.titre || "Offre inconnue" }}</h3>
           <p>Candidat : {{ candidature.cv?.prenom }} {{ candidature.cv?.nom }}</p>
           <p>Date de candidature : {{ formatDate(candidature.created_at) }}</p>
+          <P>Statut : {{ candidature.statut }}</P>
         </div>
 
         <button
           @click="voirDetails(candidature.offre?.id, candidature.cv?.id)"
           class="voir-button"
         >
-          👀 Voir plus
+          Voir plus
         </button>
       </li>
     </ul>

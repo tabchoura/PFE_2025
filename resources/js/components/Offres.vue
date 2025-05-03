@@ -33,9 +33,7 @@
             <strong>Description :</strong> {{ truncateText(offer.description, 100) }}
           </p>
           <div class="offer-details">
-            <p class="salaire">
-              <strong>Salaire :</strong> {{ formatSalaire(offer.salaire) }}
-            </p>
+            <p class="salaire"><strong>Salaire :</strong> {{ offer.salaire }}</p>
           </div>
         </div>
 
@@ -258,7 +256,7 @@ const rememberMe = ref(false);
 const togglePassword = () => (showPassword.value = !showPassword.value);
 
 // Fonction pour récupérer les offres depuis l'API
-const getOffres = async () => {
+async function getOffres() {
   loading.value = true;
   error.value = null;
 
@@ -271,7 +269,7 @@ const getOffres = async () => {
   } finally {
     loading.value = false;
   }
-};
+}
 
 onMounted(() => {
   getOffres();
@@ -283,11 +281,11 @@ const truncateText = (text, maxLength) => {
   return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 };
 
-// Fonction pour formater le salaire (si nécessaire)
-const formatSalaire = (salaire) => {
-  if (!salaire) return "Non précisé";
-  return salaire;
-};
+// // Fonction pour formater le salaire (si nécessaire)
+// const formatSalaire = (salaire) => {
+//   if (!salaire) return "Non précisé";
+//   return salaire;
+// };
 
 const checkAuthentication = (offerId) => {
   const userSession =

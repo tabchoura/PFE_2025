@@ -2,51 +2,51 @@
   <div class="form-container">
     <form @submit.prevent="ajouter">
       <h1>Ajouter une offre de travail</h1>
-      
+
       <div class="form-group">
         <label for="titre">Titre</label>
-        <input 
-          type="text" 
-          name="titre" 
-          id="titre" 
-          v-model="formdata.titre" 
+        <input
+          type="text"
+          name="titre"
+          id="titre"
+          v-model="formdata.titre"
           placeholder="Ex: Développeur Full Stack"
         />
       </div>
-      
+
       <div class="form-group">
         <label for="description">Description</label>
-        <textarea 
-          name="description" 
-          id="description" 
-          v-model="formdata.description" 
+        <textarea
+          name="description"
+          id="description"
+          v-model="formdata.description"
           placeholder="Décrivez brièvement le poste"
           rows="3"
         ></textarea>
       </div>
-      
+
       <div class="form-group">
         <label for="salaire">Salaire</label>
-        <input 
-          type="text" 
-          name="salaire" 
-          id="salaire" 
-          v-model="formdata.salaire" 
+        <input
+          type="text"
+          name="salaire"
+          id="salaire"
+          v-model="formdata.salaire"
           placeholder="Ex: 45 000 € - 55 000 €"
         />
       </div>
-      
+
       <div class="form-group">
         <label for="details">Détails</label>
-        <textarea 
-          name="details" 
-          id="details" 
-          v-model="formdata.details" 
+        <textarea
+          name="details"
+          id="details"
+          v-model="formdata.details"
           placeholder="Informations complémentaires, avantages, etc."
           rows="5"
         ></textarea>
       </div>
-            
+
       <button type="submit">
         <span>Enregistrer</span>
         <i class="icon">➔</i>
@@ -56,35 +56,38 @@
 </template>
 
 <script setup>
-import axios from 'axios';
-import { reactive } from 'vue';
-import { useRouter } from 'vue-router';
+import axios from "axios";
+import { reactive } from "vue";
+import { useRouter } from "vue-router";
 
 const formdata = reactive({
-  titre: '',
-  description: '',
-  salaire: '',
-  details: ''
+  titre: "",
+  description: "",
+  salaire: "",
+  details: "",
 });
 
 const router = useRouter();
-const ajouter = () => {
+async function ajouter() {
   // Validation basique
-  if (!formdata.titre || !formdata.description || !formdata.salaire || !formdata.details) {
+  if (
+    !formdata.titre ||
+    !formdata.description ||
+    !formdata.salaire ||
+    !formdata.details
+  ) {
     alert("Tous les champs doivent être remplis!");
     return;
   }
-  
-  // Ajouter l'offre
-  axios.post('/api/offres', formdata)
-    .then((response) => {
-      // Rediriger vers la liste des offres après l'ajout
-      router.push('/offresrecruteur');  // Redirection vers la page des offres
-    })
-    .catch((error) => {
-      console.error("Erreur lors de l'ajout de l'offre:", error);
-    });
-};
+
+  try {
+    const response = await axios.post("/api/offres", formdata);
+    console.log(response.data);
+    router.push("/offresrecruteur");
+  } catch (error) {
+    console.error("Erreur lors de l'ajout :", error);
+  }
+}
 </script>
 
 <style scoped>
@@ -135,7 +138,8 @@ label {
   font-size: 0.95rem;
 }
 
-input, textarea {
+input,
+textarea {
   width: 100%;
   padding: 0.8rem 1rem;
   border: 1px solid #e1e5ee;
@@ -145,14 +149,16 @@ input, textarea {
   background-color: #f8fafc;
 }
 
-input:focus, textarea:focus {
+input:focus,
+textarea:focus {
   outline: none;
   border-color: #3498db;
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
   background-color: #fff;
 }
 
-input::placeholder, textarea::placeholder {
+input::placeholder,
+textarea::placeholder {
   color: #a0aec0;
 }
 
@@ -201,7 +207,7 @@ button:hover .icon {
   .form-container {
     padding: 1rem;
   }
-  
+
   form {
     padding: 1.5rem;
   }

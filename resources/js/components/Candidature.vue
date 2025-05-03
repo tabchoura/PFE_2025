@@ -48,14 +48,16 @@
           <button
             @click="voirDetails(candidature.offre?.id, candidature.cv?.id)"
             class="voir-button"
-          ></button>
+          >
+            <i class="fas fa-arrow-right"></i> Voir
+          </button>
         </div>
       </li>
     </ul>
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
@@ -70,13 +72,13 @@ const truncateText = (text, maxLength) => {
   return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 };
 
-function voirDetails(offerId?: number, cvId?: number) {
+function voirDetails(offerId, cvId) {
   if (!offerId || !cvId) {
     console.error("ID manquant pour la redirection vers les détails de la candidature.");
     return;
   }
   router.push({
-    name: "DetailsCandidature",
+    name: "DetailsCandidatureCandidat",
     params: {
       offerId: offerId.toString(),
       cvId: cvId.toString(),
@@ -92,10 +94,6 @@ const getCandidatures = async () => {
     await axios.get("/sanctum/csrf-cookie");
     const response = await axios.get("/api/mescandidatures", {
       withCredentials: true,
-      headers: {
-        "X-Requested-With": "XMLHttpRequest",
-        Accept: "application/json",
-      },
     });
     candidatures.value = response.data;
   } catch (err) {

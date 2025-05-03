@@ -2,39 +2,39 @@
   <div class="supprimer-offre-container">
     <div class="confirmation-card">
       <h2>Confirmer la suppression</h2>
-      
+
       <div v-if="loading" class="loading-state">
         <p>Chargement des informations...</p>
       </div>
-      
+
       <div v-else-if="error" class="error-state">
         <p>{{ error }}</p>
         <button @click="chargerOffre" class="btn-retry">Réessayer</button>
         <button @click="retourListe" class="btn-retour">Retour à la liste</button>
       </div>
-      
+
       <div v-else class="confirmation-content">
         <p class="confirmation-message">
           Êtes-vous sûr de vouloir supprimer l'offre <strong>{{ offre.titre }}</strong> ?
         </p>
-        
+
         <div class="warning-message">
-          <p>⚠️ Cette action est irréversible et supprimera définitivement cette offre.</p>
+          <p>
+            ⚠️ Cette action est irréversible et supprimera définitivement cette offre.
+          </p>
         </div>
-        
+
         <div class="action-buttons">
-          <button 
-            @click="confirmerSuppression" 
-            class="btn-supprimer" 
+          <button
+            @click="confirmerSuppression"
+            class="btn-supprimer"
             :disabled="suppressionEnCours"
           >
             <span v-if="suppressionEnCours">Suppression...</span>
             <span v-else>Confirmer la suppression</span>
           </button>
-          
-          <button @click="retourListe" class="btn-annuler">
-            Annuler
-          </button>
+
+          <button @click="retourListe" class="btn-annuler">Annuler</button>
         </div>
       </div>
     </div>
@@ -42,9 +42,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import axios from 'axios';
+import { ref, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import axios from "axios";
 
 const router = useRouter();
 const route = useRoute();
@@ -58,7 +58,7 @@ const suppressionEnCours = ref(false);
 const chargerOffre = async () => {
   loading.value = true;
   error.value = null;
-  
+
   try {
     const response = await axios.get(`/api/offres/${offreId}`);
     offre.value = response.data;
@@ -72,13 +72,10 @@ const chargerOffre = async () => {
 
 const confirmerSuppression = async () => {
   suppressionEnCours.value = true;
-  
+
   try {
     await axios.delete(`/api/offres/${offreId}`);
-    router.push({ path: '/Offresrecruteur', query: { 
-      message: 'Offre supprimée avec succès',
-      type: 'success'
-    }});
+    router.push("/Offresrecruteur");
   } catch (err) {
     error.value = "Erreur lors de la suppression de l'offre. Veuillez réessayer.";
     console.error("Erreur lors de la suppression:", err);
@@ -86,9 +83,9 @@ const confirmerSuppression = async () => {
   }
 };
 
-const retourListe = () => {
-  router.push('/Offresrecruteur');
-};
+// const retourListe = () => {
+//   router.push('/Offresrecruteur');
+// };
 
 onMounted(() => {
   chargerOffre();
@@ -117,7 +114,8 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
-.loading-state, .error-state {
+.loading-state,
+.error-state {
   text-align: center;
   padding: 20px 0;
   color: #555;
@@ -127,7 +125,8 @@ onMounted(() => {
   color: #e74c3c;
 }
 
-.btn-retry, .btn-retour {
+.btn-retry,
+.btn-retour {
   margin-top: 15px;
   padding: 8px 20px;
   border: none;
@@ -177,7 +176,8 @@ onMounted(() => {
   margin-top: 30px;
 }
 
-.btn-supprimer, .btn-annuler {
+.btn-supprimer,
+.btn-annuler {
   padding: 10px 20px;
   border: none;
   border-radius: 6px;
@@ -221,24 +221,25 @@ onMounted(() => {
     padding: 10px;
     margin: 20px auto;
   }
-  
+
   .confirmation-card {
     padding: 20px;
   }
-  
+
   .action-buttons {
     flex-direction: column;
   }
-  
-  .btn-supprimer, .btn-annuler {
+
+  .btn-supprimer,
+  .btn-annuler {
     width: 100%;
     margin: 5px 0;
   }
-  
+
   .btn-supprimer {
     margin-right: 0;
   }
-  
+
   .btn-annuler {
     margin-left: 0;
   }

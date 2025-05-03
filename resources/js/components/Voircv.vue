@@ -98,11 +98,11 @@ const cvElement = ref(null);
 
 // Charger le CV
 async function loadCv() {
-  const id = route.params.id;
+  const idcv = route.params.id;
   isLoading.value = true;
   error.value = null;
   try {
-    const { data } = await axios.get(`/api/cv/${id}`);
+    const { data } = await axios.get(`/api/cv/${idcv}`);
     cv.value = {
       ...data,
       experiences: data.experiences || [],
@@ -153,13 +153,13 @@ function downloadPdf() {
 
 // Modifier
 function modifyCv() {
-  const id = route.params.id;
-  router.push({ name: "Modifiercv", params: { id } });
+  const idcv = route.params.id;
+  router.push(`/modifiercv/${idcv}`);
 }
 
 // Supprimer
 async function deleteCv() {
-  const id = route.params.id;
+  const idcv = route.params.id;
   if (
     !confirm(
       `Confirmez-vous la suppression du CV de ${cv.value.prenom} ${cv.value.nom} ?`
@@ -167,7 +167,7 @@ async function deleteCv() {
   )
     return;
   try {
-    await axios.delete(`/api/cv/${id}`);
+    await axios.delete(`/api/cv/${idcv}`);
     router.push("/mescv");
   } catch (e) {
     alert(e.response?.data?.message || "Erreur lors de la suppression");

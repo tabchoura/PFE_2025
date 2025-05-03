@@ -1,10 +1,11 @@
-
 <template>
   <div class="profil-container">
     <h2 class="title">👤 Bienvenue {{ profile.prenom }} {{ profile.nom }}</h2>
 
     <ul class="profil-details" v-if="!editMode">
-      <li><strong>Date de naissance :</strong> {{ formatDate(profile.date_naissance) }}</li>
+      <li>
+        <strong>Date de naissance :</strong> {{ formatDate(profile.date_naissance) }}
+      </li>
       <li><strong>Numéro de téléphone :</strong> {{ profile.phone }}</li>
       <li><strong>CIN :</strong> {{ profile.cin }}</li>
       <li><strong>Lieu de naissance :</strong> {{ profile.lieudenaissance }}</li>
@@ -64,160 +65,149 @@
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn-cancel" @click="toggleEditMode">❌ Annuler</button>
+        <button type="button" class="btn-cancel" @click="toggleEditMode">
+          ❌ Annuler
+        </button>
         <button type="submit" class="btn-save">💾 Enregistrer</button>
       </div>
     </form>
   </div>
 </template>
 
-<script>
-import api from "@/axios"; // adapte le chemin si besoin
+<script setup>
+import axios from "axios";
+import { ref, onMounted } from "vue";
 
-export default {
-  name: "Monprofile",
-  data() {
-    return {
-      profile: {
-        nom: "",
-        prenom: "",
-        email: "",
-        date_naissance: "",
-        lieudenaissance: "",
-        cin: "",
-        phone: "",
-      },
-      form: {},
-      editMode: false,
+// Déclarations des variables réactives
+const profile = ref({
+  nom: "",
+  prenom: "",
+  email: "",
+  date_naissance: "",
+  lieudenaissance: "",
+  cin: "",
+  phone: "",
+});
+const form = ref({});
+const editMode = ref(false);
+
+// Fonction pour basculer entre mode édition et affichage
+function toggleEditMode() {
+  if (!editMode.value) {
+    // Si nous entrons en mode édition, copier les données du profil dans le formulaire
+    form.value = { ...profile.value };
+  }
+  editMode.value = !editMode.value;
+}
+
+// Fonction pour charger les données du profil utilisateur
+async function loadProfileData() {
+  try {
+    await axios.get("/sanctum/csrf-cookie"); // Assurez-vous d'obtenir le cookie CSRF
+    const me = await axios.get("/api/me"); // Requête pour charger les données du profil utilisateur
+
+    const user = me.data;
+    profile.value = {
+      nom: user.nom || "",
+      prenom: user.prenom || "",
+      email: user.email || "",
+      date_naissance: user.date_naissance || "",
+      lieudenaissance: user.lieudenaissance || "",
+      cin: user.cin || "",
+      phone: user.phone || "",
     };
-  },
-  mounted() {
-    this.loadProfileData();
-  },
-  methods: {
-    // Ajout de la méthode toggleEditMode
-    toggleEditMode() {
-      if (!this.editMode) {
-        // Si nous entrons en mode édition, copier les données du profil dans le formulaire
-        this.form = { ...this.profile };
-      }
-      this.editMode = !this.editMode;
-    },
-    
-    async loadProfileData() {
-      try {
-        await api.get('/sanctum/csrf-cookie'); // Assurez-vous d'obtenir le cookie CSRF
 
-        const me = await api.get("/api/me"); // Requête pour charger les données du profil utilisateur
+    form.value = { ...profile.value };
+  } catch (error) {
+    console.error("Erreur lors du chargement des données du profil:", error);
 
-        const user = me.data;
-        this.profile = {
-          nom: user.nom || "",
-          prenom: user.prenom || "",
-          email: user.email || "",
-          date_naissance: user.date_naissance || "",
-          lieudenaissance: user.lieudenaissance || "",
-          cin: user.cin || "",
-          phone: user.phone || "",
-        };
+    if (error.response && error.response.status === 401) {
+      alert("Votre session a expiré. Veuillez vous reconnecter.");
+    } else {
+      alert("Une erreur est survenue lors du chargement des données du profil.");
+    }
+  }
+}
 
-        this.form = { ...this.profile };
+// Fonction pour mettre à jour le profil de l'utilisateur
+async function updateProfile() {
+  if (!form.value.email || !form.value.nom || !form.value.prenom) {
+    alert("❌ Veuillez remplir tous les champs obligatoires");
+    return;
+  }
 
-      } catch (error) {
-        console.error("Erreur lors du chargement des données du profil:", error);
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(form.value.email)) {
+    alert("❌ Veuillez entrer un email valide");
+    return;
+  }
 
-        if (error.response && error.response.status === 401) {
-          // Gestion spécifique des erreurs 401 (Unauthorized)
-          alert("Votre session a expiré. Veuillez vous reconnecter.");
-          // Redirigez l'utilisateur vers la page de connexion ou effectuez une autre action appropriée
-        } else {
-          // Gestion des autres erreurs
-          alert("Une erreur est survenue lors du chargement des données du profil.");
-        }
-      }
-    },
+  try {
+    profile.value = { ...form.value };
 
-    updateProfile() {
-      if (!this.form.email || !this.form.nom || !this.form.prenom) {
-        alert("❌ Veuillez remplir tous les champs obligatoires");
-        return;
-      }
+    const userSession = JSON.parse(
+      sessionStorage.getItem("userSession") || localStorage.getItem("userSession") || "{}"
+    );
 
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(this.form.email)) {
-        alert("❌ Veuillez entrer un email valide");
-        return;
-      }
+    const updatedSession = {
+      ...userSession,
+      ...form.value,
+    };
 
-      this.profile = { ...this.form };
+    if (sessionStorage.getItem("userSession")) {
+      sessionStorage.setItem("userSession", JSON.stringify(updatedSession));
+    }
+    if (localStorage.getItem("userSession")) {
+      localStorage.setItem("userSession", JSON.stringify(updatedSession));
+    }
 
-      try {
-        const userSession = JSON.parse(
-          sessionStorage.getItem("userSession") ||
-          localStorage.getItem("userSession") ||
-          '{}'
-        );
+    editMode.value = false;
+    showSuccessMessage("Profil mis à jour avec succès !");
+  } catch (error) {
+    console.error("Erreur lors de la sauvegarde du profil:", error);
+    alert("❌ Une erreur est survenue lors de la sauvegarde du profil.");
+  }
+}
 
-        const updatedSession = {
-          ...userSession,
-          nom: this.form.nom,
-          prenom: this.form.prenom,
-          email: this.form.email,
-          phone: this.form.phone,
-          lieudenaissance: this.form.lieudenaissance,
-          cin: this.form.cin,
-          date_naissance: this.form.date_naissance,
-        };
+// Fonction pour formater la date
+function formatDate(dateString) {
+  if (!dateString) return "Non renseigné";
+  try {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(date);
+  } catch (e) {
+    return dateString;
+  }
+}
 
-        if (sessionStorage.getItem("userSession")) {
-          sessionStorage.setItem("userSession", JSON.stringify(updatedSession));
-        }
-        if (localStorage.getItem("userSession")) {
-          localStorage.setItem("userSession", JSON.stringify(updatedSession));
-        }
+// Fonction pour afficher un message de succès
+function showSuccessMessage(message) {
+  const notification = document.createElement("div");
+  notification.className = "success-notification";
+  notification.textContent = "✅ " + message;
 
-        this.editMode = false;
-        this.showSuccessMessage("Profil mis à jour avec succès !");
-      } catch (error) {
-        console.error("Erreur lors de la sauvegarde du profil:", error);
-        alert("❌ Une erreur est survenue lors de la sauvegarde du profil.");
-      }
-    },
+  document.body.appendChild(notification);
 
-    formatDate(dateString) {
-      if (!dateString) return "Non renseigné";
-      try {
-        const date = new Date(dateString);
-        return new Intl.DateTimeFormat("fr-FR", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        }).format(date);
-      } catch (e) {
-        return dateString;
-      }
-    },
+  setTimeout(() => {
+    notification.classList.add("show");
+  }, 100);
 
-    showSuccessMessage(message) {
-      const notification = document.createElement("div");
-      notification.className = "success-notification";
-      notification.textContent = "✅ " + message;
+  setTimeout(() => {
+    notification.classList.remove("show");
+    setTimeout(() => {
+      document.body.removeChild(notification);
+    }, 500);
+  }, 3000);
+}
 
-      document.body.appendChild(notification);
-
-      setTimeout(() => {
-        notification.classList.add("show");
-      }, 100);
-
-      setTimeout(() => {
-        notification.classList.remove("show");
-        setTimeout(() => {
-          document.body.removeChild(notification);
-        }, 500);
-      }, 3000);
-    },
-  },
-};
+// Chargement des données du profil au montage du composant
+onMounted(() => {
+  loadProfileData();
+});
 </script>
 
 <style scoped>

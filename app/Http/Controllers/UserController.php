@@ -9,9 +9,6 @@ use Illuminate\Support\Facades\Hash;
 class UserController extends Controller
 {
 
-    public function ajoutercv(){
-
-    }
     public function myProfile() {
 
         $user = auth()->user(); // Vérifie si l'utilisateur est authentifié

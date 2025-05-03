@@ -12,20 +12,18 @@
       <div class="spinner"></div>
       <p>Chargement de vos CV...</p>
     </div>
-    
+
     <div v-else-if="cvs.length" class="cv-list">
       <div v-for="cv in cvs" :key="cv.id" class="cv-card">
         <div class="cv-info">
           <span class="cv-name">{{ cv.prenom }} {{ cv.nom }}</span>
         </div>
         <div class="cv-actions">
-          <button @click="constulercv(cv.id)" class="view-button">
-            Consulter
-            </button>
-         </div>
+          <button @click="constulercv(cv.id)" class="view-button">Consulter</button>
+        </div>
       </div>
     </div>
-    
+
     <div v-else class="empty-state">
       <div class="empty-icon">📄</div>
       <p>Vous n'avez encore créé aucun CV</p>
@@ -33,45 +31,39 @@
     </div>
   </div>
 </template>
+<script setup>
+import { ref, onMounted } from "vue";
+import axios from "axios";
+import { useRouter } from "vue-router";
 
-<script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
-import { useRouter } from 'vue-router'
+const router = useRouter();
+const loading = ref(true);
+const cvs = ref([]);
 
-const router = useRouter()
-const loading = ref(true)
-
-// Interface pour les CV
-interface Cv {
-  id: number
-  prenom: string
-  nom: string
-}
-
-const cvs = ref<Cv[]>([])
-
+// Crée une nouvelle page de création de CV en passant un query "from=mescv"
 function ajoutercv() {
-  router.push({ name: 'CreerCv', query: { from: 'mescv' } })
+  router.push({ name: "CreerCv", query: { from: "mescv" } });
 }
 
+// Au clic sur "Consulter", redirige vers la page de consultation du CV
+function constulercv(id) {
+  router.push(`/voircv/${id}`);
+}
+
+// Récupère la liste des CV de l'utilisateur authentifié
 onMounted(async () => {
   try {
-    loading.value = true
-    const { data } = await axios.get('/api/cv')
-    cvs.value = data
+    loading.value = true;
+    const response = await axios.get("/api/cv");
+    cvs.value = response.data;
   } catch (err) {
-    console.error('Erreur lors du chargement des CV :', err)
+    console.error("Erreur lors du chargement des CV :", err);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-})
-
-const constulercv = (id) => {
-  router.push(`/voircv/${id}`);
-};
-
+});
 </script>
+
 <style scoped>
 /* Styles pour la section Mes CV */
 .mes-cv-container {
@@ -214,7 +206,9 @@ const constulercv = (id) => {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 600px) {
@@ -222,23 +216,24 @@ const constulercv = (id) => {
     padding: 1.5rem;
     margin: 1rem;
   }
-  
+
   .header {
     flex-direction: column;
     gap: 1rem;
     text-align: center;
   }
-  
+
   .cv-card {
     flex-direction: column;
     gap: 1rem;
     text-align: center;
   }
-  
-  .cv-info, .cv-actions {
+
+  .cv-info,
+  .cv-actions {
     width: 100%;
   }
-  
+
   .view-button {
     display: block;
     text-align: center;

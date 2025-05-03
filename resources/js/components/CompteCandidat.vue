@@ -37,10 +37,7 @@
           Mes offres enregistrées
         </li>
 
-        
-        
         <li
-          
           @click="navigateTo(`/mescv`)"
           :class="{ active: isActive(`/mescv`) }"
           role="button"
@@ -49,13 +46,7 @@
           Mes CV
         </li>
 
-
-        <li
-          @click="logout"
-          class="logout-item"
-          role="button"
-          tabindex="0"
-        >
+        <li @click="logout" class="logout-item" role="button" tabindex="0">
           Déconnexion
         </li>
       </ul>
@@ -67,78 +58,72 @@
     </main>
   </div>
 </template>
+<script setup>
+import { ref, onMounted } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import axios from "axios"; // ton axios préconfiguré
 
-<script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import api from 'axios'   // ton axios préconfiguré
+const router = useRouter();
+const route = useRoute();
+const userData = ref(null); // Pas de type ici
+const cvId = ref(null);
 
-const router   = useRouter()
-const route    = useRoute()
-const userData = ref<any>(null)
-const cvId     = ref<string | null>(null)
-
-/**
- * Détermine si la route passée en argument correspond à la route active
- */
-function isActive(path: string) {
-  return route.path === path
+function isActive(path) {
+  return route.path === path;
 }
 
-/**
- * Navigue simplement vers la route donnée
- */
-function navigateTo(path: string) {
+function navigateTo(path) {
   if (route.path !== path) {
-    router.push(path)
+    router.push(path);
   }
 }
 
 onMounted(async () => {
   // 1️⃣ Chargement de la session
-  const raw = sessionStorage.getItem('userSession')
-           || localStorage.getItem('userSession')
+  const raw =
+    sessionStorage.getItem("userSession") || localStorage.getItem("userSession");
 
   if (!raw) {
-    return router.push('/authentification')
+    return router.push("/authentification");
   }
-  userData.value = JSON.parse(raw)
+  userData.value = JSON.parse(raw);
 
   // 2️⃣ Récupération de l'ID du premier CV de l'utilisateur
-  try {
-    const { data: cvs } = await api.get('/api/cv', {
-      params: { user_id: userData.value.id }
-    })
-    if (Array.isArray(cvs) && cvs.length) {
-      cvId.value = String(cvs[0].id)
-    }
-  } catch (e) {
-    console.error("Erreur lors du chargement des CV :", e)
-  }
+  // try {
+  //   const { data: cvs } = await axios.get("/api/cv", {
+  //     params: { user_id: userData.value.id },
+  //   });
+  //   if (Array.isArray(cvs) && cvs.length) {
+  //     cvId.value = String(cvs[0].id);
+  //   }
+  // } catch (e) {
+  //   console.error("Erreur lors du chargement des CV :", e);
+  // }
 
   // 3️⃣ Redirection par défaut si on est sur /CompteCandidat
-  if (route.path === '/CompteCandidat') {
-    router.push('/monprofile')
+  if (route.path === "/CompteCandidat") {
+    router.push("/monprofile");
   }
-})
-
-/**
- * Effectue la déconnexion
- */
+});
 async function logout() {
   try {
     // Nettoyage côté API
-    await api.post('/api/logout')
-  } catch {
-    /* ignore */
+    await axios.post("/api/logout"); // Déconnexion côté serveur
+
+    // Supprimer le cookie CSRF pour Sanctum (si utilisé)
+    await axios.get("/sanctum/csrf-cookie"); // Cette requête rafraîchit le cookie CSRF si nécessaire
+  } catch (error) {
+    console.error("Erreur lors de la déconnexion:", error);
   } finally {
-    sessionStorage.removeItem('userSession')
-    localStorage.removeItem('userSession')
-    router.push('/authentification')
+    // Supprimer les informations de session locales
+    sessionStorage.removeItem("userSession");
+    localStorage.removeItem("userSession");
+
+    // Rediriger vers la page de connexion
+    router.push("/authentification");
   }
 }
 </script>
-
 
 <style scoped>
 /* Styles pour l'ensemble du composant */
@@ -166,8 +151,7 @@ async function logout() {
   z-index: 100;
   color: #fff;
   overflow-y: auto;
-  margin-top:60px ;
-
+  margin-top: 60px;
 
   transition: all 0.3s ease;
 }
@@ -205,7 +189,7 @@ async function logout() {
 }
 
 .sidebar li::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 0;
@@ -259,7 +243,7 @@ async function logout() {
   .sidebar {
     width: 240px;
   }
-  
+
   .content {
     margin-left: 240px;
     padding: 30px;
@@ -323,7 +307,7 @@ async function logout() {
   .sidebar li {
     width: 100%;
   }
-  
+
   .content {
     padding: 20px 12px;
   }

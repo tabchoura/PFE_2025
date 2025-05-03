@@ -2,7 +2,11 @@
   <div class="offers-section">
     <div class="header-actions">
       <h2>Liste des offres</h2>
-      <button @click="ajouterOffre" class="btn-ajouter" aria-label="Ajouter une nouvelle offre">
+      <button
+        @click="ajouterOffre"
+        class="btn-ajouter"
+        aria-label="Ajouter une nouvelle offre"
+      >
         + Ajouter une offre
       </button>
     </div>
@@ -27,25 +31,33 @@
         </div>
 
         <div class="offer-card-body">
-          <p class="description"><strong>Description :</strong> {{ truncateText(offer.description, 100) }}</p>
+          <p class="description">
+            <strong>Description :</strong> {{ truncateText(offer.description, 100) }}
+          </p>
           <div class="offer-details">
-            <p class="salaire"><strong>Salaire :</strong> {{ formatSalaire(offer.salaire) }}</p>
-  
+            <p class="salaire">
+              <strong>Salaire :</strong> {{ formatSalaire(offer.salaire) }}
+            </p>
           </div>
           <div class="offer-details">
-          <p class="salaire"><strong>Détails :</strong> {{ offer.details || 'Non précisé' }}</p>
+            <p class="salaire">
+              <strong>Détails :</strong> {{ offer.details || "Non précisé" }}
+            </p>
+          </div>
         </div>
-        </div>
-        
 
         <div class="offer-actions">
-          <button class="btn-modifier" @click="modifierOffre(offer.id)" >
+          <button class="btn-modifier" @click="modifierOffre(offer.id)">
             <span class="icon">✏️</span> Modifier
           </button>
-          <button class="btn-supprimer" @click="supprimerOffre(offer.id)" aria-label="Supprimer cette offre">
-  <span class="icon">🗑️</span> Supprimer
-</button>
-<!-- <button class="btn-details" @click="ajouterdetails(offer.id)" aria-label="Ajouter les détails de l'offre">
+          <button
+            class="btn-supprimer"
+            @click="supprimerOffre(offer.id)"
+            aria-label="Supprimer cette offre"
+          >
+            <span class="icon">🗑️</span> Supprimer
+          </button>
+          <!-- <button class="btn-details" @click="ajouterdetails(offer.id)" aria-label="Ajouter les détails de l'offre">
             <span class="icon">🔍</span> Voir les détails
           </button> -->
         </div>
@@ -55,9 +67,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import axios from 'axios';
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import axios from "axios";
 
 const offres = ref([]);
 const loading = ref(true);
@@ -69,11 +81,11 @@ const getOffres = async () => {
   error.value = null;
 
   try {
-    const response = await axios.get('/api/offres');
+    const response = await axios.get("/api/offres");
     offres.value = response.data;
   } catch (err) {
-    error.value = 'Erreur lors de la récupération des offres. Veuillez réessayer.';
-    console.error('Erreur lors de la récupération des offres:', err);
+    error.value = "Erreur lors de la récupération des offres. Veuillez réessayer.";
+    console.error("Erreur lors de la récupération des offres:", err);
   } finally {
     loading.value = false;
   }
@@ -84,7 +96,7 @@ onMounted(() => {
 });
 
 const ajouterOffre = () => {
-  router.push('/ajouteroffre');
+  router.push("/ajouteroffre");
 };
 
 const modifierOffre = (id) => {
@@ -94,18 +106,18 @@ const modifierOffre = (id) => {
 const supprimerOffre = (id) => {
   router.push(`/supprimeroffre/${id}`);
 };
-const ajouterdetails = (id) => {
-  router.push(`/ajouterdetails/${id}`);
-};
+// const ajouterdetails = (id) => {
+//   router.push(`/ajouterdetails/${id}`);
+// };
 
 // Fonctions utilitaires
 const truncateText = (text, maxLength) => {
-  if (!text) return '';
-  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+  if (!text) return "";
+  return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 };
 
 const formatSalaire = (salaire) => {
-  if (!salaire) return 'Non précisé';
+  if (!salaire) return "Non précisé";
   return salaire;
 };
 </script>
@@ -136,7 +148,8 @@ const formatSalaire = (salaire) => {
   box-shadow: var(--box-shadow);
   position: relative;
   transition: box-shadow var(--transition-speed) ease;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, sans-serif;
 }
 
 .offers-section:hover {
@@ -162,7 +175,7 @@ const formatSalaire = (salaire) => {
 
 .btn-ajouter {
   padding: 10px 18px;
-  background-color:#4361ee;
+  background-color: #4361ee;
   color: white;
   border: none;
   border-radius: 8px;
@@ -177,12 +190,14 @@ const formatSalaire = (salaire) => {
 }
 
 .btn-ajouter:hover {
-  background-color:#4895ef;
+  background-color: #4895ef;
   transform: translateY(-2px);
   box-shadow: 0 6px 15px rgba(67, 97, 238, 0.25);
 }
 
-.loading-state, .error-state, .empty-state {
+.loading-state,
+.error-state,
+.empty-state {
   text-align: center;
   padding: 60px 40px;
   color: var(--text-light);
@@ -227,7 +242,8 @@ const formatSalaire = (salaire) => {
   padding: 25px;
   border-radius: var(--border-radius);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.04);
-  transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+  transition: transform var(--transition-speed) ease,
+    box-shadow var(--transition-speed) ease;
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -269,7 +285,8 @@ const formatSalaire = (salaire) => {
   line-height: 1.6;
 }
 
-.description strong, .salaire strong {
+.description strong,
+.salaire strong {
   color: var(--text-dark);
   font-weight: 600;
 }
@@ -301,7 +318,9 @@ const formatSalaire = (salaire) => {
   padding-top: 15px;
 }
 
-.btn-modifier, .btn-supprimer, .btn-details {
+.btn-modifier,
+.btn-supprimer,
+.btn-details {
   padding: 8px 16px;
   font-size: 0.875rem;
   display: flex;
@@ -442,16 +461,16 @@ const formatSalaire = (salaire) => {
     gap: 15px;
     align-items: flex-start;
   }
-  
+
   .btn-ajouter {
     width: 100%;
     justify-content: center;
   }
-  
+
   .offers-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .offer-card {
     width: 100%;
   }
@@ -468,7 +487,7 @@ const formatSalaire = (salaire) => {
 }
 
 .loading-state p:after {
-  content: '...';
+  content: "...";
   position: absolute;
   overflow: hidden;
   display: inline-block;
@@ -478,15 +497,23 @@ const formatSalaire = (salaire) => {
 }
 
 @keyframes dots-animation {
-  0% { width: 0; }
-  33% { width: 1em; }
-  66% { width: 2em; }
-  100% { width: 3em; }
+  0% {
+    width: 0;
+  }
+  33% {
+    width: 1em;
+  }
+  66% {
+    width: 2em;
+  }
+  100% {
+    width: 3em;
+  }
 }
 
 /* Effet de survol supplémentaire pour les cartes */
 .offer-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;

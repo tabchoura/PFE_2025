@@ -221,38 +221,28 @@
     </form>
   </div>
 </template>
-<script setup lang="ts">
+<script setup>
 import { reactive, ref, onMounted, computed } from "vue";
 import axios from "axios";
 import { useToast } from "vue-toastification";
 import { useRoute, useRouter } from "vue-router";
 
+// Route et navigation
 const route = useRoute();
 const router = useRouter();
+
+// Toast notifications
 const toast = useToast();
 
+// Date maximale (18 ans)
 const maxDate = computed(() => {
   const d = new Date();
   d.setFullYear(d.getFullYear() - 18);
   return d.toISOString().split("T")[0];
 });
 
-interface CvForm {
-  nom: string;
-  prenom: string;
-  email: string;
-  date_naissance: string;
-  adresse: string;
-  presentation: string;
-  competences: string[];
-  langues: string[];
-  experiences: string[];
-  educations_formations: string[];
-  projets: string[];
-  image: string;
-}
-
-const form = reactive<CvForm>({
+// Formulaire réactif
+const form = reactive({
   nom: "",
   prenom: "",
   email: "",
@@ -267,16 +257,19 @@ const form = reactive<CvForm>({
   image: "",
 });
 
-const profilePicture = ref<string>("");
-const errors = ref<Record<string, string>>({});
+// Autres états
+const profilePicture = ref("");
+const errors = ref({});
 const isSubmitting = ref(false);
 
+// Nettoyage des toasts au montage
 onMounted(() => {
   toast.clear();
 });
 
+// Validation du formulaire
 function validateForm() {
-  const newErrors: Record<string, string> = {};
+  const newErrors = {};
 
   if (!form.nom.trim()) newErrors.nom = "Le nom est requis";
   if (!form.prenom.trim()) newErrors.prenom = "Le prénom est requis";
@@ -298,18 +291,19 @@ function validateForm() {
   return Object.keys(newErrors).length === 0;
 }
 
-function addItem(field: keyof CvForm) {
-  (form[field] as string[]).push("");
+// Gestion des champs dynamiques
+function addItem(field) {
+  form[field].push("");
 }
-
-function removeItem(field: keyof CvForm, index: number) {
-  const list = form[field] as string[];
+function removeItem(field, index) {
+  const list = form[field];
   list.splice(index, 1);
   if (!list.length) list.push("");
 }
 
-async function handleImage(e: Event) {
-  const input = e.target as HTMLInputElement;
+// Upload d’image
+async function handleImage(e) {
+  const input = e.target;
   const file = input.files?.[0];
   if (!file) return;
 
@@ -340,12 +334,14 @@ async function handleImage(e: Event) {
     form.image = data.image_url;
     toast.success("Image téléchargée avec succès");
     delete errors.value.image;
-  } catch (err: any) {
-    console.error("Erreur upload image:", err);
+  } catch (err) {
+    console.error("Erreur upload image :", err);
     errors.value.image = err.response?.data?.message || "Échec d'upload de l'image";
     toast.error(errors.value.image);
   }
 }
+
+// Soumission du CV
 async function submitCv() {
   if (isSubmitting.value) return;
   toast.clear();
@@ -364,7 +360,6 @@ async function submitCv() {
     toast.success("CV créé avec succès !");
 
     if (from === "postuler" && offreId) {
-      // Candidat vient du bouton postuler, on envoie la candidature automatiquement
       try {
         await axios.post(`/api/offres/${offreId}/postuler`, {
           cv_id: data.id,
@@ -372,18 +367,18 @@ async function submitCv() {
           statut: "En attente",
         });
         toast.success("Candidature envoyée automatiquement !");
-        router.push("/candidature"); // Redirection vers les candidatures
+        router.push("/candidature");
         return;
       } catch (postulerError) {
-        console.error("Erreur lors de la candidature automatique:", postulerError);
+        console.error("Erreur candidature automatique :", postulerError);
         toast.error("CV créé, mais erreur lors de la candidature.");
       }
     }
 
-    // Sinon, c'est juste un ajout de CV → retour à la page "mes CV"
+    // Retour à "mes CV"
     router.push("/mescv");
-  } catch (err: any) {
-    console.error("Erreur création CV:", err);
+  } catch (err) {
+    console.error("Erreur création CV :", err);
     toast.error("Erreur lors de la création du CV");
   } finally {
     isSubmitting.value = false;
