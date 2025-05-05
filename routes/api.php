@@ -1,73 +1,74 @@
 <?php
 
-use App\Http\Controllers\CvController;
-use App\Http\Controllers\EntretienController;
-use App\Http\Controllers\OfferController;
-use App\Http\Controllers\EntrepriseController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ImageController;
-use App\Http\Controllers\CandidatureController;
-use App\Http\Controllers\UserController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\OfferController;
+use App\Http\Controllers\CvController;
+use App\Http\Controllers\CandidatureController;
+use App\Http\Controllers\EntretienController;
+use App\Http\Controllers\EntrepriseController;
+use App\Http\Controllers\ImageController;
 
-// 🔐 Auth Routes (Login & Registration)
-Route::post('/login', [AuthController::class, 'login']);
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+*/
+
+// Routes publiques
+Route::post('/login',    [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
-// Public route for viewing offer details
+// → Liste des offres publique (plus de 401)
+Route::get('/offres', [OfferController::class, 'index']);
 
-// Middleware for authenticated routes
+// Routes protégées par Sanctum
 Route::middleware('auth:sanctum')->group(function () {
 
-    // User-related routes
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
-    Route::post('/logout', [AuthController::class, 'logout']);
+    // ─── Utilisateur ──────────────────────────────────────────────────────
+    Route::get('/user',          fn(Request $req) => $req->user());
+    Route::post('/logout',       [AuthController::class, 'logout']);
     Route::put('/update-profil', [UserController::class, 'updateMyprofile']);
-    Route::get('/me', [UserController::class, 'myProfile']);  // Get authenticated user's profile
+    Route::get('/me',            [UserController::class, 'myProfile']);
 
-    // Offer-related routes
-    Route::get('/offres', [OfferController::class, 'index']);
-    Route::post('/offres', [OfferController::class, 'store']);
-    Route::put('/offres/{id}', [OfferController::class, 'update']);
+    // ─── Offres (CRUD privé) ───────────────────────────────────────────────
+    Route::post(  '/offres',      [OfferController::class, 'store']);
+    Route::get(   '/offres/{id}', [OfferController::class, 'show']);
+    Route::put(   '/offres/{id}', [OfferController::class, 'update']);
     Route::delete('/offres/{id}', [OfferController::class, 'destroy']);
-    Route::get('/offres/{id}', [OfferController::class, 'show']);
 
-    // CV-related routes
-    Route::apiResource('cv', CvController::class);
-
-    // Candidature-related routes
-    Route::apiResource('candidatures', CandidatureController::class);
-    // Route::get('/mescandidatures', [CandidatureController::class, 'mescandidatures']);
+    // ─── Postuler à une offre ─────────────────────────────────────────────
     Route::post('/offres/{id}/postuler', [CandidatureController::class, 'postuler']); // Postuler route
 
-    // Interview-related routes
-    Route::get('/entretiens', [EntretienController::class, 'index']);
-    Route::post('/entretiens', [EntretienController::class, 'store']);
-    Route::put('/entretiens/{id}', [EntretienController::class, 'update']);
-    Route::delete('/entretiens/{id}', [EntretienController::class, 'destroy']);
+    // ─── Candidatures ──────────────────────────────────────────────────────
+    Route::put('/candidatures/{id}/accept', [CandidatureController::class, 'accept'])
+         ->name('candidatures.accept');
+    Route::put('/candidatures/{id}/refuse', [CandidatureController::class, 'refuse'])
+         ->name('candidatures.refuse');
 
-    // Entreprise-related routes
-    Route::get('/entreprises', [EntrepriseController::class, 'index']);
-    Route::post('/entreprises', [EntrepriseController::class, 'store']);
-    Route::put('/entreprises/{id}', [EntrepriseController::class, 'update']);
-    Route::delete('/entreprises/{id}', [EntrepriseController::class, 'destroy']);
-
-    // Image upload route
-    Route::post('/ajouterimage', [ImageController::class, 'uploadImage']);
-
-    // Test route to check token and role (candidat)
-    Route::middleware(['role:candidat'])->get('/test-candidat', function () {
-        return response()->json(['message' => '✅ Accès autorisé pour le candidat.']);
-    });
-});
-
-// 📦 Routes for authenticated users
-Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('cv', CvController::class);
     Route::apiResource('candidatures', CandidatureController::class);
     Route::get('/mescandidatures', [CandidatureController::class, 'mescandidatures']);
-});
 
+    // ─── CV ─────────────────────────────────────────────────────────────────
+    Route::apiResource('cv', CvController::class);
+
+    // ─── Entretiens ─────────────────────────────────────────────────────────
+    Route::middleware('auth:sanctum')->group(function () {
+     Route::apiResource('entretiens', EntretienController::class);
+ });
+ 
+    // ─── Entreprises ────────────────────────────────────────────────────────
+    Route::get(   '/entreprises',      [EntrepriseController::class, 'index']);
+    Route::post(  '/entreprises',      [EntrepriseController::class, 'store']);
+    Route::put(   '/entreprises/{id}', [EntrepriseController::class, 'update']);
+    Route::delete('/entreprises/{id}', [EntrepriseController::class, 'destroy']);
+
+    // ─── Images ─────────────────────────────────────────────────────────────
+    Route::post('/ajouterimage', [ImageController::class, 'uploadImage']);
+
+    // ─── Test accès candidat ────────────────────────────────────────────────
+    Route::middleware('role:candidat')
+         ->get('/test-candidat', fn() => response()->json(['message' => '✅ Accès autorisé pour le candidat.']));
+});

@@ -1,21 +1,40 @@
-
 <template>
   <div class="mon-espace">
     <!-- Barre Latérale -->
     <aside class="sidebar">
       <h2>Mon Espace Recruteur</h2>
       <ul>
-        <li @click="navigateTo('/monprofilerecruteur')" :class="{ active: isActive('/monprofilerecruteur') }" role="button" tabindex="0">
+        <li
+          @click="navigateTo('/monprofilerecruteur')"
+          :class="{ active: isActive('/monprofilerecruteur') }"
+          role="button"
+          tabindex="0"
+        >
           Mon profil
         </li>
-        <li @click="navigateTo('/Candidaturesrecruteur')"  :class="{ active: isActive('/Candidaturesrecruteur') }" role="button" tabindex="0">
+        <li
+          @click="navigateTo('/Candidaturesrecruteur')"
+          :class="{ active: isActive('/Candidaturesrecruteur') }"
+          role="button"
+          tabindex="0"
+        >
           Candidatures reçues
         </li>
-        <li @click="navigateTo('/Entretiensrecruteurs')" :class="{ active: isActive('/Entretiensrecruteurs') }"  role="button" tabindex="0">
-  Mes entretiens
-</li>
+        <li
+          @click="navigateTo('/entretiensrecrutuer')"
+          :class="{ active: isActive('/entretiensrecrutuer') }"
+          role="button"
+          tabindex="0"
+        >
+          Entretiens
+        </li>
 
-        <li @click="navigateTo('/Offresrecruteur')" :class="{ active: isActive('/Offresrecruteur') }" role="button" tabindex="0">
+        <li
+          @click="navigateTo('/Offresrecruteur')"
+          :class="{ active: isActive('/Offresrecruteur') }"
+          role="button"
+          tabindex="0"
+        >
           Gérer les offres
         </li>
         <li @click="logout" class="logout-item" role="button" tabindex="0">
@@ -27,7 +46,8 @@
     <!-- Contenu principal -->
     <main class="content">
       <!-- Affichage dynamique du composant -->
-      <router-view></router-view> <!-- Ce composant affichera dynamiquement le composant associé à la route -->
+      <router-view></router-view>
+      <!-- Ce composant affichera dynamiquement le composant associé à la route -->
     </main>
   </div>
 </template>
@@ -63,29 +83,32 @@ onMounted(() => {
     userData.value = session;
 
     // Si l'utilisateur accède directement à /CompteCandidat sans section spécifique
-    if (route.path === '/CompteRecruteur') {
-      router.push('/monprofilerecruteur');  // Redirige automatiquement vers la page par défaut (par exemple 'Monprofile')
+    if (route.path === "/CompteRecruteur") {
+      router.push("/monprofilerecruteur"); // Redirige automatiquement vers la page par défaut (par exemple 'Monprofile')
     }
   } else {
-    router.push("/authentification");  // Redirige vers la page d'authentification si non connecté
+    router.push("/authentification"); // Redirige vers la page d'authentification si non connecté
   }
 });
 // Déconnexion
 async function logout() {
   try {
     const session = JSON.parse(
-      sessionStorage.getItem('userSession') || localStorage.getItem('userSession') || '{}'
+      sessionStorage.getItem("userSession") || localStorage.getItem("userSession") || "{}"
     );
 
     const token = session.token;
     if (token) {
       // Ajoute le token dans l'en-tête Authorization pour que Laravel reconnaisse l'utilisateur
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }
 
     await api.post("/api/logout"); // Laravel va supprimer les tokens ici
   } catch (error) {
-    console.error("Erreur lors de la déconnexion :", error.response?.data || error.message);
+    console.error(
+      "Erreur lors de la déconnexion :",
+      error.response?.data || error.message
+    );
   } finally {
     // Supprimer la session même s'il y a une erreur
     localStorage.removeItem("userSession");
@@ -94,10 +117,7 @@ async function logout() {
     router.push("/authentification");
   }
 }
-
 </script>
-
-
 
 <style scoped>
 /* Styles pour l'ensemble du composant */
@@ -125,8 +145,7 @@ async function logout() {
   z-index: 100;
   color: #fff;
   overflow-y: auto;
-  margin-top:60px ;
-
+  margin-top: 60px;
 
   transition: all 0.3s ease;
 }
@@ -164,7 +183,7 @@ async function logout() {
 }
 
 .sidebar li::before {
-  content: '';
+  content: "";
   position: absolute;
   left: 0;
   top: 0;
@@ -218,7 +237,7 @@ async function logout() {
   .sidebar {
     width: 240px;
   }
-  
+
   .content {
     margin-left: 240px;
     padding: 30px;
@@ -282,7 +301,7 @@ async function logout() {
   .sidebar li {
     width: 100%;
   }
-  
+
   .content {
     padding: 20px 12px;
   }

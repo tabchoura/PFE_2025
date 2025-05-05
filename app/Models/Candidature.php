@@ -17,7 +17,7 @@ class Candidature extends Model
         'statut'
     ];
     protected $attributes = [
-        'statut' => 'En attente',
+        'statut' => 'enattente',
     ];
 
     // Relation avec l'offre
@@ -37,4 +37,10 @@ class Candidature extends Model
     {
         return $this->belongsTo(User::class);
     }
+    // app/Models/Candidature.php
+public function entretien()
+{
+    return $this->hasOne(Entretien::class);
+}
+
 }

@@ -1,572 +1,462 @@
 <template>
-  <!-- Détails de l'offre -->
-  <div v-if="offer" class="offer-details">
-    <h1>{{ offer.titre }}</h1>
-    <p><strong>Description:</strong> {{ offer.description }}</p>
-    <p><strong>Salaire:</strong> {{ offer.salaire }}</p>
-    <p><strong>Détails:</strong> {{ offer.details }}</p>
-  </div>
-
-  <!-- Aperçu du CV -->
-  <div class="cv-container">
-    <!-- Loader -->
-    <div v-if="isLoading" class="loading-container">
+  <div class="candidature-details-container">
+    <!-- Chargement -->
+    <div v-if="loading" class="loading-state">
       <div class="loader"></div>
-      <p class="loading-text">Chargement du CV et de l'offre…</p>
+      <p>Chargement des détails…</p>
     </div>
 
-    <!-- Message d'erreur -->
-    <div v-else-if="error" class="error-message">
+    <!-- Erreur -->
+    <div v-else-if="error" class="error-state">
       <p>{{ error }}</p>
-      <button @click="loadData" class="retry-btn">Réessayer</button>
+      <button @click="loadData" class="btn-retry">🔄 Réessayer</button>
     </div>
 
-    <!-- Contenu du CV et de l'offre -->
-    <div v-else ref="cvElement" class="cv-form preview-form">
-      <div class="cv-left-column">
-        <div class="profile-section">
-          <div class="profile-picture-container">
-            <div class="profile-picture" :style="profileImageStyle"></div>
+    <!-- Contenu principal -->
+    <div v-else class="candidature-content">
+      <h1>Détails de la candidature</h1>
+
+      <!-- Offre -->
+      <div class="section-card offer-details">
+        <h2>Offre d’emploi</h2>
+        <h3>{{ offer.titre }}</h3>
+        <p><strong>Description :</strong> {{ offer.description }}</p>
+        <p><strong>Salaire :</strong> {{ offer.salaire }}</p>
+        <p v-if="offer.details"><strong>Détails :</strong> {{ offer.details }}</p>
+        <p class="status-line">
+          <strong>Statut :</strong>
+          <span :class="statusClass">{{ statutLabel }}</span>
+        </p>
+      </div>
+
+      <!-- Infos candidature -->
+      <div class="section-card candidature-info">
+        <h2>Infos candidature</h2>
+        <p><strong>Date :</strong> {{ formatDate(candidature.created_at) }}</p>
+        <div class="message-section">
+          <h3>Message du candidat</h3>
+          <div class="message-content">
+            {{ candidature.message || "Aucun message" }}
           </div>
         </div>
 
-        <div class="section">
-          <h1 class="cv-title-preview">{{ cv.prenom }} {{ cv.nom }}</h1>
-          <p v-if="cv.date_naissance" class="info">
-            🗓️ Né(e) le {{ formatDate(cv.date_naissance) }}
-          </p>
-          <p v-if="cv.email" class="info">
-            📧 <a :href="`mailto:${cv.email}`">{{ cv.email }}</a>
-          </p>
-          <p v-if="cv.adresse" class="info">📍 {{ cv.adresse }}</p>
+        <!-- Boutons Accepter / Refuser -->
+        <div class="action-buttons" v-if="statusKey === 'pending'">
+          <button @click="accepter" class="btn-accept">✅ Accepter</button>
+          <button @click="refuser" class="btn-refuse">❌ Refuser</button>
         </div>
       </div>
 
-      <div class="cv-right-column">
-        <section v-if="cv.presentation" class="section">
-          <h3 class="section-title">Présentation</h3>
-          <p>{{ cv.presentation }}</p>
-        </section>
-        <section v-if="cv.experiences.length" class="section">
-          <h3 class="section-title">Expériences professionnelles</h3>
-          <ul>
-            <li v-for="(exp, i) in cv.experiences" :key="i">{{ exp }}</li>
-          </ul>
-        </section>
-        <section v-if="cv.educations_formations.length" class="section">
-          <h3 class="section-title">Éducation & Formation</h3>
-          <ul>
-            <li v-for="(edu, i) in cv.educations_formations" :key="i">{{ edu }}</li>
-          </ul>
-        </section>
-        <div class="two-columns" v-if="cv.competences.length || cv.langues.length">
-          <section v-if="cv.competences.length" class="section">
-            <h3 class="section-title">Compétences</h3>
-            <ul>
-              <li v-for="(c, i) in cv.competences" :key="i">{{ c }}</li>
-            </ul>
-          </section>
-          <section v-if="cv.langues.length" class="section">
-            <h3 class="section-title">Langues</h3>
-            <ul>
-              <li v-for="(l, i) in cv.langues" :key="i">{{ l }}</li>
-            </ul>
-          </section>
+      <!-- Aperçu CV -->
+      <div ref="cvElement" class="section-card cv-preview">
+        <h2>CV du candidat</h2>
+        <div class="cv-content">
+          <div class="cv-left-column">
+            <div class="profile-picture-container">
+              <div class="profile-picture" :style="profileImageStyle"></div>
+            </div>
+            <h3>{{ cv.prenom }} {{ cv.nom }}</h3>
+            <p v-if="cv.date_naissance">
+              🗓️ Né(e) le {{ formatDate(cv.date_naissance) }}
+            </p>
+            <p v-if="cv.email">
+              📧 <a :href="`mailto:${cv.email}`">{{ cv.email }}</a>
+            </p>
+            <p v-if="cv.adresse">📍 {{ cv.adresse }}</p>
+          </div>
+          <div class="cv-right-column">
+            <section v-if="cv.presentation" class="section">
+              <h4>Présentation</h4>
+              <p>{{ cv.presentation }}</p>
+            </section>
+            <section v-if="cv.experiences.length" class="section">
+              <h4>Expériences</h4>
+              <ul>
+                <li v-for="(e, i) in cv.experiences" :key="i">{{ e }}</li>
+              </ul>
+            </section>
+            <section v-if="cv.educations_formations.length" class="section">
+              <h4>Éducation & Formation</h4>
+              <ul>
+                <li v-for="(f, i) in cv.educations_formations" :key="i">{{ f }}</li>
+              </ul>
+            </section>
+            <div class="two-columns" v-if="cv.competences.length || cv.langues.length">
+              <section v-if="cv.competences.length" class="section">
+                <h4>Compétences</h4>
+                <ul>
+                  <li v-for="(c, i) in cv.competences" :key="i">{{ c }}</li>
+                </ul>
+              </section>
+              <section v-if="cv.langues.length" class="section">
+                <h4>Langues</h4>
+                <ul>
+                  <li v-for="(l, i) in cv.langues" :key="i">{{ l }}</li>
+                </ul>
+              </section>
+            </div>
+            <section v-if="cv.projets.length" class="section">
+              <h4>Projets</h4>
+              <ul>
+                <li v-for="(p, i) in cv.projets" :key="i">{{ p }}</li>
+              </ul>
+            </section>
+          </div>
         </div>
-        <section v-if="cv.projets.length" class="section">
-          <h3 class="section-title">Projets</h3>
-          <ul>
-            <li v-for="(p, i) in cv.projets" :key="i">{{ p }}</li>
-          </ul>
-        </section>
       </div>
-    </div>
 
-    <!-- Boutons d'actions -->
-    <div v-if="cv && !isLoading" class="form-actions">
-      <button @click="downloadPdf" class="action-btn download-btn">
-        📥 Télécharger PDF
-      </button>
+      <!-- Navigation -->
+      <div class="navigation-actions">
+        <button @click="goBack" class="btn-back">← Retour</button>
+        <button @click="downloadPdf" class="btn-download">⬇️ Télécharger CV</button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
 import html2pdf from "html2pdf.js";
 
 const route = useRoute();
-const cv = ref<any>(null);
-const offer = ref<any>(null);
-const offerId = route.params.offerId as string;
-const cvId = route.params.cvId as string;
-const isLoading = ref(true);
+const router = useRouter();
+const candidatureId = route.params.candidatureId as string;
+
+// États
+const loading = ref(true);
 const error = ref<string | null>(null);
+const candidature = ref<any>({});
+const offer = ref<any>({});
+const cv = ref<any>({
+  experiences: [],
+  educations_formations: [],
+  competences: [],
+  langues: [],
+  projets: [],
+});
 const cvElement = ref<HTMLElement | null>(null);
 
-const profileImageStyle = computed(() => {
-  if (cv.value?.profilePictureUrl) {
-    return {
-      backgroundImage: `url(${cv.value.profilePictureUrl})`,
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-    };
-  }
-  return { backgroundColor: "#ccc" };
+// Normalisation du statut
+const statusKey = computed<"pending" | "accepter" | "refuser">(() => {
+  const raw = (candidature.value.statut || "").toString().toLowerCase();
+  if (raw.includes("accept")) return "Accepter";
+  if (raw.includes("refus")) return "Refuser";
+  return "pending";
 });
 
-const formatDate = (dateStr: string) => {
-  if (!dateStr) return "Date inconnue";
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("fr-FR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-};
+// CSS + label
+const statusClass = computed(() => `status-${statusKey.value}`);
+const statutLabel = computed(() => {
+  switch (statusKey.value) {
+    case "accepter":
+      return "Acceptée";
+    case "refused":
+      return "Refusée";
+    default:
+      return "En attente";
+  }
+});
 
+// Image de profil
+const profileImageStyle = computed(() =>
+  cv.value.profilePictureUrl
+    ? {
+        backgroundImage: `url(${cv.value.profilePictureUrl})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }
+    : { backgroundColor: "#ccc" }
+);
+
+// Formatage date
+function formatDate(d?: string) {
+  return d
+    ? new Date(d).toLocaleDateString("fr-FR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "";
+}
+
+// Chargement initial
 async function loadData() {
-  isLoading.value = true;
+  loading.value = true;
   error.value = null;
-
   try {
-    const offerResponse = await axios.get(`/api/offres/${offerId}`);
-    offer.value = offerResponse.data;
-  } catch (error) {
-    console.error("Erreur lors de la récupération de l'offre:", error);
-    error.value = "Offre non trouvée.";
-  }
-
-  try {
-    const cvResponse = await axios.get(`/api/cv/${cvId}`);
-    cv.value = {
-      ...cvResponse.data,
-      experiences: cvResponse.data.experiences || [],
-      educations_formations: cvResponse.data.educations_formations || [],
-      competences: cvResponse.data.competences || [],
-      langues: cvResponse.data.langues || [],
-      projets: cvResponse.data.projets || [],
-    };
-  } catch (e) {
-    console.error("Erreur lors de la récupération du CV:", e);
-    error.value = "CV non trouvé.";
+    const { data } = await axios.get(`/api/candidatures/${candidatureId}`);
+    candidature.value = data;
+    offer.value = data.offre;
+    cv.value = data.cv;
+  } catch (err) {
+    console.error(err);
+    error.value = "Impossible de charger les détails.";
   } finally {
-    isLoading.value = false;
+    loading.value = false;
   }
+}
+
+// Acceptation / refus + notification + redirection
+async function accepter() {
+  try {
+    await axios.put(`/api/candidatures/${candidatureId}/accept`);
+    alert("Candidature acceptée ✅");
+    router.push({ name: "Candidaturesrecruteur" });
+  } catch {
+    alert("Échec de l'acceptation.");
+  }
+}
+async function refuser() {
+  try {
+    await axios.put(`/api/candidatures/${candidatureId}/refuse`);
+    alert("Candidature refusée ❌");
+    router.push({ name: "Candidaturesrecruteur" });
+  } catch {
+    alert("Échec du refus.");
+  }
+}
+
+// PDF & retour
+function downloadPdf() {
+  if (!cvElement.value) return;
+  html2pdf()
+    .set({ margin: 10, filename: `CV_${cv.value.prenom}_${cv.value.nom}.pdf` })
+    .from(cvElement.value)
+    .save();
+}
+function goBack() {
+  router.back();
 }
 
 onMounted(loadData);
-
-function downloadPdf() {
-  if (!cvElement.value) return;
-  cvElement.value.classList.add("printing");
-  html2pdf()
-    .set({
-      margin: 10,
-      filename: `CV_${cv.value.prenom}_${cv.value.nom}.pdf`,
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-    })
-    .from(cvElement.value)
-    .save()
-    .finally(() => cvElement.value?.classList.remove("printing"));
-}
 </script>
 
 <style scoped>
-/* Styles CSS */
-.offer-details {
+/* Container global */
+.candidature-details-container {
   max-width: 900px;
-  margin: 30px auto;
-  margin-top: 100px;
-  padding: 30px;
-  background-color: #ffffff;
+  margin: 3rem auto;
+  padding: 1rem;
+  font-family: "Segoe UI", sans-serif;
+  color: #333;
+}
+
+/* Cartes */
+.section-card {
+  background: #fff;
+  padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease-in-out;
-  min-height: 300px;
-  max-height: 400px;
-  overflow-y: auto;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.section-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
-.offer-details:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+/* En-têtes */
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+  color: #1a202c;
+}
+h2 {
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+  color: #2d3748;
+}
+h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.75rem;
+  color: #4a5568;
+}
+h4 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: #4a5568;
 }
 
-.button-container {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 20px;
+/* Ligne statut */
+.status-line {
+  margin-top: 1rem;
+  font-size: 1rem;
+}
+.status-line strong {
+  color: #2d3748;
 }
 
-.btnapply {
-  padding: 12px 24px;
-  background-color: #09a1cb;
+/* Loader */
+.loading-state {
+  text-align: center;
+  padding: 3rem;
+}
+.loader {
+  width: 60px;
+  height: 60px;
+  border: 6px solid #e2e8f0;
+  border-top: 6px solid #3182ce;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Erreur */
+.error-state {
+  background: #fff5f5;
+  border: 1px solid #feb2b2;
+  padding: 1.5rem;
+  border-radius: 8px;
+  color: #c53030;
+  margin-bottom: 2rem;
+}
+.btn-retry {
+  margin-top: 1rem;
+  padding: 0.6rem 1.2rem;
+  background: #e53e3e;
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  transition: background-color 0.3s ease;
+  transition: background 0.2s ease;
+}
+.btn-retry:hover {
+  background: #c53030;
 }
 
-.btnapply:hover {
-  background-color: #428beb;
+/* Statut */
+.status-pending {
+  color: #dd6b20;
+  font-weight: 600;
 }
-
-h1 {
-  font-size: 2rem;
-  text-align: center;
-  color: #2980b9;
-  margin-bottom: 20px;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+.status-accepted {
+  color: #38a169;
+  font-weight: 600;
 }
-
-p {
-  font-size: 1.1rem;
-  line-height: 1.8;
-  color: #555;
-  margin-bottom: 15px;
-}
-
-strong {
-  color: #2c3e50;
+.status-refused {
+  color: #e53e3e;
   font-weight: 600;
 }
 
-.offer-details p:first-child {
-  margin-top: 0;
+/* Boutons Accepter/Refuser */
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
 }
-.offer-details p:last-child {
-  margin-bottom: 0;
-}
-
-@media (max-width: 768px) {
-  .offer-details {
-    padding: 20px;
-  }
-  h1 {
-    font-size: 1.8rem;
-  }
-  p {
-    font-size: 1rem;
-  }
-}
-
-.cv-container {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  max-width: 900px;
-  margin: 2rem auto;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+.btn-accept,
+.btn-refuse {
+  flex: 1;
+  padding: 0.8rem;
+  border: none;
   border-radius: 8px;
-  overflow: hidden;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.1s ease;
+}
+.btn-accept {
+  background: #48bb78;
+}
+.btn-accept:hover {
+  transform: translateY(-2px);
+  background: #38a169;
+}
+.btn-refuse {
+  background: #f56565;
+}
+.btn-refuse:hover {
+  transform: translateY(-2px);
+  background: #e53e3e;
 }
 
-.cv-form {
+/* CV */
+.cv-content {
   display: flex;
   flex-wrap: wrap;
-  min-height: 100vh;
+  gap: 2rem;
 }
-
-.cv-title {
-  position: absolute;
-  top: 0;
-  right: 150px;
-  width: 100%;
-  color: #2c3e50;
-  text-align: center;
-  padding: 1rem;
-  margin: 0;
-  font-size: 1.8rem;
-  font-weight: 500;
-  z-index: 10;
-}
-
 .cv-left-column {
   flex: 1;
-  min-width: 300px;
-  background-color: #0f3164;
+  min-width: 250px;
+  background: #2a4365;
   color: #fff;
-  padding: 6rem 2rem 2rem;
+  padding: 2rem;
+  border-radius: 12px;
 }
-
-.cv-right-column {
-  flex: 2;
-  min-width: 400px;
-  background-color: #fff;
-  padding: 6rem 2rem 2rem;
-}
-
-.section {
-  margin-bottom: 2rem;
-  padding: 1rem;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-.cv-left-column .section {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-.cv-right-column .section {
-  background-color: #f8f9fa;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-}
-
-.section:hover {
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.section-title {
-  color: inherit;
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid #3498db;
-}
-
-.input-group {
-  margin-bottom: 1.2rem;
-}
-
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  font-size: 0.9rem;
-}
-
-input,
-textarea {
-  width: 100%;
-  padding: 0.8rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-family: inherit;
-  font-size: 0.95rem;
-  background-color: rgba(255, 255, 255, 0.9);
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-input:focus,
-textarea:focus {
-  outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-}
-
-.cv-left-column input,
-.cv-left-column textarea {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: transparent;
-  color: #fff;
-}
-
-.cv-left-column input::placeholder,
-.cv-left-column textarea::placeholder {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-textarea {
-  resize: vertical;
-}
-
-.profile-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
 .profile-picture-container {
-  position: relative;
-  margin-bottom: 1.5rem;
   text-align: center;
+  margin-bottom: 1.5rem;
 }
-
 .profile-picture {
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background-color: #ddd;
-  margin: 0 auto 1rem;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 3px solid #3498db;
   background-size: cover;
   background-position: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease;
+  margin: 0 auto 1rem;
 }
-
-.profile-picture:hover {
-  transform: scale(1.05);
+.cv-left-column h3 {
+  margin-bottom: 1rem;
 }
-
-.upload-label {
-  cursor: pointer;
-  padding: 0.5rem 1rem;
-  background-color: #3498db;
-  color: #fff;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  transition: background-color 0.3s ease;
+.cv-right-column {
+  flex: 2;
+  min-width: 300px;
+  padding: 2rem;
+  background: #f7fafc;
+  border-radius: 12px;
 }
-
-.upload-label:hover {
-  background-color: #2980b9;
+.section {
+  margin-bottom: 1.5rem;
 }
-
-.hidden {
-  display: none;
-}
-
-.form-actions {
-  margin-top: 2rem;
-  text-align: center;
+.two-columns {
   display: flex;
-  gap: 1rem;
-  justify-content: center;
+  gap: 1.5rem;
 }
-
-.submit-btn,
-.download-btn,
-.next-btn {
-  padding: 1rem 2rem;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.submit-btn {
-  background-color: #3498db;
-}
-
-.download-btn {
-  background-color: #27ae60;
-}
-
-.next-btn {
-  background-color: #9b59b6;
-}
-
-.submit-btn:hover,
-.download-btn:hover,
-.next-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.submit-btn:hover {
-  background-color: #2980b9;
-}
-
-.download-btn:hover {
-  background-color: #219653;
-}
-
-.next-btn:hover {
-  background-color: #8e44ad;
-}
-
-.submit-btn:disabled,
-.next-btn:disabled {
-  background-color: #95a5a6;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.dynamic-field {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.dynamic-field input,
-.dynamic-field textarea {
+.two-columns section {
   flex: 1;
 }
 
-.add-btn {
-  background: none;
-  border: 1px dashed #3498db;
-  color: #3498db;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: block;
-  width: 100%;
-  margin-top: 0.5rem;
-}
-
-.add-btn:hover {
-  background: rgba(52, 152, 219, 0.1);
-  transform: translateY(-1px);
-}
-
-.delete-btn {
-  background: none;
-  border: none;
-  font-size: 1rem;
-  cursor: pointer;
-  color: #e74c3c;
-  transition: transform 0.2s ease;
+/* Navigation */
+.navigation-actions {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
+  justify-content: space-between;
+  margin-top: 2rem;
+}
+.btn-back,
+.btn-download {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  background: #3182ce;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+.btn-back:hover,
+.btn-download:hover {
+  transform: translateY(-2px);
+  background: #2b6cb0;
 }
 
-.delete-btn:hover {
-  transform: scale(1.2);
-  background-color: rgba(231, 76, 60, 0.1);
-}
-
-.error {
-  color: #e74c3c;
-  font-size: 0.8rem;
-  margin-top: 0.3rem;
-}
-
+/* Responsive */
 @media (max-width: 768px) {
-  .cv-form {
+  .cv-content {
     flex-direction: column;
   }
-
-  .cv-left-column,
-  .cv-right-column {
-    width: 100%;
-    padding-top: 5rem;
-  }
-
-  .form-actions {
+  .navigation-actions {
     flex-direction: column;
-  }
-
-  .submit-btn,
-  .download-btn,
-  .next-btn {
-    width: 100%;
+    gap: 1rem;
   }
 }
 </style>

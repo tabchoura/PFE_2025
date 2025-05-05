@@ -9,27 +9,24 @@ return new class extends Migration
     {
         Schema::create('entretiens', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->nullable();
-            $table->string('statut');
-            $table->date('date_entretien')->nullable();
-            $table->time('time')->nullable();
-            $table->timestamps();
-    
-            // Crée la colonne offre_id et ajoute la clé étrangère en même temps
-            $table->foreignId('offre_id')->constrained('offres')->onDelete('cascade');
-            $table->unsignedBigInteger('user_id'); // Clé étrangère vers la table users
 
-            // Lier la table entretiens à la table users
-            $table->foreign('user_id')
-                  ->references('id')
-                  ->on('users')
+            /* --- lien vers la candidature concernée --- */
+            $table->foreignId('candidature_id')
+                  ->constrained('candidatures')
                   ->onDelete('cascade');
+
+            /* --- date + heure au même champ (timestamp) --- */
+            $table->timestamp('date_entretien');
+
+            /* --- statut de l’entretien (planifié, réalisé…) --- */
+            $table->string('statut')->default('planifié');
+
+            $table->timestamps();
         });
     }
-    
+
     public function down(): void
     {
         Schema::dropIfExists('entretiens');
     }
-    
 };

@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <!-- Bouton pour afficher/masquer le formulaire -->
+    <!-- Bouton pour afficher / masquer le formulaire -->
     <button @click="formVisible = !formVisible" class="toggle-btn">
       ➕ Ajouter un événement
     </button>
@@ -16,12 +16,12 @@
     <!-- Calendrier -->
     <pro-calendar :events="events" :config="calendarConfig" />
 
-    <!-- Liste des événements avec bouton Supprimer -->
+    <!-- Liste des événements -->
     <div v-if="events.length" class="event-list">
       <h3>📅 Événements enregistrés :</h3>
       <ul>
         <li v-for="(event, index) in events" :key="event.id">
-          {{ event.name }} - {{ formatDate(event.date) }}
+          {{ event.name }} – {{ formatDate(event.date) }}
           <button @click="supprimerEvenement(index)">🗑 Supprimer</button>
         </li>
       </ul>
@@ -29,61 +29,84 @@
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue';
-import '@lbgm/pro-calendar-vue/style';
+<script setup lang="ts">
+import { ref } from "vue";
+import "@lbgm/pro-calendar-vue/style";
 
-const events = ref([]);
+/* ---- v-model support ---- */
+const props = defineProps<{ modelValue: string | null }>();
+const emit = defineEmits<{ "update:modelValue": [string | null] }>();
+
+/* ---- état ---- */
+const events = ref<any[]>([]);
 const formVisible = ref(false);
-const titre = ref('');
-const date = ref('');
-const heure = ref('');
+const titre = ref("");
+const date = ref(""); // YYYY-MM-DD
+const heure = ref(""); // HH:mm
 
-const calendarConfig = ref({
+/* ---- config calendrier (laisse tel quel) ---- */
+const calendarConfig = {
   actions: {
-    view: { enabled: true, icon: true, text: 'Voir' },
+    view: { enabled: true, icon: true, text: "Voir" },
     report: { enabled: false },
   },
-  searchPlaceHolder: 'Rechercher...',
-  eventName: 'Nouvel Événement',
-  closeText: 'Fermer',
-});
+  searchPlaceHolder: "Rechercher...",
+  eventName: "Nouvel Événement",
+  closeText: "Fermer",
+};
 
+/* ---- ajouter un évènement + remonter la date ---- */
 function ajouterEvenement() {
-  const dateTime = new Date(`${date.value}T${heure.value}`);
+  if (!date.value || !heure.value) {
+    alert("Merci de saisir la date et l’heure");
+    return;
+  }
+
+  // construit directement la chaîne MySQL
+  const mysql = `${date.value} ${heure.value}:00`; // ex. 2025-05-10 14:00:00
+
   events.value.push({
     id: Date.now().toString(),
     name: titre.value,
-    comment: 'Ajout manuel',
-    date: dateTime.toISOString(),
+    comment: "Ajout manuel",
+    date: mysql,
     keywords: titre.value,
   });
 
-  titre.value = '';
-  date.value = '';
-  heure.value = '';
+  emit("update:modelValue", mysql); // ← envoie au parent
+
+  // reset formulaire
+  titre.value = "";
+  date.value = "";
+  heure.value = "";
   formVisible.value = false;
 }
 
-function supprimerEvenement(index) {
+/* ---- supprimer ---- */
+function supprimerEvenement(index: number) {
   events.value.splice(index, 1);
+  if (!events.value.length) emit("update:modelValue", null);
 }
 
-function formatDate(dateString) {
-  const options = { dateStyle: 'full', timeStyle: 'short' };
-  return new Date(dateString).toLocaleString('fr-FR', options);
+/* ---- format pour l’affichage ---- */
+function formatDate(str: string) {
+  return new Date(str).toLocaleString("fr-FR", {
+    dateStyle: "full",
+    timeStyle: "short",
+  });
 }
 </script>
 
 <style scoped>
+/* styles inchangés */
 .container {
   max-width: 800px;
   margin: auto;
   padding: 20px;
 }
 .toggle-btn {
-  background-color: #4caf50;
-  color: white;
+  background: #4caf50;
+  color: #fff;
   padding: 10px 16px;
   border: none;
   border-radius: 6px;
@@ -98,14 +121,14 @@ function formatDate(dateString) {
   margin-bottom: 20px;
 }
 .form input {
+  flex: 1;
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  flex: 1;
 }
 .form button {
-  background-color: #2196f3;
-  color: white;
+  background: #2196f3;
+  color: #fff;
   border: none;
   padding: 8px 16px;
   border-radius: 5px;
@@ -128,8 +151,8 @@ function formatDate(dateString) {
   margin-bottom: 8px;
 }
 .event-list button {
-  background-color: #e53935;
-  color: white;
+  background: #e53935;
+  color: #fff;
   border: none;
   padding: 6px 12px;
   border-radius: 4px;

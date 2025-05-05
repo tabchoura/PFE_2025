@@ -63,7 +63,26 @@ const routes = [
   ]},
   { path: '/entretiens', component: CompteCandidat, meta: { requiresAuth: true }, children: [
     { path: '', name: 'Entretiens', component: Entretiens }
-  ]}, { path: '/mescv', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+  ]}, 
+// router/index.ts
+{
+  path: "/entretiensrecruteur",          // orthographe corrigée
+  component: CompteRecruteur,
+  meta: { requiresAuth: true },
+  children: [
+    {
+      // on accepte un identifiant juste après le slash
+      path: ":candidatureId",            // ← segment dynamique
+      name: "Entretiens",
+      component: Entretiens,
+      props: true                        // la vue recevra candidatureId en prop
+    }
+  ]
+},
+
+  
+  
+  { path: '/mescv', component: CompteCandidat, meta: { requiresAuth: true }, children: [
     { path: '', name: 'Mescv', component: Mescv }
   ]},
   { path: '/creercv', component: CompteCandidat, meta: { requiresAuth: true }, children: [
@@ -73,25 +92,21 @@ const routes = [
   // { path: '/aftercvpostuler', component: CompteCandidat, meta: { requiresAuth: true }, children: [
   //   { path: '', name: 'Aftercvpostuler', component: Aftercvpostuler }
   // ]},
- // Pour le candidat
-{
-  path:'/detailscandidature/offre/:offerId/cv/:cvId',
-  component: CompteCandidat,
-  meta: { requiresAuth: true },
-  children: [
-    { path: '', name: 'DetailsCandidatureCandidat', component: DetailsCandidature }
-  ]
-},
+  {
+    path: '/candidatures/:candidatureId',
+    component: CompteRecruteur,
+    meta: { requiresAuth: true, role: 'recruteur' },
+    children: [
+      {
+        path: '',
+        name: 'DetailsCandidature',
+        component: DetailsCandidature
+      }
+    ]
+  },
 
-{
-  path: '/detailscandidature/offre/:offerId/cv/:cvId',
-  component: CompteRecruteur,
-  children: [
-    { path: '', name: 'DetailsCandidature', component: DetailsCandidature }
-  ]
-}
-,
-
+  // Vue recruteur
+ 
   
   { path: '/voircv/:id', component: CompteCandidat, meta: { requiresAuth: true }, children: [
     { path: '', name: 'VoirCv', component: Voircv }

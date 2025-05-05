@@ -55,6 +55,7 @@
           <label for="motivation" class="motivation-label"
             >Ajoutez un message (optionnel)</label
           >
+
           <textarea
             id="motivation"
             v-model="motivationText"
@@ -170,7 +171,7 @@ async function confirmPostuler() {
     await axios.post(`/api/offres/${offerId}/postuler`, {
       cv_id: cvId,
       message: motivationText.value || null,
-      statut: "En attente", // Statut de la candidature
+      statut: "Enattente", // Statut de la candidature
     });
     success.value = "Votre candidature a été envoyée avec succès!";
     error.value = null;

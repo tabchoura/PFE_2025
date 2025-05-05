@@ -340,8 +340,6 @@ async function handleImage(e) {
     toast.error(errors.value.image);
   }
 }
-
-// Soumission du CV
 async function submitCv() {
   if (isSubmitting.value) return;
   toast.clear();
@@ -364,7 +362,7 @@ async function submitCv() {
         await axios.post(`/api/offres/${offreId}/postuler`, {
           cv_id: data.id,
           message: null,
-          statut: "En attente",
+          statut: "enattente",
         });
         toast.success("Candidature envoyée automatiquement !");
         router.push("/candidature");
@@ -377,6 +375,7 @@ async function submitCv() {
 
     // Retour à "mes CV"
     router.push("/mescv");
+    k;
   } catch (err) {
     console.error("Erreur création CV :", err);
     toast.error("Erreur lors de la création du CV");

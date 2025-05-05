@@ -225,6 +225,37 @@ const errors = ref({ email: "", password: "" });
 const isLoading = ref(false);
 const showPassword = ref(false);
 
+const login = async () => {
+  if (!validateForm()) return;
+
+  isLoading.value = true;
+  errorMessage.value = "";
+
+  try {
+    await axios.get("/sanctum/csrf-cookie");
+    const response = await axios.post(
+      "/api/login",
+      { email: email.value, password: password.value, remember: rememberMe.value },
+      { withCredentials: true }
+    );
+
+    const userData = response.data;
+    const storage = rememberMe.value ? localStorage : sessionStorage;
+    storage.setItem("userSession", JSON.stringify(userData));
+
+    successMessage.value = "Connexion réussie ! Redirection en cours...";
+    setTimeout(() => router.push("/monprofile"), 1500);
+  } catch (err) {
+    if (err.response && err.response.status === 401) {
+      errorMessage.value = "Identifiants incorrects ou utilisateur non trouvé";
+    } else {
+      errorMessage.value = "Une erreur est survenue. Veuillez réessayer.";
+    }
+  } finally {
+    isLoading.value = false;
+  }
+};
+
 const validateForm = () => {
   errors.value.email = "";
   errors.value.password = "";
