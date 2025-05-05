@@ -18,9 +18,9 @@ return new class extends Migration
             $table->text('message')->nullable(); // Facultatif
             $table->enum('statut', ['enattente','accepter','entretien','embauche','refuser'])
             ->default('enattente');
-      
             $table->unsignedBigInteger('user_id'); // Assurez-vous que user_id est non nullable
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade'); // Clé étrangère vers users
+            $table->timestamp('date_entretien')->nullable();
 
             $table->timestamps(); // created_at et updated_at
         });

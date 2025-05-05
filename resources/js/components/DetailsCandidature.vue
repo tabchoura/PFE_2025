@@ -18,7 +18,7 @@
 
       <!-- Offre -->
       <div class="section-card offer-details">
-        <h2>Offre d’emploi</h2>
+        <h2>Offre d'emploi</h2>
         <h3>{{ offer.titre }}</h3>
         <p><strong>Description :</strong> {{ offer.description }}</p>
         <p><strong>Salaire :</strong> {{ offer.salaire }}</p>
@@ -40,10 +40,20 @@
           </div>
         </div>
 
-        <!-- Boutons Accepter / Refuser -->
-        <div class="action-buttons" v-if="statusKey === 'pending'">
+        <!-- Boutons Accepter / Refuser - Ne s'affiche que si le statut est "en attente" et qu'aucun entretien n'est planifié -->
+        <div
+          class="action-buttons"
+          v-if="statusKey === 'pending' && !candidature.date_entretien"
+        >
           <button @click="accepter" class="btn-accept">✅ Accepter</button>
           <button @click="refuser" class="btn-refuse">❌ Refuser</button>
+        </div>
+
+        <!-- Afficher un message si la candidature a été acceptée et un entretien est prévu -->
+        <div v-if="candidature.date_entretien" class="entretien-info">
+          <p class="entretien-status">
+            ✅ Entretien planifié pour le {{ formatDate(candidature.date_entretien) }}
+          </p>
         </div>
       </div>
 
@@ -138,19 +148,29 @@ const cv = ref<any>({
 });
 const cvElement = ref<HTMLElement | null>(null);
 
-// Normalisation du statut
-const statusKey = computed<"pending" | "accepter" | "refuser">(() => {
-  const raw = (candidature.value.statut || "").toString().toLowerCase();
-  if (raw.includes("accept")) return "Accepter";
-  if (raw.includes("refus")) return "Refuser";
-  return "pending";
+// Normalisation du statut - version robuste pour détecter tous les cas
+const statusKey = computed<"pending" | "accepted" | "refused">(() => {
+  const raw = (candidature.value.statut || "").toString().toLowerCase().trim();
+
+  // Vérifier si un entretien est déjà planifié
+  if (candidature.value.date_entretien) {
+    return "accepted";
+  }
+
+  // Vérifier les différentes possibilités de statut
+  if (raw.includes("accept") || raw === "acceptee" || raw === "acceptée")
+    return "accepted";
+  if (raw.includes("refus") || raw === "refusee" || raw === "refusée") return "refused";
+  if (raw.includes("attente") || raw === "enattente") return "pending";
+
+  return "pending"; // Par défaut
 });
 
 // CSS + label
 const statusClass = computed(() => `status-${statusKey.value}`);
 const statutLabel = computed(() => {
   switch (statusKey.value) {
-    case "accepter":
+    case "accepted":
       return "Acceptée";
     case "refused":
       return "Refusée";
@@ -190,6 +210,20 @@ async function loadData() {
     candidature.value = data;
     offer.value = data.offre;
     cv.value = data.cv;
+
+    // Vérification additionnelle du statut lors du chargement
+    // Si une date d'entretien existe mais le statut est toujours "en attente",
+    // corriger le statut local
+    if (
+      data.date_entretien &&
+      data.statut &&
+      data.statut.toString().toLowerCase().includes("attente")
+    ) {
+      console.log(
+        "Correction du statut: candidature avec entretien planifié mais statut incorrect"
+      );
+      candidature.value.statut = "acceptée";
+    }
   } catch (err) {
     console.error(err);
     error.value = "Impossible de charger les détails.";
@@ -203,15 +237,29 @@ async function accepter() {
   try {
     await axios.put(`/api/candidatures/${candidatureId}/accept`);
     alert("Candidature acceptée ✅");
+    // Mettre à jour le statut localement sans avoir à recharger la page
+    candidature.value.statut = "acceptée";
+
+    // Redirection vers la page des candidatures
     router.push({ name: "Candidaturesrecruteur" });
+
+    setTimeout(() => {
+      router.push({
+        name: "Entretiens",
+        params: { candidatureId: candidatureId.toString() },
+      });
+    }, 1000);
   } catch {
     alert("Échec de l'acceptation.");
   }
 }
+
 async function refuser() {
   try {
     await axios.put(`/api/candidatures/${candidatureId}/refuse`);
     alert("Candidature refusée ❌");
+    // Mettre à jour le statut localement sans avoir à recharger la page
+    candidature.value.statut = "refusée";
     router.push({ name: "Candidaturesrecruteur" });
   } catch {
     alert("Échec du refus.");
@@ -226,13 +274,13 @@ function downloadPdf() {
     .from(cvElement.value)
     .save();
 }
+
 function goBack() {
   router.back();
 }
 
 onMounted(loadData);
 </script>
-
 <style scoped>
 /* Container global */
 .candidature-details-container {

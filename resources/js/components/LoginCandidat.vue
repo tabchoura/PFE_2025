@@ -162,46 +162,12 @@
 
         <!-- Notifications -->
         <div v-if="errorMessage" class="error-notification">
-          <span class="error-icon">
-            <!-- Warning Icon SVG -->
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              width="20"
-              height="20"
-            >
-              <path
-                fill="none"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
-              />
-            </svg>
-          </span>
+          <span class="error-icon">...</span>
           {{ errorMessage }}
           <button @click="errorMessage = ''" class="close-error">×</button>
         </div>
         <div v-if="successMessage" class="success-notification">
-          <span class="success-icon">
-            <!-- Check Icon SVG -->
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              width="20"
-              height="20"
-            >
-              <path
-                fill="none"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-          </span>
+          <span class="success-icon">...</span>
           {{ successMessage }}
         </div>
       </div>
@@ -213,9 +179,10 @@
 import { ref } from "vue";
 import axios from "axios";
 import logincandidat from "../../assets/logincandidat.jpg";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 
 const router = useRouter();
+const route = useRoute();
 const email = ref("");
 const password = ref("");
 const rememberMe = ref(false);
@@ -224,37 +191,6 @@ const successMessage = ref("");
 const errors = ref({ email: "", password: "" });
 const isLoading = ref(false);
 const showPassword = ref(false);
-
-const login = async () => {
-  if (!validateForm()) return;
-
-  isLoading.value = true;
-  errorMessage.value = "";
-
-  try {
-    await axios.get("/sanctum/csrf-cookie");
-    const response = await axios.post(
-      "/api/login",
-      { email: email.value, password: password.value, remember: rememberMe.value },
-      { withCredentials: true }
-    );
-
-    const userData = response.data;
-    const storage = rememberMe.value ? localStorage : sessionStorage;
-    storage.setItem("userSession", JSON.stringify(userData));
-
-    successMessage.value = "Connexion réussie ! Redirection en cours...";
-    setTimeout(() => router.push("/monprofile"), 1500);
-  } catch (err) {
-    if (err.response && err.response.status === 401) {
-      errorMessage.value = "Identifiants incorrects ou utilisateur non trouvé";
-    } else {
-      errorMessage.value = "Une erreur est survenue. Veuillez réessayer.";
-    }
-  } finally {
-    isLoading.value = false;
-  }
-};
 
 const validateForm = () => {
   errors.value.email = "";
@@ -275,6 +211,44 @@ const validateForm = () => {
   }
 
   return valid;
+};
+
+const login = async () => {
+  if (!validateForm()) return;
+
+  isLoading.value = true;
+  errorMessage.value = "";
+
+  try {
+    await axios.get("/sanctum/csrf-cookie");
+    const response = await axios.post(
+      "/api/login",
+      { email: email.value, password: password.value, remember: rememberMe.value },
+      { withCredentials: true }
+    );
+
+    const userData = response.data;
+    const storage = rememberMe.value ? localStorage : sessionStorage;
+    storage.setItem("userSession", JSON.stringify(userData));
+
+    successMessage.value = "Connexion réussie ! Redirection en cours...";
+    setTimeout(() => {
+      const { redirect, offerId, cvId } = route.query;
+      if (redirect === "detailsoffre" && offerId && cvId) {
+        router.push({ name: "Detailsoffre", params: { offerId, cvId } });
+      } else {
+        router.push("/monprofile");
+      }
+    }, 1500);
+  } catch (err) {
+    if (err.response && err.response.status === 401) {
+      errorMessage.value = "Identifiants incorrects ou utilisateur non trouvé";
+    } else {
+      errorMessage.value = "Une erreur est survenue. Veuillez réessayer.";
+    }
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 const resetPassword = () => (window.location.href = "/reset-password");

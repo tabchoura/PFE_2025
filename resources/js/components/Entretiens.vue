@@ -6,37 +6,40 @@
     <!-- Calendrier relié au state selectedDate -->
     <Calendrier v-model="selectedDate" />
 
-    <button class="primary-btn" @click="envoyer">
-      <i class="fas fa-paper-plane" /> Envoyer
+    <button class="primary-btn" @click="envoyer" :disabled="loading">
+      <i class="fas fa-paper-plane" />
+      <span v-if="!loading">Envoyer</span>
+      <span v-else>Envoi...</span>
     </button>
 
     <!-- Message de confirmation -->
-    <div v-if="entretien" class="success">
+    <div v-if="successMessage" class="success">
       <h3>Entretien enregistré ✅</h3>
-      <p>🗓️ {{ formatDate(entretien.date_entretien) }}</p>
+      <p>🗓️ {{ formatDate(entretienDate) }}</p>
+    </div>
+    <div v-if="errorMessage" class="error">
+      <p>{{ errorMessage }}</p>
     </div>
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
 import Calendrier from "./Calendrier.vue";
 
-/* --- paramètres de route --- */
 const route = useRoute();
-const candidatureId = Number(route.params.candidatureId); // ex. 42
-
-/* --- router pour une éventuelle redirection --- */
 const router = useRouter();
+const candidatureId = Number(route.params.candidatureId);
 
-/* --- état local --- */
-const selectedDate = ref<string | null>(null); // date choisie dans le calendrier
-const entretien = ref<any | null>(null); // réponse du backend
+const selectedDate = ref(null);
+const entretienDate = ref(null);
+const successMessage = ref(false);
+const errorMessage = ref(null);
+const loading = ref(false);
 
-/* --- helpers --- */
-function formatDate(d?: string) {
+function formatDate(d) {
   return d
     ? new Date(d).toLocaleString("fr-FR", {
         day: "numeric",
@@ -48,30 +51,32 @@ function formatDate(d?: string) {
     : "";
 }
 
-/* --- action Envoyer --- */
 async function envoyer() {
   if (!selectedDate.value) {
-    alert("Merci de sélectionner une date.");
+    errorMessage.value = "Veuillez choisir une date d'entretien.";
     return;
   }
 
+  loading.value = true;
+  errorMessage.value = null;
+
   try {
-    // requête POST vers l’API
-    const { data } = await axios.post("/api/entretiens", {
-      candidature_id: candidatureId,
+    const { data } = await axios.post(`/api/candidatures/${candidatureId}/entretien`, {
       date_entretien: selectedDate.value,
     });
 
-    // on stocke l’objet entretien pour l’afficher
-    entretien.value = data;
+    entretienDate.value = data.date_entretien;
+    successMessage.value = true;
 
-    // 👉 si tu veux revenir automatiquement à la liste :
-    setTimeout(() => router.push("/candidaturesrecruteur"), 1500);
-  } catch (err: any) {
-    console.error(err);
-    alert(
-      err.response?.data?.message || "Erreur lors de l’enregistrement de l’entretien"
-    );
+    // Optionnel : revenir après 2s
+    setTimeout(() => {
+      router.push({ name: "Candidaturesrecruteur" });
+    }, 2000);
+  } catch (err) {
+    errorMessage.value =
+      err.response?.data?.message || "Erreur lors de l’enregistrement de l’entretien.";
+  } finally {
+    loading.value = false;
   }
 }
 </script>
@@ -86,7 +91,6 @@ async function envoyer() {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
-/* bouton primaire */
 .primary-btn {
   display: flex;
   align-items: center;
@@ -101,15 +105,28 @@ async function envoyer() {
   cursor: pointer;
   transition: background 0.3s;
 }
-.primary-btn:hover {
+.primary-btn:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+.primary-btn:hover:not(:disabled) {
   background: #2980b9;
 }
-/* bloc succès */
+
 .success {
   margin-top: 2rem;
   padding: 1rem 1.5rem;
   background: #c6f6d5;
   border-left: 4px solid #38a169;
   border-radius: 8px;
+}
+
+.error {
+  margin-top: 1rem;
+  padding: 1rem 1.5rem;
+  background: #fed7d7;
+  border-left: 4px solid #e53e3e;
+  border-radius: 8px;
+  color: #c53030;
 }
 </style>

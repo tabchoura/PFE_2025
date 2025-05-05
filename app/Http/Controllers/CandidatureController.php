@@ -4,132 +4,124 @@ namespace App\Http\Controllers;
 
 use App\Models\Candidature;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;  // Ajouter le facade Auth
+use Illuminate\Support\Facades\Auth;
 
 class CandidatureController extends Controller
-{ public function accept($id)
+{
+    /* ------------------------------------------------------------------
+     * 1. Changer le statut (accepter / refuser)
+     * ------------------------------------------------------------------ */
+    public function accept($id)
     {
         $candidature = Candidature::findOrFail($id);
-        $candidature->statut = 'accepter';
-        $candidature->save();
+        $candidature->update(['statut' => 'accepter']);
 
         return response()->json([
             'message'     => 'Candidature acceptée.',
-            'candidature' => $candidature,
-        ], 200);
+        ]);
     }
 
-    /**
-     * Refuse une candidature.
-     */
     public function refuse($id)
     {
         $candidature = Candidature::findOrFail($id);
-        $candidature->statut = 'refuser';
-        $candidature->save();
+        $candidature->update(['statut' => 'refuser']);
 
         return response()->json([
             'message'     => 'Candidature refusée.',
-            'candidature' => $candidature,
-        ], 200);
+        ]);
     }
 
+    /* ------------------------------------------------------------------
+     * 2. Postuler à une offre  (route : POST /offres/{id}/postuler)
+     * ------------------------------------------------------------------ */
     public function postuler(Request $request, $id)
+    {
+        $request->validate([
+            'cv_id'   => ['required', 'exists:cvs,id'],
+            'message' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $candidature = Candidature::create([
+            'offre_id' => $id,
+            'cv_id'    => $request->cv_id,
+            'user_id'  => auth()->id(),
+            'message'  => $request->input('message'),
+            'statut'   => $request->input('statut', 'enattente'),
+        ]);
+
+        return response()->json([
+            'message'     => '✅ Candidature envoyée avec succès.',
+        ], 201);
+    }
+
+    /**
+ * Planifie et envoie la date d’entretien pour une candidature.
+ */public function envoyerEntretien(Request $request, $id)
 {
-    // Validation des données
-    $request->validate([
-        'cv_id' => 'required|exists:cvs,id', // Le CV doit exister dans la table `cvs`
-        // 'message' => 'nullable|string|max:1000', // Le message est facultatif
+    // Au lieu de « date_format », on utilise simplement « date »
+    $validated = $request->validate([
+        'date_entretien' => ['required', 'date'],  
     ]);
 
-    
-
-    // Récupération de l'offre avec l'ID
-    // $user_id=auth()->id();    
-    
-    // Créer une nouvelle candidature pour l'offre
-    $candidature = new Candidature();
-    $candidature->message  = $request   ['message'] ?? null;    // ← ici !
-    $candidature->offre_id = $id; // Lier l'offre à la candidature
-    $candidature->cv_id = $request->cv_id; // Lier le CV à la candidature
-  $candidature->user_id =auth()->id();   
-$candidature->statut = $request->input('statut', 'enattente');
-$candidature->save(); // Sauvegarder la candidature dans la base de données
+    $candidature = Candidature::findOrFail($id);
+    $candidature->update([
+        'date_entretien' => $validated['date_entretien'],
+        'statut'         => 'entretien',
+    ]);
 
     return response()->json([
-        'message' => '✅ Candidature envoyée avec succès.'
-    ]);
+        'message'        => 'Date d’entretien enregistrée.',
+        'date_entretien' => $candidature->date_entretien,
+        'candidature'    => $candidature,
+    ], 200);
 }
-    // 🔵 Voir toutes les candidatures (optionnel)
+
+
+
+    /* ------------------------------------------------------------------
+     * 3. Lister et afficher
+     * ------------------------------------------------------------------ */
     public function index()
     {
-        return response()->json(Candidature::with(['offre', 'cv'])->get());
+        return response()->json(
+            Candidature::with(['offre', 'cv', ])->get()
+        );
     }
 
-    // 🔵 Voir une seule candidature
     public function show($id)
     {
-        $candidature = Candidature::with(['offre', 'cv'])->find($id);
+        $candidature = Candidature::with(['offre', 'cv', ])->find($id);
 
-        if (!$candidature) {
+        if (! $candidature) {
             return response()->json(['message' => 'Candidature non trouvée'], 404);
         }
 
         return response()->json($candidature);
     }
 
-    // 🔵 Voir les candidatures de l'utilisateur authentifié
     public function mescandidatures()
     {
         $user = Auth::user();
-    
-        if (!$user) {
+
+        if (! $user) {
             return response()->json(['message' => 'Utilisateur non authentifié'], 401);
         }
-    
+
         $candidatures = Candidature::where('user_id', $user->id)
-                                   ->with(['offre', 'cv']) // ✅ ajoute la relation vers le CV
-                                   ->get();
-    
+            ->with(['offre', 'cv', ])
+            ->get();
+
         return response()->json($candidatures);
     }
-    
-    // 🔵 Postuler à une offre (via API POST)
-    // 
-// public function store($id,Request $request)
-//  {  
-   
-//     // Vérifier si l'utilisateur est authentifié
-// //     $user = Auth::user(); 
-// //     if (!$user) {
-// //         return response()->json(['message' => 'Utilisateur non authentifié'], 401);
-// //     }
-// //     // Valider les données
-// //     $validatedData = $request->validate([
-// //         'offre_id' => 'required|exists:offres,id',
-// //         'cv_id' => 'required|exists:cvs,id',
-// //         'message' => 'nullable|string|max:1000',
-// //         'statut' => 'nullable|string|max:1000',
-// //     ]);
-// //     // Créer la candidature
-// //     $candidature = new Candidature();
-// //     $candidature->offre_id = $validatedData['offre_id'];
-// //     $candidature->cv_id = $validatedData['cv_id'];
-// //     $candidature->message = $validatedData['message'];
-// //     $candidature->statut = $validatedData['statut'];
-// //     $candidature->user_id = $user->id; // Associer l'utilisateur authentifié à la candidature
-// //     $candidature->save();
 
-// //     return response()->json($candidature, 201); // Retourner la candidature après l'enregistrement
-// }
-
-
-    // 🔵 Supprimer une candidature
+    /* ------------------------------------------------------------------
+     * 4. Supprimer
+     * ------------------------------------------------------------------ */
     public function destroy($id)
     {
         $candidature = Candidature::find($id);
 
-        if (!$candidature) {
+        if (! $candidature) {
             return response()->json(['message' => 'Candidature non trouvée'], 404);
         }
 

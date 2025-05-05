@@ -77,7 +77,7 @@
             <p><strong>Date :</strong> {{ formatDate(c.created_at) }}</p>
           </div>
         </div>
-
+        <!-- 
         <div class="workflow-stepper">
           <div
             v-for="(step, i) in getSteps(c.statut)"
@@ -91,7 +91,7 @@
             <span class="circle">{{ i + 1 }}</span>
             <span class="label">{{ step.label }}</span>
           </div>
-        </div>
+        </div> -->
 
         <div class="candidature-card-footer">
           <!-- <button

@@ -14,7 +14,8 @@ class Candidature extends Model
         'cv_id',
         'user_id',  // Assurez-vous que user_id est bien dans les fillable
         'message',
-        'statut'
+        'statut',
+        'date_entretien'
     ];
     protected $attributes = [
         'statut' => 'enattente',
@@ -38,9 +39,6 @@ class Candidature extends Model
         return $this->belongsTo(User::class);
     }
     // app/Models/Candidature.php
-public function entretien()
-{
-    return $this->hasOne(Entretien::class);
-}
+
 
 }

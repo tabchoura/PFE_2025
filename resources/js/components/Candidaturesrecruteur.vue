@@ -96,7 +96,11 @@
               <i class="fas fa-calendar"></i>
               <div>
                 <span class="label">Date de candidature</span>
-                <span class="value">{{ formatDate(c.created_at) }}</span>
+                <span class="value">{{ formatDate(c.created_at) }}</span> <br />
+              </div>
+              <div>
+                <span class="label">Date de l'entretien</span>
+                <span class="value">{{ formatDate(c.date_entretien) }}</span>
               </div>
             </div>
             <div class="detail-item" v-if="c.message">
@@ -112,6 +116,22 @@
                 <span class="label">Expérience</span>
                 <span class="value">{{ c.cv?.experience }}</span>
               </div>
+            </div>
+          </div>
+
+          <!-- Workflow stepper ajouté ici, en dehors des detail-item -->
+          <div class="workflow-stepper">
+            <div
+              v-for="(step, i) in getSteps()"
+              :key="step.key"
+              class="step"
+              :class="{
+                'step-done': stepOrder(c.statut) > i,
+                'step-active': stepOrder(c.statut) === i,
+              }"
+            >
+              <span class="circle">{{ i + 1 }}</span>
+              <span class="label">{{ step.label }}</span>
             </div>
           </div>
         </div>
@@ -237,6 +257,27 @@ const getInitials = (prenom?: string, nom?: string) => {
   return p + n || "??";
 };
 
+// Fonctions pour le workflow
+const getSteps = () => {
+  return [
+    { key: "enattente", label: "En attente" },
+    { key: "accepter", label: "Acceptée" },
+    { key: "entretien", label: "Entretien" },
+    { key: "embauche", label: "Embauchée" },
+  ];
+};
+
+const stepOrder = (statut?: string) => {
+  const order = {
+    enattente: 0,
+    accepter: 1,
+    entretien: 2,
+    embauche: 3,
+    refuser: -1, // Le statut refusé est traité comme un cas spécial
+  };
+  return order[statut || "enattente"] ?? 0;
+};
+
 // Actions
 function voirDetails(candidatureId?: number) {
   if (!candidatureId) return;
@@ -257,42 +298,13 @@ function filterCandidatures() {
   }
   // sortCandidatures();
 }
+
 function planifierEntretien(candidatureId: number) {
   router.push({
     name: "Entretiens",
     params: { candidatureId }, // correspond au segment dynamique
   });
 }
-// function sortCandidatures() {
-//   switch (sortOption.value) {
-//     case "recent":
-//       filteredCandidatures.value.sort((a, b) => {
-//         return (
-//           new Date(b.created_at || "").getTime() - new Date(a.created_at || "").getTime()
-//         );
-//       });
-//       break;
-//     case "ancien":
-//       filteredCandidatures.value.sort((a, b) => {
-//         return (
-//           new Date(a.created_at || "").getTime() - new Date(b.created_at || "").getTime()
-//         );
-//       });
-//       break;
-//     case "name":
-//       filteredCandidatures.value.sort((a, b) => {
-//         const nameA = `${a.cv?.nom || ""} ${a.cv?.prenom || ""}`.toLowerCase();
-//         const nameB = `${b.cv?.nom || ""} ${b.cv?.prenom || ""}`.toLowerCase();
-//         return nameA.localeCompare(nameB);
-//       });
-//       break;
-//   }
-// }
-
-// function resetFilters() {
-//   statutFilter.value = "";
-//   filterCandidatures();
-// }
 
 async function updateStatus(candidatureId?: number, newStatus?: string) {
   if (!candidatureId || !newStatus) return;
@@ -538,32 +550,22 @@ h1 i {
 /* Status Colors */
 .status-enattente {
   border-left-color: #805ad5;
-  background-color: #e9d8fd;
-  color: #6b46c1;
 }
 
 .status-accepter {
   border-left-color: #38a169;
-  background-color: #c6f6d5;
-  color: #2f855a;
 }
 
 .status-entretien {
   border-left-color: #3182ce;
-  background-color: #bee3f8;
-  color: #2b6cb0;
 }
 
 .status-embauche {
   border-left-color: #dd6b20;
-  background-color: #feebc8;
-  color: #c05621;
 }
 
 .status-refuser {
   border-left-color: #e53e3e;
-  background-color: #fed7d7;
-  color: #c53030;
 }
 
 .status-badge {
@@ -573,6 +575,31 @@ h1 i {
   font-weight: 600;
   text-align: center;
   text-transform: capitalize;
+}
+
+.status-badge.status-enattente {
+  background-color: #e9d8fd;
+  color: #6b46c1;
+}
+
+.status-badge.status-accepter {
+  background-color: #c6f6d5;
+  color: #2f855a;
+}
+
+.status-badge.status-entretien {
+  background-color: #bee3f8;
+  color: #2b6cb0;
+}
+
+.status-badge.status-embauche {
+  background-color: #feebc8;
+  color: #c05621;
+}
+
+.status-badge.status-refuser {
+  background-color: #fed7d7;
+  color: #c53030;
 }
 
 /* Main Content */
@@ -644,6 +671,7 @@ h1 i {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  margin-bottom: 1.5rem;
 }
 
 .detail-item {
@@ -667,6 +695,80 @@ h1 i {
 .detail-item .value {
   color: #2d3748;
   font-size: 0.95rem;
+}
+
+/* Workflow Stepper */
+.workflow-stepper {
+  display: flex;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #edf2f7;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+}
+
+.step:not(:last-child):after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  right: -50%;
+  width: 100%;
+  height: 2px;
+  background-color: #e2e8f0;
+  z-index: 1;
+}
+
+.step-done:not(:last-child):after {
+  background-color: #3498db;
+}
+
+.circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #e2e8f0;
+  color: #718096;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+  z-index: 2;
+  position: relative;
+}
+
+.step-done .circle {
+  background-color: #3498db;
+  color: white;
+}
+
+.step-active .circle {
+  background-color: #3498db;
+  color: white;
+  box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
+}
+
+.step .label {
+  font-size: 0.7rem;
+  color: #718096;
+  text-align: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.step-done .label,
+.step-active .label {
+  color: #3498db;
+  font-weight: 600;
 }
 
 /* Footer actions */
@@ -791,6 +893,16 @@ h1 i {
 
   .quick-status-update {
     justify-content: space-between;
+  }
+
+  .workflow-stepper {
+    overflow-x: auto;
+    padding-bottom: 1rem;
+  }
+
+  .step .label {
+    font-size: 0.65rem;
+    max-width: 70px;
   }
 }
 </style>

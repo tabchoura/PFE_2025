@@ -55,9 +55,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('cv', CvController::class);
 
     // ─── Entretiens ─────────────────────────────────────────────────────────
-    Route::middleware('auth:sanctum')->group(function () {
-     Route::apiResource('entretiens', EntretienController::class);
- });
+    Route::post(
+     '/candidatures/{id}/entretien',
+     [CandidatureController::class, 'envoyerEntretien']
+ )->middleware('auth:sanctum');
+ 
  
     // ─── Entreprises ────────────────────────────────────────────────────────
     Route::get(   '/entreprises',      [EntrepriseController::class, 'index']);
