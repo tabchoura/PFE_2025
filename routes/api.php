@@ -70,6 +70,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // ─── Images ─────────────────────────────────────────────────────────────
     Route::post('/ajouterimage', [ImageController::class, 'uploadImage']);
 
+
+    
     // ─── Test accès candidat ────────────────────────────────────────────────
     Route::middleware('role:candidat')
          ->get('/test-candidat', fn() => response()->json(['message' => '✅ Accès autorisé pour le candidat.']));

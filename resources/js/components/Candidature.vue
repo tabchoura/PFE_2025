@@ -44,7 +44,6 @@
         v-for="c in candidaturesFiltrees"
         :key="c.id"
         class="candidature-item"
-        :class="`candidature-${c.statut || 'enattente'}`"
       >
         <div class="candidature-header">
           <h3 class="title-offre">{{ c.offre?.titre || "Offre inconnue" }}</h3>
@@ -77,31 +76,16 @@
             <p><strong>Date :</strong> {{ formatDate(c.created_at) }}</p>
           </div>
         </div>
-        <!-- 
-        <div class="workflow-stepper">
-          <div
-            v-for="(step, i) in getSteps(c.statut)"
-            :key="step.key"
-            class="step"
-            :class="{
-              'step-done': stepOrder(c.statut) > i,
-              'step-active': stepOrder(c.statut) === i,
-            }"
-          >
-            <span class="circle">{{ i + 1 }}</span>
-            <span class="label">{{ step.label }}</span>
-          </div>
-        </div> -->
-
-        <div class="candidature-card-footer">
-          <!-- <button
-            @click="voirDetails(c.offre?.id, c.cv?.id)"
-            class="voir-button"
-            :disabled="!c.offre?.id || !c.cv?.id"
-          >
-            <i class="fas fa-arrow-right"></i> Voir détails
-          </button> -->
+        <div class="card-info-row">
+          <i class="fas fa-comment"></i>
+          <p>
+            <strong>Entretien :</strong>
+            {{ formatDateTime12h(c.date_entretien) || "Aucun entretien" }}
+          </p>
         </div>
+      
+
+
       </li>
     </ul>
   </div>
@@ -120,38 +104,13 @@ const filtreStatut = ref("");
 
 // Status labels for display
 const labels = {
-  enattente: "enattente",
+  enattente: "En attente",
   accepter: "Acceptée",
   entretien: "Entretien",
   embauche: "Embauchée",
   refuser: "Refusée",
 };
 
-/**
- * Get workflow steps based on status
- */
-function getSteps(statut) {
-  if (statut === "refuser") {
-    return [
-      { key: "enattente", label: "enattente" },
-      { key: "refuser", label: "Refusée" },
-    ];
-  }
-  return [
-    { key: "enattente", label: "enattente" },
-    { key: "accepter", label: "Acceptée" },
-    { key: "entretien", label: "Entretien" },
-    { key: "embauche", label: "Embauchée" },
-  ];
-}
-
-/**
- * Determine the current step index based on status
- */
-function stepOrder(statut) {
-  const steps = getSteps(statut);
-  return steps.findIndex((s) => s.key === (statut || "enattente"));
-}
 
 /**
  * Format date in a user-friendly format
@@ -170,6 +129,25 @@ function formatDate(dateString) {
   }
 }
 
+ function formatDateTime12h(dateString) {
+  if (!dateString) return "—";
+  const date = new Date(dateString);
+
+  // Options pour Intl.DateTimeFormat
+  const options = {
+    day:    "numeric",
+    month:  "long",
+    year:   "numeric",
+    hour:   "numeric",
+    minute: "numeric",
+    hour12: true      // active le format 12 h avec AM/PM
+  };
+
+  // Formatter en fr-FR (mais avec hour12: true pour avoir AM/PM)
+  return new Intl.DateTimeFormat("fr-FR", options).format(date);
+}
+
+
 /**
  * Truncate text with ellipsis if it exceeds max length
  */
@@ -181,13 +159,7 @@ const truncateText = (text, max) => {
 /**
  * Navigate to details page
  */
-function voirDetails(offerId, cvId) {
-  if (!offerId || !cvId) return;
-  router.push({
-    name: "DetailsCandidatureCandidat",
-    params: { offerId: offerId.toString(), cvId: cvId.toString() },
-  });
-}
+
 
 /**
  * Filter candidatures based on selected status
@@ -200,23 +172,23 @@ const candidaturesFiltrees = computed(() => {
 /**
  * Fetch candidatures from API
  */
-async function getCandidatures() {
+ async function getCandidatures() {
   loading.value = true;
-  error.value = null;
+  error.value   = null;
 
   try {
+    // Init CSRF cookie pour Laravel Sanctum
     await axios.get("/sanctum/csrf-cookie");
-    const res = await axios.get("/api/mescandidatures", {
-      withCredentials: true,
+
+    // Récupère les candidatures
+    const { data } = await axios.get("/api/mescandidatures", {
+      withCredentials: true
     });
 
-    if (res.data && Array.isArray(res.data)) {
-      candidatures.value = res.data;
-    } else {
-      throw new Error("Format de données invalide");
-    }
+    // On s’assure que data est un tableau, sinon on remet un tableau vide
+    candidatures.value = Array.isArray(data) ? data : [];
   } catch (e) {
-    console.error("Erreur lors du chargement des candidatures:", e);
+    console.error("Erreur lors du chargement :", e);
     error.value =
       e.response?.status === 401
         ? "Vous devez être connecté pour voir vos candidatures."

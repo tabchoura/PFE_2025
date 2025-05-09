@@ -20,6 +20,9 @@ class Candidature extends Model
     protected $attributes = [
         'statut' => 'enattente',
     ];
+    protected $casts = [
+        'date_entretien' => 'datetime',
+    ];
 
     // Relation avec l'offre
     public function offre()

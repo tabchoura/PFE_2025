@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Candidature;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Mail\EntretienPlanifie;
+use Illuminate\Support\Facades\Mail;
 
 class CandidatureController extends Controller
 {
@@ -54,28 +56,37 @@ class CandidatureController extends Controller
         ], 201);
     }
 
-    /**
- * Planifie et envoie la date d’entretien pour une candidature.
- */public function envoyerEntretien(Request $request, $id)
-{
-    // Au lieu de « date_format », on utilise simplement « date »
-    $validated = $request->validate([
-        'date_entretien' => ['required', 'date'],  
-    ]);
+    public function envoyerEntretien(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'date_entretien' => ['required','date'],
+        ]);
 
-    $candidature = Candidature::findOrFail($id);
-    $candidature->update([
-        'date_entretien' => $validated['date_entretien'],
-        'statut'         => 'entretien',
-    ]);
+        // 1. On récupère la candidature et on la met à jour
+        $candidature = Candidature::with('cv')->findOrFail($id);
+        $candidature->update([
+            'date_entretien' => $validated['date_entretien'],
+            'statut'         => 'entretien',
+        ]);
 
-    return response()->json([
-        'message'        => 'Date d’entretien enregistrée.',
-        'date_entretien' => $candidature->date_entretien,
-        'candidature'    => $candidature,
-    ], 200);
-}
+        // 2. On récupère l'email dans le CV lié
+        $recipientEmail = $candidature->cv->email;
+        if (! filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
+            return response()->json([
+                'message' => 'L’adresse e-mail du candidat est invalide.',
+            ], 422);
+        }
 
+        // 3. On envoie l’email à cet e-mail
+        Mail::to($recipientEmail)
+            ->send(new EntretienPlanifie($candidature));
+
+        return response()->json([
+            'message'        => 'Date d’entretien enregistrée et email envoyé à '.$recipientEmail,
+            'date_entretien' => $candidature->date_entretien,
+            'candidature'    => $candidature,
+        ], 200);
+    }
 
 
     /* ------------------------------------------------------------------

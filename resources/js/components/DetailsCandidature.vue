@@ -29,34 +29,6 @@
         </p>
       </div>
 
-      <!-- Infos candidature -->
-      <div class="section-card candidature-info">
-        <h2>Infos candidature</h2>
-        <p><strong>Date :</strong> {{ formatDate(candidature.created_at) }}</p>
-        <div class="message-section">
-          <h3>Message du candidat</h3>
-          <div class="message-content">
-            {{ candidature.message || "Aucun message" }}
-          </div>
-        </div>
-
-        <!-- Boutons Accepter / Refuser - Ne s'affiche que si le statut est "en attente" et qu'aucun entretien n'est planifié -->
-        <div
-          class="action-buttons"
-          v-if="statusKey === 'pending' && !candidature.date_entretien"
-        >
-          <button @click="accepter" class="btn-accept">✅ Accepter</button>
-          <button @click="refuser" class="btn-refuse">❌ Refuser</button>
-        </div>
-
-        <!-- Afficher un message si la candidature a été acceptée et un entretien est prévu -->
-        <div v-if="candidature.date_entretien" class="entretien-info">
-          <p class="entretien-status">
-            ✅ Entretien planifié pour le {{ formatDate(candidature.date_entretien) }}
-          </p>
-        </div>
-      </div>
-
       <!-- Aperçu CV -->
       <div ref="cvElement" class="section-card cv-preview">
         <h2>CV du candidat</h2>
@@ -113,6 +85,34 @@
             </section>
           </div>
         </div>
+        <!-- Infos candidature -->
+        <div class="section-card candidature-info">
+          <h2>Infos candidature</h2>
+          <p><strong>Date :</strong> {{ formatDate(candidature.created_at) }}</p>
+          <div class="message-section">
+            <h3>Message du candidat</h3>
+            <div class="message-content">
+              {{ candidature.message || "Aucun message" }}
+            </div>
+          </div>
+
+          <!-- Boutons Accepter / Refuser - Ne s'affiche que si le statut est "en attente" et qu'aucun entretien n'est planifié -->
+          <div
+            class="action-buttons"
+            v-if="statusKey === 'pending' && !candidature.date_entretien"
+          >
+            <button @click="accepter" class="btn-accept">✅ Accepter</button>
+            <button @click="refuser" class="btn-refuse">❌ Refuser</button>
+          </div>
+
+          <!-- Afficher un message si la candidature a été acceptée et un entretien est prévu -->
+          <div v-if="candidature.date_entretien" class="entretien-info">
+            <p class="entretien-status">
+              ✅ Entretien planifié pour le
+              {{ formatDateTime12h(candidature.date_entretien) }}
+            </p>
+          </div>
+        </div>
       </div>
 
       <!-- Navigation -->
@@ -123,8 +123,7 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
@@ -132,41 +131,41 @@ import html2pdf from "html2pdf.js";
 
 const route = useRoute();
 const router = useRouter();
-const candidatureId = route.params.candidatureId as string;
+const candidatureId = route.params.candidatureId;
 
 // États
 const loading = ref(true);
-const error = ref<string | null>(null);
-const candidature = ref<any>({});
-const offer = ref<any>({});
-const cv = ref<any>({
+const error = ref(null);
+const candidature = ref({});
+const offer = ref({});
+const cv = ref({
   experiences: [],
   educations_formations: [],
   competences: [],
   langues: [],
   projets: [],
 });
-const cvElement = ref<HTMLElement | null>(null);
+const cvElement = ref(null);
 
-// Normalisation du statut - version robuste pour détecter tous les cas
-const statusKey = computed<"pending" | "accepted" | "refused">(() => {
+// Normalisation du statut
+const statusKey = computed(() => {
   const raw = (candidature.value.statut || "").toString().toLowerCase().trim();
 
-  // Vérifier si un entretien est déjà planifié
   if (candidature.value.date_entretien) {
     return "accepted";
   }
-
-  // Vérifier les différentes possibilités de statut
-  if (raw.includes("accept") || raw === "acceptee" || raw === "acceptée")
+  if (raw.includes("accept") || raw === "acceptee" || raw === "acceptée") {
     return "accepted";
-  if (raw.includes("refus") || raw === "refusee" || raw === "refusée") return "refused";
-  if (raw.includes("attente") || raw === "enattente") return "pending";
-
-  return "pending"; // Par défaut
+  }
+  if (raw.includes("refus") || raw === "refusee" || raw === "refusée") {
+    return "refused";
+  }
+  if (raw.includes("attente") || raw === "enattente") {
+    return "pending";
+  }
+  return "pending";
 });
 
-// CSS + label
 const statusClass = computed(() => `status-${statusKey.value}`);
 const statutLabel = computed(() => {
   switch (statusKey.value) {
@@ -179,19 +178,20 @@ const statutLabel = computed(() => {
   }
 });
 
-// Image de profil
-const profileImageStyle = computed(() =>
-  cv.value.profilePictureUrl
-    ? {
-        backgroundImage: `url(${cv.value.profilePictureUrl})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }
-    : { backgroundColor: "#ccc" }
-);
+// Style de la photo de profil
+const profileImageStyle = computed(() => {
+  if (cv.value.profilePictureUrl) {
+    return {
+      backgroundImage: `url(${cv.value.profilePictureUrl})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+    };
+  }
+  return { backgroundColor: "#ccc" };
+});
 
-// Formatage date
-function formatDate(d?: string) {
+// Formatage de date
+function formatDate(d) {
   return d
     ? new Date(d).toLocaleDateString("fr-FR", {
         day: "numeric",
@@ -199,6 +199,24 @@ function formatDate(d?: string) {
         year: "numeric",
       })
     : "";
+}
+
+function formatDateTime12h(dateString) {
+  if (!dateString) return "—";
+  const date = new Date(dateString);
+
+  // Options pour Intl.DateTimeFormat
+  const options = {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true, // active le format 12 h avec AM/PM
+  };
+
+  // Formatter en fr-FR (mais avec hour12: true pour avoir AM/PM)
+  return new Intl.DateTimeFormat("fr-FR", options).format(date);
 }
 
 // Chargement initial
@@ -211,17 +229,12 @@ async function loadData() {
     offer.value = data.offre;
     cv.value = data.cv;
 
-    // Vérification additionnelle du statut lors du chargement
-    // Si une date d'entretien existe mais le statut est toujours "en attente",
-    // corriger le statut local
+    // Correction éventuelle du statut
     if (
       data.date_entretien &&
       data.statut &&
       data.statut.toString().toLowerCase().includes("attente")
     ) {
-      console.log(
-        "Correction du statut: candidature avec entretien planifié mais statut incorrect"
-      );
       candidature.value.statut = "acceptée";
     }
   } catch (err) {
@@ -232,21 +245,17 @@ async function loadData() {
   }
 }
 
-// Acceptation / refus + notification + redirection
+// Accepter / Refuser
 async function accepter() {
   try {
     await axios.put(`/api/candidatures/${candidatureId}/accept`);
     alert("Candidature acceptée ✅");
-    // Mettre à jour le statut localement sans avoir à recharger la page
     candidature.value.statut = "acceptée";
-
-    // Redirection vers la page des candidatures
     router.push({ name: "Candidaturesrecruteur" });
-
     setTimeout(() => {
       router.push({
         name: "Entretiens",
-        params: { candidatureId: candidatureId.toString() },
+        params: { candidatureId },
       });
     }, 1000);
   } catch {
@@ -258,7 +267,6 @@ async function refuser() {
   try {
     await axios.put(`/api/candidatures/${candidatureId}/refuse`);
     alert("Candidature refusée ❌");
-    // Mettre à jour le statut localement sans avoir à recharger la page
     candidature.value.statut = "refusée";
     router.push({ name: "Candidaturesrecruteur" });
   } catch {
@@ -281,230 +289,552 @@ function goBack() {
 
 onMounted(loadData);
 </script>
+
 <style scoped>
 /* Container global */
 .candidature-details-container {
-  max-width: 900px;
+  max-width: 1000px;
   margin: 3rem auto;
-  padding: 1rem;
-  font-family: "Segoe UI", sans-serif;
-  color: #333;
+  padding: 1.5rem;
+  font-family: "Poppins", "Segoe UI", system-ui, sans-serif;
+  color: #2d3748;
+  background-color: #f8fafc;
+  border-radius: 16px;
 }
 
 /* Cartes */
 .section-card {
   background: #fff;
-  padding: 2rem;
-  border-radius: 12px;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  padding: 2.5rem;
+  border-radius: 16px;
+  margin-bottom: 2.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid #f0f4f8;
 }
+
 .section-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  transform: translateY(-6px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+  border-color: #e2e8f0;
 }
 
 /* En-têtes */
 h1 {
-  font-size: 2.5rem;
-  margin-bottom: 1.5rem;
+  font-size: 2.75rem;
+  margin-bottom: 2rem;
   color: #1a202c;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  position: relative;
+  padding-bottom: 0.5rem;
 }
+
+h1::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, #3182ce, #63b3ed);
+  border-radius: 2px;
+}
+
 h2 {
-  font-size: 1.75rem;
+  font-size: 1.85rem;
+  margin-bottom: 1.25rem;
+  color: #2c5282;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+
+h3 {
+  font-size: 1.35rem;
   margin-bottom: 1rem;
   color: #2d3748;
+  font-weight: 600;
 }
-h3 {
-  font-size: 1.25rem;
-  margin-bottom: 0.75rem;
-  color: #4a5568;
-}
+
 h4 {
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
-  color: #4a5568;
+  font-size: 1.15rem;
+  margin-bottom: 0.75rem;
+  color: #2d3748;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.95rem;
 }
 
 /* Ligne statut */
 .status-line {
-  margin-top: 1rem;
-  font-size: 1rem;
+  margin-top: 1.5rem;
+  font-size: 1.1rem;
+  padding: 0.75rem 0;
+  border-top: 1px dashed #e2e8f0;
 }
+
 .status-line strong {
-  color: #2d3748;
+  color: #1a365d;
 }
 
 /* Loader */
 .loading-state {
   text-align: center;
-  padding: 3rem;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
 }
+
 .loader {
-  width: 60px;
-  height: 60px;
-  border: 6px solid #e2e8f0;
-  border-top: 6px solid #3182ce;
+  width: 70px;
+  height: 70px;
+  border: 4px solid #edf2f7;
+  border-top: 4px solid #3182ce;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1rem;
+  animation: spin 1.2s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+  margin: 0 auto 1.5rem;
 }
+
 @keyframes spin {
-  to {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
     transform: rotate(360deg);
   }
 }
 
+.loading-state p {
+  color: #4a5568;
+  font-size: 1.1rem;
+}
+
 /* Erreur */
 .error-state {
-  background: #fff5f5;
-  border: 1px solid #feb2b2;
-  padding: 1.5rem;
-  border-radius: 8px;
+  background: #fff5f7;
+  border: 1px solid #fed7e2;
+  padding: 2rem;
+  border-radius: 12px;
   color: #c53030;
   margin-bottom: 2rem;
+  text-align: center;
 }
+
 .btn-retry {
-  margin-top: 1rem;
-  padding: 0.6rem 1.2rem;
-  background: #e53e3e;
+  margin-top: 1.5rem;
+  padding: 0.8rem 1.8rem;
+  background: linear-gradient(135deg, #e53e3e, #c53030);
   color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s ease;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.3);
 }
+
 .btn-retry:hover {
-  background: #c53030;
+  background: linear-gradient(135deg, #c53030, #9b2c2c);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(229, 62, 62, 0.4);
 }
 
 /* Statut */
 .status-pending {
-  color: #dd6b20;
+  color: #c05621;
   font-weight: 600;
+  background-color: #fffaf0;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  border: 1px solid #feebc8;
 }
+
 .status-accepted {
-  color: #38a169;
+  color: #2f855a;
   font-weight: 600;
+  background-color: #f0fff4;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  border: 1px solid #c6f6d5;
 }
+
 .status-refused {
-  color: #e53e3e;
+  color: #c53030;
   font-weight: 600;
+  background-color: #fff5f5;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  border: 1px solid #fed7d7;
 }
 
 /* Boutons Accepter/Refuser */
 .action-buttons {
   display: flex;
-  gap: 1rem;
-  margin-top: 1.5rem;
+  gap: 1.5rem;
+  margin-top: 2rem;
 }
+
 .btn-accept,
 .btn-refuse {
   flex: 1;
-  padding: 0.8rem;
+  padding: 1rem 1.2rem;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   color: #fff;
   cursor: pointer;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.1s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  font-size: 1.05rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
 .btn-accept {
-  background: #48bb78;
+  background: linear-gradient(135deg, #48bb78, #38a169);
+  box-shadow: 0 4px 12px rgba(56, 161, 105, 0.2);
 }
+
 .btn-accept:hover {
-  transform: translateY(-2px);
-  background: #38a169;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(56, 161, 105, 0.3);
+  background: linear-gradient(135deg, #38a169, #2f855a);
 }
+
 .btn-refuse {
-  background: #f56565;
+  background: linear-gradient(135deg, #f56565, #e53e3e);
+  box-shadow: 0 4px 12px rgba(229, 62, 62, 0.2);
 }
+
 .btn-refuse:hover {
-  transform: translateY(-2px);
-  background: #e53e3e;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(229, 62, 62, 0.3);
+  background: linear-gradient(135deg, #e53e3e, #c53030);
+}
+
+/* Entretien info */
+.entretien-info {
+  margin-top: 1.5rem;
+  padding: 1.2rem;
+  background-color: #ebf8ff;
+  border-radius: 10px;
+  border-left: 4px solid #3182ce;
+}
+
+.entretien-status {
+  color: #2c5282;
+  font-weight: 600;
+  margin: 0;
+  font-size: 1.05rem;
 }
 
 /* CV */
 .cv-content {
   display: flex;
   flex-wrap: wrap;
-  gap: 2rem;
+  gap: 2.5rem;
+  margin-top: 1rem;
 }
+
 .cv-left-column {
   flex: 1;
   min-width: 250px;
-  background: #2a4365;
+  background: linear-gradient(135deg, #2c5282, #1a365d);
   color: #fff;
-  padding: 2rem;
-  border-radius: 12px;
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(26, 54, 93, 0.2);
 }
+
 .profile-picture-container {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
+
 .profile-picture {
-  width: 120px;
-  height: 120px;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
   background-size: cover;
   background-position: center;
-  margin: 0 auto 1rem;
+  margin: 0 auto 1.5rem;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
 }
+
+.profile-picture:hover {
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
 .cv-left-column h3 {
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  color: white;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
+
+.cv-left-column p {
+  margin-bottom: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cv-left-column a {
+  color: #90cdf4;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.cv-left-column a:hover {
+  color: #63b3ed;
+  text-decoration: underline;
+}
+
 .cv-right-column {
   flex: 2;
   min-width: 300px;
-  padding: 2rem;
-  background: #f7fafc;
-  border-radius: 12px;
+  padding: 2.5rem;
+  background: #f8fafc;
+  border-radius: 16px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  border: 1px solid #edf2f7;
 }
+
 .section {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  position: relative;
 }
+
+.section h4 {
+  color: #2b6cb0;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.section ul {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.section ul li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 0.8rem;
+  line-height: 1.6;
+}
+
+.section ul li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #3182ce;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
 .two-columns {
   display: flex;
-  gap: 1.5rem;
+  gap: 2rem;
 }
+
 .two-columns section {
   flex: 1;
+}
+
+/* Message du candidat */
+.message-section {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background-color: #f7fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.message-section h3 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  color: #2d3748;
+  margin-bottom: 1rem;
+}
+
+.message-content {
+  line-height: 1.7;
+  color: #4a5568;
+  white-space: pre-line;
+  font-style: italic;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 8px;
+  border-left: 3px solid #3182ce;
 }
 
 /* Navigation */
 .navigation-actions {
   display: flex;
   justify-content: space-between;
-  margin-top: 2rem;
+  margin-top: 2.5rem;
 }
+
 .btn-back,
 .btn-download {
-  padding: 0.8rem 1.5rem;
+  padding: 1rem 2rem;
   border: none;
-  border-radius: 8px;
-  background: #3182ce;
+  border-radius: 10px;
   color: #fff;
   cursor: pointer;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: background 0.2s ease, transform 0.1s ease;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.05rem;
 }
-.btn-back:hover,
+
+.btn-back {
+  background: linear-gradient(135deg, #4a5568, #2d3748);
+  box-shadow: 0 4px 15px rgba(74, 85, 104, 0.2);
+}
+
+.btn-back:hover {
+  transform: translateY(-3px);
+  background: linear-gradient(135deg, #2d3748, #1a202c);
+  box-shadow: 0 8px 20px rgba(74, 85, 104, 0.3);
+}
+
+.btn-download {
+  background: linear-gradient(135deg, #3182ce, #2b6cb0);
+  box-shadow: 0 4px 15px rgba(49, 130, 206, 0.2);
+}
+
 .btn-download:hover {
-  transform: translateY(-2px);
-  background: #2b6cb0;
+  transform: translateY(-3px);
+  background: linear-gradient(135deg, #2b6cb0, #2c5282);
+  box-shadow: 0 8px 20px rgba(49, 130, 206, 0.3);
+}
+
+/* Offre détails */
+.offer-details h3 {
+  color: #2b6cb0;
+  font-size: 1.5rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.offer-details p {
+  margin-bottom: 1rem;
+  line-height: 1.7;
+}
+
+.offer-details p strong {
+  color: #2d3748;
+  font-weight: 600;
+}
+
+/* Candidature info */
+.candidature-info h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.candidature-info h2::before {
+  content: "📋";
+  font-size: 1.5rem;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
+  .candidature-details-container {
+    padding: 1rem;
+    margin: 2rem auto;
+  }
+
+  .section-card {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
   .cv-content {
     flex-direction: column;
+    gap: 1.5rem;
   }
+
+  .two-columns {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
   .navigation-actions {
     flex-direction: column;
     gap: 1rem;
   }
+
+  .btn-back,
+  .btn-download {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
 }
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  .profile-picture {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+/* Animation pour le contenu principal */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.candidature-content {
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* Effet de focus pour les boutons */
+button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+}
+
+/* Police pour tout le document */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
 </style>

@@ -5,11 +5,7 @@
       <h1><i class="fas fa-file-alt"></i> Candidatures Reçues</h1>
       <div class="actions-zone">
         <div class="filter-controls">
-          <select
-            v-model="statutFilter"
-            @change="filterCandidatures"
-            class="status-filter"
-          >
+          <select v-model="filtreStatut" class="status-filter">
             <option value="">Tous les statuts</option>
             <option value="enattente">En attente</option>
             <option value="accepter">Acceptée</option>
@@ -22,11 +18,11 @@
     </div>
 
     <!-- Résumé du nombre de candidatures -->
-    <div class="stats-bar" v-if="!loading && filteredCandidatures.length > 0">
+    <div class="stats-bar" v-if="!loading && candidaturesFiltrees.length > 0">
       <p>
-        <span class="stats-count">{{ filteredCandidatures.length }}</span>
-        candidature{{ filteredCandidatures.length > 1 ? "s" : "" }}
-        {{ statutFilter ? `avec statut "${getStatusLabel(statutFilter)}"` : "au total" }}
+        <span class="stats-count">{{ candidaturesFiltrees.length }}</span>
+        candidature{{ candidaturesFiltrees.length > 1 ? "s" : "" }}
+        {{ filtreStatut ? `avec statut "${labels(filtreStatut)}"` : "au total" }}
       </p>
     </div>
 
@@ -37,11 +33,10 @@
     </div>
 
     <div v-else-if="error" class="error-state">
-      <i class="fas fa-exclamation-triangle"></i>
-      <h3>Erreur lors du chargement des candidatures</h3>
+      <i class="fas fa-exclamation-circle error-icon"></i>
       <p>{{ error }}</p>
-      <button @click="loadCandidatures" class="retry-button">
-        <i class="fas fa-sync"></i> Réessayer
+      <button @click="getCandidatures" class="btn-retry">
+        <i class="fas fa-redo-alt"></i> Réessayer
       </button>
     </div>
 
@@ -50,20 +45,19 @@
       <h3>Aucune candidature reçue</h3>
       <p>Les candidatures apparaîtront ici dès que vous en recevrez.</p>
     </div>
-
-    <div v-else-if="filteredCandidatures.length === 0" class="no-results-state">
-      <i class="fas fa-search"></i>
-      <h3>Aucun résultat trouvé</h3>
-      <p>Aucune candidature ne correspond à vos critères de recherche.</p>
-      <!-- <button @click="resetFilters" class="reset-filters-btn">
-        <i class="fas fa-times"></i> Réinitialiser les filtres
-      </button> -->
+    <div v-else-if="candidaturesFiltrees.length === 0" class="empty-state">
+      <i class="fas fa-inbox empty-icon"></i>
+      <p>
+        Aucune candidature
+        {{ filtreStatut ? `avec le statut "${labels[filtreStatut]}"` : "" }} pour le
+        moment
+      </p>
     </div>
 
     <!-- Liste des candidatures -->
     <div v-else class="candidatures-list">
       <div
-        v-for="c in filteredCandidatures"
+        v-for="c in candidaturesFiltrees"
         :key="c.id"
         class="candidature-card"
         :class="`status-${c.statut || 'enattente'}`"
@@ -72,7 +66,7 @@
           <div class="candidature-header">
             <h3>{{ c.offre?.titre || "Offre inconnue" }}</h3>
             <div :class="['status-badge', `status-${c.statut || 'enattente'}`]">
-              {{ getStatusLabel(c.statut) }}
+              {{ labels(c.statut) }}
             </div>
           </div>
 
@@ -83,10 +77,10 @@
             <div class="identity">
               <h4>{{ c.cv?.prenom || "Prénom" }} {{ c.cv?.nom || "Nom" }}</h4>
               <p class="email" v-if="c.cv?.email">
-                <i class="fas fa-envelope"></i> {{ c.cv?.email }}
+                <i class="fas fa-envelope"></i> {{ c.cv.email }}
               </p>
               <p class="phone" v-if="c.cv?.telephone">
-                <i class="fas fa-phone"></i> {{ c.cv?.telephone }}
+                <i class="fas fa-phone"></i> {{ c.cv.telephone }}
               </p>
             </div>
           </div>
@@ -96,11 +90,12 @@
               <i class="fas fa-calendar"></i>
               <div>
                 <span class="label">Date de candidature</span>
-                <span class="value">{{ formatDate(c.created_at) }}</span> <br />
+                <span class="value">{{ formatDate(c.created_at) }}</span
+                ><br />
               </div>
               <div>
                 <span class="label">Date de l'entretien</span>
-                <span class="value">{{ formatDate(c.date_entretien) }}</span>
+                <span class="value">{{ formatDateTime12h(c.date_entretien) }}</span>
               </div>
             </div>
             <div class="detail-item" v-if="c.message">
@@ -114,12 +109,12 @@
               <i class="fas fa-briefcase"></i>
               <div>
                 <span class="label">Expérience</span>
-                <span class="value">{{ c.cv?.experience }}</span>
+                <span class="value">{{ c.cv.experience }}</span>
               </div>
             </div>
           </div>
 
-          <!-- Workflow stepper ajouté ici, en dehors des detail-item -->
+          <!-- Workflow stepper -->
           <div class="workflow-stepper">
             <div
               v-for="(step, i) in getSteps()"
@@ -142,36 +137,12 @@
               <i class="fas fa-eye"></i> Voir détails
             </button>
             <div class="quick-status-update">
-              <!-- <button
-                v-if="c.statut !== 'accepter'"
-                @click="updateStatus(c.id, 'accepter')"
-                class="status-btn accept-btn"
-                title="Accepter"
-              >
-                <i class="fas fa-check"></i>
-              </button> -->
-              <!-- <button
-                v-if="c.statut !== 'entretien'"
-                @click="updateStatus(c.id, 'entretien')"
-                class="status-btn interview-btn"
-                title="Programmer entretien"
-              >
-                <i class="fas fa-calendar-check"></i>
-              </button>
-              <button
-                v-if="c.statut !== 'refuser'"
-                @click="updateStatus(c.id, 'refuser')"
-                class="status-btn reject-btn"
-                title="Refuser"
-              >
-                <i class="fas fa-times"></i>
-              </button> -->
               <button
                 v-if="c.statut === 'accepter'"
-                @click="planifierEntretien(c.id)"
                 class="primary-btn schedule-btn"
+                @click="planifierEntretien(c.id, selectedDate)"
               >
-                <i class="fas fa-calendar-alt" /> Planifier entretien
+                <i class="fas fa-calendar-alt"></i> Planifier entretien
               </button>
             </div>
           </div>
@@ -181,178 +152,121 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, onMounted } from "vue";
+<script setup>
+import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 
-// Types
-interface Cv {
-  id?: number;
-  prenom?: string;
-  nom?: string;
-  email?: string;
-  telephone?: string;
-  experience?: string;
-}
-
-interface Offre {
-  id?: number;
-  titre?: string;
-  description?: string;
-}
-
-interface Candidature {
-  id?: number;
-  cv?: Cv;
-  offre?: Offre;
-  created_at?: string;
-  statut?: string;
-  message?: string;
-}
-
 // État
-const candidatures = ref<Candidature[]>([]);
-const filteredCandidatures = ref<Candidature[]>([]);
+const candidatures = ref([]);
+const filteredCandidatures = ref([]);
 const loading = ref(true);
-const error = ref<string | null>(null);
-const statutFilter = ref("");
-const sortOption = ref("recent");
+const error = ref(null);
+const filtreStatut = ref("");
+const selectedDate = ref("");
 
 const router = useRouter();
 
-// Formatage et utilitaires
-const formatDate = (d?: string) => {
-  if (!d) return "Date non spécifiée";
-  try {
-    return new Date(d).toLocaleDateString("fr-FR", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-  } catch {
-    return "Format de date invalide";
-  }
-};
+// Utilitaires
+const formatDate = (d) =>
+  d
+    ? new Date(d).toLocaleDateString("fr-FR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "Date non spécifiée";
 
-const getStatusLabel = (statut?: string) => {
-  const labels: Record<string, string> = {
+const labels = (statut) => {
+  const labels = {
     enattente: "En attente",
     accepter: "Acceptée",
     entretien: "Entretien",
     embauche: "Embauchée",
     refuser: "Refusée",
   };
-  return labels[statut || "enattente"] || "En attente";
+  return labels[statut] || "En attente";
 };
 
-const truncateText = (text?: string, maxLength = 100) => {
-  if (!text) return "";
-  return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
-};
+function formatDateTime12h(dateString) {
+  if (!dateString) return "—";
+  const date = new Date(dateString);
 
-const getInitials = (prenom?: string, nom?: string) => {
-  const p = prenom?.charAt(0) || "";
-  const n = nom?.charAt(0) || "";
-  return p + n || "??";
-};
-
-// Fonctions pour le workflow
-const getSteps = () => {
-  return [
-    { key: "enattente", label: "En attente" },
-    { key: "accepter", label: "Acceptée" },
-    { key: "entretien", label: "Entretien" },
-    { key: "embauche", label: "Embauchée" },
-  ];
-};
-
-const stepOrder = (statut?: string) => {
-  const order = {
-    enattente: 0,
-    accepter: 1,
-    entretien: 2,
-    embauche: 3,
-    refuser: -1, // Le statut refusé est traité comme un cas spécial
+  // Options pour Intl.DateTimeFormat
+  const options = {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true, // active le format 12 h avec AM/PM
   };
-  return order[statut || "enattente"] ?? 0;
+
+  // Formatter en fr-FR (mais avec hour12: true pour avoir AM/PM)
+  return new Intl.DateTimeFormat("fr-FR", options).format(date);
+}
+const truncateText = (text, length = 100) =>
+  text && text.length > length ? text.slice(0, length) + "..." : text;
+
+const getInitials = (prenom, nom) =>
+  (prenom || "").charAt(0) + (nom || "").charAt(0) || "??";
+
+const getSteps = () => [
+  { key: "enattente", label: "En attente" },
+  { key: "accepter", label: "Acceptée" },
+  { key: "entretien", label: "Entretien" },
+  { key: "embauche", label: "Embauchée" },
+];
+
+const stepOrder = (statut) => {
+  const order = { enattente: 0, accepter: 1, entretien: 2, embauche: 3, refuser: -1 };
+  return order[statut] ?? 0;
 };
 
 // Actions
-function voirDetails(candidatureId?: number) {
-  if (!candidatureId) return;
+function voirDetails(id) {
+  if (!id) return;
   router.push({
     name: "DetailsCandidature",
-    params: { candidatureId: candidatureId.toString() },
+    params: { candidatureId: id },
   });
 }
 
-function filterCandidatures() {
-  // Si c'est "Tous les statuts" ou valeur vide, on affiche tout
-  if (!statutFilter.value || statutFilter.value === "Tous les statuts") {
-    filteredCandidatures.value = [...candidatures.value];
-  } else {
-    filteredCandidatures.value = candidatures.value.filter(
-      (c) => c.statut === statutFilter.value
-    );
-  }
-  // sortCandidatures();
-}
+const candidaturesFiltrees = computed(() => {
+  if (!filtreStatut.value) return candidatures.value;
+  return candidatures.value.filter((c) => c.statut === filtreStatut.value);
+});
 
-function planifierEntretien(candidatureId: number) {
-  router.push({
-    name: "Entretiens",
-    params: { candidatureId }, // correspond au segment dynamique
-  });
-}
-
-async function updateStatus(candidatureId?: number, newStatus?: string) {
-  if (!candidatureId || !newStatus) return;
-
+async function planifierEntretien(id, selectedDate) {
   try {
-    await axios.patch(`/api/candidatures/${candidatureId}`, {
-      statut: newStatus,
-    });
-
-    // Mise à jour locale
-    const index = candidatures.value.findIndex((c) => c.id === candidatureId);
-    if (index !== -1) {
-      candidatures.value[index].statut = newStatus;
-      filterCandidatures();
-    }
+    const response = await axios.post(
+      `/api/candidatures/${id}/entretien`,
+      { date_entretien: selectedDate } // c’est ici que tu passes la date
+    );
+    // response.data.message → "Date d’entretien enregistrée et e-mail envoyé."
+    // Affiche un toast ou mets à jour l’UI
+    console.log(response.data);
   } catch (err) {
-    console.error("Erreur lors de la mise à jour du statut", err);
-    alert("Erreur lors de la mise à jour du statut");
+    console.error("Erreur lors de la planification", err);
   }
 }
 
-async function loadCandidatures() {
+const getCandidatures = async () => {
   loading.value = true;
   error.value = null;
-
   try {
     const { data } = await axios.get("/api/candidatures");
-
-    if (Array.isArray(data)) {
-      candidatures.value = data;
-      filterCandidatures();
-    } else {
-      throw new Error("Format de données invalide");
-    }
-  } catch (err: any) {
-    console.error("Erreur chargement", err);
-    error.value =
-      err.response?.data?.message || "Erreur lors du chargement des candidatures";
+    candidatures.value = Array.isArray(data) ? data : [];
+  } catch (e) {
+    error.value = e.response?.data?.message || "Erreur lors du chargement";
   } finally {
     loading.value = false;
   }
-}
+};
 
-// Initialisation
-onMounted(() => {
-  loadCandidatures();
-});
+onMounted(getCandidatures);
 </script>
+
 <style scoped>
 .candidatures-container {
   max-width: 1200px;
