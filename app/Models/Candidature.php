@@ -15,13 +15,20 @@ class Candidature extends Model
         'user_id',  // Assurez-vous que user_id est bien dans les fillable
         'message',
         'statut',
-        'date_entretien'
+ 'status_ia',
+        'date_entretien',
+        'cv_embedding', 'match_score',
+                'similarity_score', 
+
     ];
     protected $attributes = [
         'statut' => 'enattente',
     ];
     protected $casts = [
         'date_entretien' => 'datetime',
+         'cv_embedding' => 'array',
+        'match_score'  => 'float',
+        
     ];
 
     // Relation avec l'offre

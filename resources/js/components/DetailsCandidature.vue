@@ -92,7 +92,7 @@
           <div class="message-section">
             <h3>Message du candidat</h3>
             <div class="message-content">
-              {{ candidature.message || "Aucun message" }}
+              <span class="value">{{ truncateText(candidature.message, 100) }}</span>
             </div>
           </div>
 
@@ -138,6 +138,7 @@ const loading = ref(true);
 const error = ref(null);
 const candidature = ref({});
 const offer = ref({});
+
 const cv = ref({
   experiences: [],
   educations_formations: [],
@@ -146,6 +147,9 @@ const cv = ref({
   projets: [],
 });
 const cvElement = ref(null);
+
+const truncateText = (text, length = 100) =>
+  text && text.length > length ? text.slice(0, length) + "..." : text;
 
 // Normalisation du statut
 const statusKey = computed(() => {
@@ -282,6 +286,7 @@ function downloadPdf() {
     .from(cvElement.value)
     .save();
 }
+html2pdf;
 
 function goBack() {
   router.back();

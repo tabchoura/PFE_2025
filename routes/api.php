@@ -10,6 +10,9 @@ use App\Http\Controllers\CandidatureController;
 use App\Http\Controllers\EntretienController;
 use App\Http\Controllers\EntrepriseController;
 use App\Http\Controllers\ImageController;
+use App\Models\Candidature;
+use App\Jobs\EvaluateCvEmbedding;
+use App\Services\LocalEmbeddingService;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +23,27 @@ use App\Http\Controllers\ImageController;
 // Routes publiques
 Route::post('/login',    [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
+
+ 
+
+// Route::post('/candidature/embed', function (\Illuminate\Http\Request $request) {
+//     $id = $request->input('id');
+//     $candidature = Candidature::findOrFail($id);
+//     $service = new LocalEmbeddingService();
+
+//     EvaluateCvEmbedding::dispatch($candidature, $service);
+
+//     return response()->json([
+//         'message' => 'Job EvaluateCvEmbedding lancée avec succès.',
+//         'candidature_id' => $id
+//     ]);
+// });
+
+Route::get('/embed', function () {
+    return response()->json(['status' => 'ok']);
+});
+
+
 
 // → Liste des offres publique (plus de 401)
 Route::get('/offres', [OfferController::class, 'index']);
@@ -55,11 +79,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('cv', CvController::class);
 
     // ─── Entretiens ─────────────────────────────────────────────────────────
-    Route::post(
-     '/candidatures/{id}/entretien',
-     [CandidatureController::class, 'envoyerEntretien']
- )->middleware('auth:sanctum');
- 
+Route::post('/candidatures/{candidatureId}/entretien', [CandidatureController::class, 'envoyerEntretien']);
+
  
     // ─── Entreprises ────────────────────────────────────────────────────────
     Route::get(   '/entreprises',      [EntrepriseController::class, 'index']);

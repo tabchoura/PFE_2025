@@ -11,6 +11,7 @@ import Candidature from '@/components/Candidature.vue';
 import CompteRecruteur from '@/components/CompteRecruteur.vue';
 import Monprofilerecruteur from '@/components/Monprofilerecruteur.vue';
 import Entretiens from '@/components/Entretiens.vue';
+import EntretiensRecruteurs from '@/components/Entretiensrecruteurs.vue';
 import Voircv from '@/components/Voircv.vue';
 import CreateLettre from '@/components/CreateLettre.vue';
 import Test from '@/components/Test.vue';
@@ -66,20 +67,13 @@ const routes = [
   ]}, 
 // router/index.ts
 {
-  path: "/entretiensrecruteur",          // orthographe corrigée
-  component: CompteRecruteur,
-  meta: { requiresAuth: true },
-  children: [
-    {
-      // on accepte un identifiant juste après le slash
-      path: ":candidatureId",            // ← segment dynamique
-      name: "Entretiens",
-      component: Entretiens,
-      props: true                        // la vue recevra candidatureId en prop
-    }
-  ]
-},
+  path: '/planifier-entretien/:candidatureId',
+  name: 'PlanifierEntretien',
+  component: EntretiensRecruteurs,  // Le composant qui gère la planification
+  props: true  // Passe candidatureId en prop
+}
 
+,
   
   
   { path: '/mescv', component: CompteCandidat, meta: { requiresAuth: true }, children: [

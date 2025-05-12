@@ -49,7 +49,7 @@
       <i class="fas fa-inbox empty-icon"></i>
       <p>
         Aucune candidature
-        {{ filtreStatut ? `avec le statut "${labels[filtreStatut]}"` : "" }} pour le
+        {{ filtreStatut ? `avec le statut "${labels(filtreStatut)}"` : "" }} pour le
         moment
       </p>
     </div>
@@ -65,8 +65,19 @@
         <div class="candidature-main">
           <div class="candidature-header">
             <h3>{{ c.offre?.titre || "Offre inconnue" }}</h3>
-            <div :class="['status-badge', `status-${c.statut || 'enattente'}`]">
-              {{ labels(c.statut) }}
+            
+            <!-- Affichage du statut IA avec condition -->
+            <div
+              :class="[ 
+                'status-badge', 
+                `status-${(c.status_ia || '').toLowerCase().trim()}` 
+              ]"
+            >
+              <span>
+                {{ c.status_ia === 'accepted' ? "CV pertinent ✅" : 
+                   c.status_ia === 'rejected' ? "CV non pertinent ❌" :
+                   c.status_ia || "Statut inconnu" }}
+              </span>
             </div>
           </div>
 
@@ -90,8 +101,8 @@
               <i class="fas fa-calendar"></i>
               <div>
                 <span class="label">Date de candidature</span>
-                <span class="value">{{ formatDate(c.created_at) }}</span
-                ><br />
+                <span class="value">{{ formatDate(c.created_at) }}</span>
+                <br />
               </div>
               <div>
                 <span class="label">Date de l'entretien</span>
@@ -114,10 +125,10 @@
             </div>
           </div>
 
-          <!-- Workflow stepper -->
+          <!-- Workflow stepper dynamique basé sur le statut IA -->
           <div class="workflow-stepper">
             <div
-              v-for="(step, i) in getSteps()"
+              v-for="(step, i) in getSteps(c.status_ia)"
               :key="step.key"
               class="step"
               :class="{
@@ -129,16 +140,23 @@
               <span class="label">{{ step.label }}</span>
             </div>
           </div>
+
+          <!-- Bouton "Planifier entretien" uniquement si accepté -->
+          <div v-if="c.status_ia === 'accepted'">
+            <button @click="planifierEntretien(c)" class="primary-btn">
+              <i class="fas fa-calendar-alt"></i> Planifier entretien
+            </button>
+          </div>
         </div>
 
         <div class="candidature-actions">
           <div class="action-buttons">
-            <button @click="voirDetails(c.id)" class="primary-btn" :disabled="!c.id">
+            <button @click="voirDetails(c)" class="primary-btn" :disabled="!c.id">
               <i class="fas fa-eye"></i> Voir détails
             </button>
             <div class="quick-status-update">
               <button
-                v-if="c.statut === 'accepter'"
+                v-if="c.statut === 'entretien'"
                 class="primary-btn schedule-btn"
                 @click="planifierEntretien(c.id, selectedDate)"
               >
@@ -157,17 +175,14 @@ import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 
-// État
 const candidatures = ref([]);
-const filteredCandidatures = ref([]);
 const loading = ref(true);
 const error = ref(null);
 const filtreStatut = ref("");
 const selectedDate = ref("");
-
 const router = useRouter();
 
-// Utilitaires
+
 const formatDate = (d) =>
   d
     ? new Date(d).toLocaleDateString("fr-FR", {
@@ -177,59 +192,73 @@ const formatDate = (d) =>
       })
     : "Date non spécifiée";
 
-const labels = (statut) => {
-  const labels = {
-    enattente: "En attente",
-    accepter: "Acceptée",
-    entretien: "Entretien",
-    embauche: "Embauchée",
-    refuser: "Refusée",
-  };
-  return labels[statut] || "En attente";
-};
-
-function formatDateTime12h(dateString) {
+const formatDateTime12h = (dateString) => {
   if (!dateString) return "—";
   const date = new Date(dateString);
-
-  // Options pour Intl.DateTimeFormat
-  const options = {
+  return new Intl.DateTimeFormat("fr-FR", {
     day: "numeric",
     month: "long",
     year: "numeric",
     hour: "numeric",
     minute: "numeric",
-    hour12: true, // active le format 12 h avec AM/PM
-  };
+    hour12: true,
+  }).format(date);
+};
 
-  // Formatter en fr-FR (mais avec hour12: true pour avoir AM/PM)
-  return new Intl.DateTimeFormat("fr-FR", options).format(date);
-}
 const truncateText = (text, length = 100) =>
   text && text.length > length ? text.slice(0, length) + "..." : text;
 
 const getInitials = (prenom, nom) =>
   (prenom || "").charAt(0) + (nom || "").charAt(0) || "??";
 
-const getSteps = () => [
-  { key: "enattente", label: "En attente" },
-  { key: "accepter", label: "Acceptée" },
-  { key: "entretien", label: "Entretien" },
-  { key: "embauche", label: "Embauchée" },
-];
+const labels = (statut) => {
+  const map = {
+    enattente: "En attente",
+    accepter: "Acceptée",
+    entretien: "Entretien",
+    embauche: "Embauchée",
+    refuser: "Refusée",
+  };
+  return map[statut] || "—";
+};
+
+const getSteps = (status_ia) => {
+  if (status_ia === "accepted") {
+    return [
+      { key: "accepter", label: "Acceptée" },
+      { key: "entretien", label: "Entretien" },
+      { key: "embauche", label: "Embauchée" },
+    ];
+  } else if (status_ia === "rejected") {
+    return [
+      { key: "refuser", label: "Refusée" }
+    ];
+  }
+  return [
+    { key: "enattente", label: "En attente" },
+    { key: "accepter", label: "Acceptée" },
+    { key: "entretien", label: "Entretien" },
+    { key: "embauche", label: "Embauchée" },
+  ];
+};
 
 const stepOrder = (statut) => {
-  const order = { enattente: 0, accepter: 1, entretien: 2, embauche: 3, refuser: -1 };
+  const order = {
+    enattente: 0,
+    accepter: 1,
+    entretien: 2,
+    embauche: 3,
+    refuser: 1,
+  };
   return order[statut] ?? 0;
 };
 
-// Actions
-function voirDetails(id) {
-  if (!id) return;
-  router.push({
-    name: "DetailsCandidature",
-    params: { candidatureId: id },
-  });
+function voirDetails(candidature) {
+  if (!candidature.id) return;
+
+  localStorage.setItem("current_candidature", JSON.stringify(candidature));
+
+  router.push({ name: "DetailsCandidature", params: { candidatureId: candidature.id } });
 }
 
 const candidaturesFiltrees = computed(() => {
@@ -237,27 +266,45 @@ const candidaturesFiltrees = computed(() => {
   return candidatures.value.filter((c) => c.statut === filtreStatut.value);
 });
 
-async function planifierEntretien(id, selectedDate) {
-  try {
-    const response = await axios.post(
-      `/api/candidatures/${id}/entretien`,
-      { date_entretien: selectedDate } // c’est ici que tu passes la date
-    );
-    // response.data.message → "Date d’entretien enregistrée et e-mail envoyé."
-    // Affiche un toast ou mets à jour l’UI
-    console.log(response.data);
-  } catch (err) {
-    console.error("Erreur lors de la planification", err);
-  }
+// Fonction pour planifier l'entretien
+async function planifierEntretien(candidature) {
+  if (!candidature.id) return;  // Vérifie si l'ID de la candidature existe
+
+  // Sauvegarde de la candidature actuelle dans le localStorage (facultatif)
+  localStorage.setItem("current_candidature", JSON.stringify(candidature));
+
+  // Passe à la route 'planifier-entretien' avec l'ID de la candidature
+  router.push({ name: "PlanifierEntretien", params: { candidatureId: candidature.id } });
 }
+
+
 
 const getCandidatures = async () => {
   loading.value = true;
   error.value = null;
   try {
     const { data } = await axios.get("/api/candidatures");
-    candidatures.value = Array.isArray(data) ? data : [];
+
+    candidatures.value = Array.isArray(data)
+      ? data.map((c) => {
+          const iaStatus = c.status_ia || "";
+          let displayStatus = c.statut || "enattente";
+
+          if (iaStatus.toLowerCase().trim() === "accepted") {
+            displayStatus = "accepter";
+          } else if (iaStatus.toLowerCase().trim() === "rejected") {
+            displayStatus = "refuser";
+          }
+
+          return {
+            ...c,
+            status_ia_original: iaStatus,
+            statut: displayStatus, 
+          };
+        })
+      : [];
   } catch (e) {
+    console.error("Erreur de chargement des candidatures:", e);
     error.value = e.response?.data?.message || "Erreur lors du chargement";
   } finally {
     loading.value = false;
@@ -266,6 +313,8 @@ const getCandidatures = async () => {
 
 onMounted(getCandidatures);
 </script>
+
+
 
 <style scoped>
 .candidatures-container {
@@ -491,29 +540,19 @@ h1 i {
   text-transform: capitalize;
 }
 
-.status-badge.status-enattente {
-  background-color: #e9d8fd;
-  color: #6b46c1;
-}
-
-.status-badge.status-accepter {
+.status-badge.status-accepted {
   background-color: #c6f6d5;
   color: #2f855a;
 }
 
-.status-badge.status-entretien {
-  background-color: #bee3f8;
-  color: #2b6cb0;
-}
-
-.status-badge.status-embauche {
-  background-color: #feebc8;
-  color: #c05621;
-}
-
-.status-badge.status-refuser {
+.status-badge.status-rejected {
   background-color: #fed7d7;
   color: #c53030;
+}
+
+.status-badge.status- {
+  background-color: #e9d8fd;
+  color: #6b46c1;
 }
 
 /* Main Content */

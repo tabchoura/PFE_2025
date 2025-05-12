@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Candidature;
+use App\Models\Offre;
+use App\Models\Cv;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Mail\EntretienPlanifie;
+use App\Services\LocalEmbeddingService;
+use App\Jobs\EvaluateCvEmbedding;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\EntretienPlanifie;
 
 class CandidatureController extends Controller
 {
@@ -19,7 +23,7 @@ class CandidatureController extends Controller
         $candidature->update(['statut' => 'accepter']);
 
         return response()->json([
-            'message'     => 'Candidature acceptée.',
+            'message' => 'Candidature acceptée.',
         ]);
     }
 
@@ -29,37 +33,97 @@ class CandidatureController extends Controller
         $candidature->update(['statut' => 'refuser']);
 
         return response()->json([
-            'message'     => 'Candidature refusée.',
+            'message' => 'Candidature refusée.',
         ]);
     }
 
     /* ------------------------------------------------------------------
      * 2. Postuler à une offre  (route : POST /offres/{id}/postuler)
      * ------------------------------------------------------------------ */
-    public function postuler(Request $request, $id)
-    {
-        $request->validate([
-            'cv_id'   => ['required', 'exists:cvs,id'],
-            'message' => ['nullable', 'string', 'max:1000'],
-        ]);
+public function postuler(Request $request, $id)
+{
+    // Validation des données envoyées par le formulaire
+    $request->validate([
+        'cv_id'   => ['required', 'exists:cvs,id'],
+        'message' => ['nullable', 'string', 'max:1000'],
+    ]);
 
-        $candidature = Candidature::create([
-            'offre_id' => $id,
-            'cv_id'    => $request->cv_id,
-            'user_id'  => auth()->id(),
-            'message'  => $request->input('message'),
-            'statut'   => $request->input('statut', 'enattente'),
-        ]);
+    // Récupérer le CV et l'offre
+    $cv = Cv::find($request->cv_id);
+    $offre = Offre::findOrFail($id);
 
-        return response()->json([
-            'message'     => '✅ Candidature envoyée avec succès.',
-        ], 201);
+    // Si le CV ou l'offre n'existe pas, retourner une erreur
+    if (!$cv || !$offre) {
+        return response()->json(['message' => 'CV ou Offre non trouvé.'], 404);
     }
 
+    // Fusionner tous les champs du CV pour créer un seul texte
+    $cvText = $cv->name . ' ' . $cv->email . ' ' . $cv->skills; // Exemple : Tu peux ajuster les champs en fonction de ton modèle
+
+    // Appel au service d'Embedding pour générer un vecteur du texte du CV
+    $embeddingService = app(LocalEmbeddingService::class);
+    $cvEmbedding = $embeddingService->embedText($cvText);
+
+    // Vérifier si l'embedding du CV est vide ou incorrect
+    if (empty($cvEmbedding)) {
+        return response()->json(['message' => 'Le texte extrait du CV est vide ou invalide.'], 400);
+    }
+
+    // Créer la candidature
+    $candidature = Candidature::create([
+        'offre_id' => $id,
+        'user_id'  => auth()->id(),
+        'cv_id'    => $request->cv_id,
+        'message'  => $request->input('message', ''),
+        'statut'   => $request->input('statut', 'enattente'),
+    ]);
+
+    // Sauvegarder l'embedding du CV dans la candidature
+    $candidature->update([
+        'cv_embedding' => json_encode($cvEmbedding), // Enregistrer l'embedding dans la base de données
+    ]);
+
+    // Dispatcher le job pour évaluer la similarité entre le CV et l'offre
+    EvaluateCvEmbedding::dispatch($candidature);
+
+    return response()->json([
+        'message'     => '✅ Candidature envoyée avec succès.',
+        'candidature' => $candidature,
+    ], 201);
+}
+ public function mescandidatures()
+    {
+        $user = Auth::user();
+
+        if (! $user) {
+            return response()->json(['message' => 'Utilisateur non authentifié'], 401);
+        }
+
+        $candidatures = Candidature::where('user_id', $user->id)
+            ->with(['offre', 'cv', ])
+            ->get();
+
+        return response()->json($candidatures);
+    }
+ public function show($id)
+    {
+        $candidature = Candidature::with(['offre', 'cv', ])->find($id);
+
+        if (! $candidature) {
+            return response()->json(['message' => 'Candidature non trouvée'], 404);
+        }
+
+        return response()->json($candidature);
+    }
+    /* ---------------------
+    ---------------------------------------------
+     * 3. Envoyer un entretien à un candidat
+     * ------------------------------------------------------------------ */
+  
     public function envoyerEntretien(Request $request, $id)
     {
         $validated = $request->validate([
-            'date_entretien' => ['required','date'],
+    'date_entretien' => ['required', 'date_format:d/m/Y'],  // Validation stricte au format jj/mm/aaaa
         ]);
 
         // 1. On récupère la candidature et on la met à jour
@@ -89,50 +153,46 @@ class CandidatureController extends Controller
     }
 
 
+
     /* ------------------------------------------------------------------
-     * 3. Lister et afficher
+     * 4. Comparer les embeddings entre CV et offre
+     * ------------------------------------------------------------------ */
+    // private function compareEmbeddings($cvEmbedding, $offerEmbedding)
+    // {
+    //     // Calcul de la similarité cosinus entre les deux embeddings
+    //     $dotProduct = 0.0;
+    //     $cvNorm = 0.0;
+    //     $offerNorm = 0.0;
+
+    //     $length = min(count($cvEmbedding), count($offerEmbedding));
+
+    //     for ($i = 0; $i < $length; $i++) {
+    //         $dotProduct += $cvEmbedding[$i] * $offerEmbedding[$i];
+    //         $cvNorm += $cvEmbedding[$i] ** 2;
+    //         $offerNorm += $offerEmbedding[$i] ** 2;
+    //     }
+
+    //     return ($cvNorm && $offerNorm) ? $dotProduct / (sqrt($cvNorm) * sqrt($offerNorm)) : 0.0;
+    // }
+
+    /* ------------------------------------------------------------------
+     * 5. Lister et afficher les candidatures
      * ------------------------------------------------------------------ */
     public function index()
     {
         return response()->json(
-            Candidature::with(['offre', 'cv', ])->get()
+            Candidature::with(['offre', 'cv'])->get()
         );
     }
 
-    public function show($id)
-    {
-        $candidature = Candidature::with(['offre', 'cv', ])->find($id);
-
-        if (! $candidature) {
-            return response()->json(['message' => 'Candidature non trouvée'], 404);
-        }
-
-        return response()->json($candidature);
-    }
-
-    public function mescandidatures()
-    {
-        $user = Auth::user();
-
-        if (! $user) {
-            return response()->json(['message' => 'Utilisateur non authentifié'], 401);
-        }
-
-        $candidatures = Candidature::where('user_id', $user->id)
-            ->with(['offre', 'cv', ])
-            ->get();
-
-        return response()->json($candidatures);
-    }
-
     /* ------------------------------------------------------------------
-     * 4. Supprimer
+     * 6. Supprimer une candidature
      * ------------------------------------------------------------------ */
     public function destroy($id)
     {
         $candidature = Candidature::find($id);
 
-        if (! $candidature) {
+        if (!$candidature) {
             return response()->json(['message' => 'Candidature non trouvée'], 404);
         }
 

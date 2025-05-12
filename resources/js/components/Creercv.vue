@@ -1,6 +1,6 @@
 <template>
   <div class="cv-container">
-    <form @submit.prevent="submitCv" class="cv-form">
+    <form @submit.prevent="submitCv" class="cv-form" enctype="multipart/form-data">
       <h1 class="cv-title">Créer Votre CV&nbsp;!</h1>
 
       <!-- Colonne gauche -->
@@ -227,21 +227,16 @@ import axios from "axios";
 import { useToast } from "vue-toastification";
 import { useRoute, useRouter } from "vue-router";
 
-// Route et navigation
 const route = useRoute();
 const router = useRouter();
-
-// Toast notifications
 const toast = useToast();
 
-// Date maximale (18 ans)
 const maxDate = computed(() => {
   const d = new Date();
   d.setFullYear(d.getFullYear() - 18);
   return d.toISOString().split("T")[0];
 });
 
-// Formulaire réactif
 const form = reactive({
   nom: "",
   prenom: "",
@@ -257,29 +252,23 @@ const form = reactive({
   image: "",
 });
 
-// Autres états
 const profilePicture = ref("");
 const errors = ref({});
 const isSubmitting = ref(false);
 
-// Nettoyage des toasts au montage
 onMounted(() => {
   toast.clear();
 });
 
-// Validation du formulaire
 function validateForm() {
   const newErrors = {};
-
   if (!form.nom.trim()) newErrors.nom = "Le nom est requis";
   if (!form.prenom.trim()) newErrors.prenom = "Le prénom est requis";
-
   if (!form.email.trim()) {
     newErrors.email = "L'email est requis";
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
     newErrors.email = "Veuillez entrer un email valide";
   }
-
   const birthDate = new Date(form.date_naissance);
   const today = new Date();
   const age = today.getFullYear() - birthDate.getFullYear();
@@ -291,7 +280,6 @@ function validateForm() {
   return Object.keys(newErrors).length === 0;
 }
 
-// Gestion des champs dynamiques
 function addItem(field) {
   form[field].push("");
 }
@@ -301,7 +289,6 @@ function removeItem(field, index) {
   if (!list.length) list.push("");
 }
 
-// Upload d’image
 async function handleImage(e) {
   const input = e.target;
   const file = input.files?.[0];
@@ -340,6 +327,7 @@ async function handleImage(e) {
     toast.error(errors.value.image);
   }
 }
+
 async function submitCv() {
   if (isSubmitting.value) return;
   toast.clear();
@@ -373,9 +361,7 @@ async function submitCv() {
       }
     }
 
-    // Retour à "mes CV"
     router.push("/mescv");
-    k;
   } catch (err) {
     console.error("Erreur création CV :", err);
     toast.error("Erreur lors de la création du CV");

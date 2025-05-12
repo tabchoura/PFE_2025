@@ -9,8 +9,14 @@ class Offre extends Model
 {
     use HasFactory;
     protected $fillable = [
-       'titre', 'description', 'salaire', 'details'
+       'titre', 'description', 'salaire', 'details','embedding',
+
     ];
+
+    protected $casts = [
+  'embedding' => 'array',
+];
+
     public function user()
     {
         return $this->belongsTo(User::class);

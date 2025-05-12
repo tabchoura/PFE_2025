@@ -16,6 +16,7 @@
       <p>🗓️ {{ formatDate(entretien.date_entretien) }}</p>
     </div>
   </div>
+  
 </template>
 
 <script setup lang="ts">
@@ -27,19 +28,22 @@ import Calendrier from "./Calendrier.vue";
 // Récupération du paramètre de route
 const route = useRoute();
 const router = useRouter();
-const candidatureId = Number(route.params.candidatureId);
+const candidatureId = Number(route.params.candidatureId);  // Convertir en nombre
 
+// Vérifiez que l'ID est bien récupéré
+console.log("candidatureId", candidatureId);  // Affiche dans la console
 // État local
 const selectedDate = ref<string | null>(null);
 const entretien = ref<any | null>(null);
 const isSubmitting = ref(false);
 
-// Formatage de date
+// Formatage de la date au format d/m/Y
 function formatDate(d?: string) {
   if (!d) return "";
 
   try {
-    return new Date(d).toLocaleString("fr-FR", {
+    const date = new Date(d);
+    return date.toLocaleString("fr-FR", {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -52,7 +56,17 @@ function formatDate(d?: string) {
   }
 }
 
-// Action d'envoi
+// Fonction pour formater la date au format d/m/Y avant de l'envoyer
+function formatDateForApi(date: string | null) {
+  if (!date) return "";  // Retourne une chaîne vide si la date est vide
+  const d = new Date(date);
+  const day = ("0" + d.getDate()).slice(-2);  // Ajoute un 0 si le jour est inférieur à 10
+  const month = ("0" + (d.getMonth() + 1)).slice(-2);  // Ajoute un 0 si le mois est inférieur à 10
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;  // Format d/m/Y
+}
+
+// Fonction envoyer l'entretien au backend
 async function envoyer() {
   if (!selectedDate.value) {
     alert("Merci de sélectionner une date.");
@@ -61,11 +75,13 @@ async function envoyer() {
 
   isSubmitting.value = true;
 
+  // Formater la date avant de l'envoyer
+  const formattedDate = formatDateForApi(selectedDate.value);
+
   try {
     // Requête POST vers l'API
-    const { data } = await axios.post("/api/entretiens", {
-      candidature_id: candidatureId,
-      date_entretien: selectedDate.value,
+    const { data } = await axios.post(`/api/candidatures/${candidatureId}/entretien`, {
+      date_entretien: formattedDate,  // Envoie la date formatée
     });
 
     // Stockage de la réponse
