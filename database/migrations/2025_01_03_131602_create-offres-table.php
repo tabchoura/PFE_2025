@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('titre')->nullable();
             $table->string('details')->nullable();
 
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
 
           //  $table->string('salaire')->nullable();  
             //      $table->unsignedBigInteger('user_id')->nullable()->change(); // Rendre la colonne nullable

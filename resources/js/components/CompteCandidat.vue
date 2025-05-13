@@ -29,8 +29,8 @@
           Mes entretiens
         </li>
         <li
-          @click="navigateTo('/offres')"
-          :class="{ active: isActive('/offres') }"
+          @click="navigateTo('/mesoffres')"
+          :class="{ active: isActive('/mesoffres') }"
           role="button"
           tabindex="0"
         >

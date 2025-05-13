@@ -1,6 +1,6 @@
 <template>
   <div class="candidatures-container">
-    <!-- Header with title and filter -->
+    <!-- Header avec titre et filtre -->
     <div class="header-actions">
       <h2><i class="fas fa-user-check"></i> Mes candidatures</h2>
       <select v-model="filtreStatut" class="statut-filter">
@@ -47,9 +47,20 @@
       >
         <div class="candidature-header">
           <h3 class="title-offre">{{ c.offre?.titre || "Offre inconnue" }}</h3>
-          <span class="statut-badge" :class="`statut-${c.statut || 'enattente'}`">
-            {{ labels[c.statut] || "enattente" }}
-          </span>
+          
+          <!-- Affichage du statut IA avec condition -->
+          <div
+            :class="[ 
+              'status-badge', 
+              `status-${(c.status_ia || '').toLowerCase().trim()}` 
+            ]"
+          >
+            <span>
+              {{ c.status_ia === 'accepted' ? "Accepté ✅" : 
+                 c.status_ia === 'rejected' ? "Refusée ❌" :
+                 c.status_ia || "Statut inconnu" }}
+            </span>
+          </div>
         </div>
 
         <div class="candidature-card-body">
@@ -83,20 +94,15 @@
             {{ formatDateTime12h(c.date_entretien) || "Aucun entretien" }}
           </p>
         </div>
-      
-
-
       </li>
     </ul>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted, computed } from "vue";
 import axios from "axios";
 
-const router = useRouter();
 const candidatures = ref([]);
 const loading = ref(true);
 const error = ref(null);
@@ -110,7 +116,6 @@ const labels = {
   embauche: "Embauchée",
   refuser: "Refusée",
 };
-
 
 /**
  * Format date in a user-friendly format
@@ -129,24 +134,23 @@ function formatDate(dateString) {
   }
 }
 
- function formatDateTime12h(dateString) {
+function formatDateTime12h(dateString) {
   if (!dateString) return "—";
   const date = new Date(dateString);
 
   // Options pour Intl.DateTimeFormat
   const options = {
-    day:    "numeric",
-    month:  "long",
-    year:   "numeric",
-    hour:   "numeric",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "numeric",
     minute: "numeric",
-    hour12: true      // active le format 12 h avec AM/PM
+    hour12: true, // active le format 12 h avec AM/PM
   };
 
   // Formatter en fr-FR (mais avec hour12: true pour avoir AM/PM)
   return new Intl.DateTimeFormat("fr-FR", options).format(date);
 }
-
 
 /**
  * Truncate text with ellipsis if it exceeds max length
@@ -155,11 +159,6 @@ const truncateText = (text, max) => {
   if (!text) return "";
   return text.length > max ? text.slice(0, max) + "…" : text;
 };
-
-/**
- * Navigate to details page
- */
-
 
 /**
  * Filter candidatures based on selected status
@@ -172,9 +171,9 @@ const candidaturesFiltrees = computed(() => {
 /**
  * Fetch candidatures from API
  */
- async function getCandidatures() {
+async function getCandidatures() {
   loading.value = true;
-  error.value   = null;
+  error.value = null;
 
   try {
     // Init CSRF cookie pour Laravel Sanctum
@@ -182,11 +181,23 @@ const candidaturesFiltrees = computed(() => {
 
     // Récupère les candidatures
     const { data } = await axios.get("/api/mescandidatures", {
-      withCredentials: true
+      withCredentials: true,
     });
 
     // On s’assure que data est un tableau, sinon on remet un tableau vide
-    candidatures.value = Array.isArray(data) ? data : [];
+    candidatures.value = Array.isArray(data)
+      ? data.map((c) => {
+          // Si le statut IA est "rejected", on met "refuser" dans c.statut
+          if (c.status_ia === "rejected") {
+            c.statut = "refuser"; // On assigne "refuser" dans c.statut
+          } else if (c.status_ia === "accepted") {
+            c.statut = "accepter"; // On assigne "accepter" dans c.statut
+          } else {
+            c.statut = "enattente"; // Sinon, le statut est "enattente"
+          }
+          return c;
+        })
+      : [];
   } catch (e) {
     console.error("Erreur lors du chargement :", e);
     error.value =
@@ -198,163 +209,71 @@ const candidaturesFiltrees = computed(() => {
   }
 }
 
-// Watch for filter changes to update URL query params
-watch(filtreStatut, (newValue) => {
-  const query = { ...router.currentRoute.value.query };
-
-  if (newValue) {
-    query.statut = newValue;
-  } else {
-    delete query.statut;
-  }
-
-  router.replace({ query });
-});
-
-// Initialize component
 onMounted(() => {
-  // Check if there's a status filter in URL
-  const { statut } = router.currentRoute.value.query;
-  if (statut && Object.keys(labels).includes(statut)) {
-    filtreStatut.value = statut;
-  }
-
   // Fetch data
   getCandidatures();
 });
 </script>
 
 <style scoped>
+/* Styles pour le conteneur des candidatures */
 .candidatures-container {
-  width: 100%;
   max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
 }
 
-/* Header styling */
+/* Header */
 .header-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #eaeaea;
 }
 
 .header-actions h2 {
   margin: 0;
   color: #333;
-  font-size: 1.5rem;
+  font-size: 1.8rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
 }
 
 .header-actions h2 i {
-  margin-right: 0.5rem;
-  color: #4a6cf7;
+  margin-right: 0.75rem;
+  color: #3498db;
 }
 
 .statut-filter {
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
   border: 1px solid #ddd;
   font-weight: 500;
   color: #333;
   background-color: #fff;
-  font-size: 0.95rem;
+  font-size: 1rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
   cursor: pointer;
 }
 
 .statut-filter:focus {
   outline: none;
-  border-color: #4a6cf7;
-  box-shadow: 0 0 0 2px rgba(74, 108, 247, 0.2);
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
-/* Loading state */
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem 1rem;
-  color: #666;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid rgba(74, 108, 247, 0.2);
-  border-top-color: #4a6cf7;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Error state */
-.error-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem 1rem;
-  color: #d32f2f;
-  text-align: center;
-}
-
-.error-icon {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-}
-
-.btn-retry {
-  margin-top: 1rem;
-  padding: 0.5rem 1.5rem;
-  background-color: #fff;
-  color: #4a6cf7;
-  border: 1px solid #4a6cf7;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-retry:hover {
-  background-color: #4a6cf7;
-  color: #fff;
-}
-
-/* Empty state */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem 1rem;
-  color: #666;
-  text-align: center;
-}
-
-.empty-icon {
-  font-size: 2.5rem;
-  color: #ccc;
-  margin-bottom: 1rem;
-}
-
-/* Candidature grid */
+/* Candidatures grid */
 .candidature-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
   padding: 0;
   margin: 0;
   list-style: none;
@@ -369,40 +288,25 @@ onMounted(() => {
   border: 1px solid #eaeaea;
   overflow: hidden;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
 }
 
 .candidature-item:hover {
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-/* Card header */
-.candidature-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  background-color: #f9f9f9;
-  border-bottom: 1px solid #eaeaea;
-}
-
-.title-offre {
-  margin: 0;
-  font-size: 1.1rem;
-  color: #333;
-  font-weight: 600;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
 }
 
 /* Status badges */
 .statut-badge {
   display: inline-block;
-  padding: 0.25rem 0.75rem;
+  padding: 0.35rem 0.75rem;
   border-radius: 20px;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 600;
   text-align: center;
   white-space: nowrap;
+  text-transform: capitalize;
+  margin-left: 0.75rem;
 }
 
 .statut-enattente {
@@ -432,41 +336,37 @@ onMounted(() => {
 
 /* Card body */
 .candidature-card-body {
-  padding: 1rem;
+  padding: 1.5rem;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
+/* Card info row */
 .card-info-row {
   display: flex;
+  align-items: center;
   margin-bottom: 0.75rem;
-  align-items: flex-start;
 }
 
 .card-info-row i {
   margin-right: 0.5rem;
-  margin-top: 0.25rem;
-  color: #666;
-  min-width: 1rem;
-  text-align: center;
+  color: #6b7280;
 }
 
 .card-info-row p {
   margin: 0;
   color: #444;
-  font-size: 0.95rem;
-}
-
-.card-info-row strong {
-  color: #333;
+  font-size: 1rem;
 }
 
 /* Workflow stepper */
 .workflow-stepper {
   display: flex;
   align-items: center;
-  padding: 1rem;
-  overflow-x: auto;
-  background-color: #f5f5f5;
+  margin-top: 1rem;
+  padding-top: 1rem;
   border-top: 1px solid #eaeaea;
 }
 
@@ -490,46 +390,46 @@ onMounted(() => {
 }
 
 .step-done:not(:last-child)::after {
-  background-color: #4a6cf7;
+  background-color: #3498db;
 }
 
 .circle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background-color: #fff;
   border: 2px solid #ddd;
   color: #888;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: bold;
   margin-bottom: 0.5rem;
   z-index: 2;
 }
 
 .step-done .circle {
-  background-color: #4a6cf7;
-  border-color: #4a6cf7;
+  background-color: #3498db;
+  border-color: #3498db;
   color: #fff;
 }
 
 .step-active .circle {
-  border-color: #4a6cf7;
-  color: #4a6cf7;
+  border-color: #3498db;
+  color: #3498db;
   font-weight: bold;
 }
 
 .label {
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   color: #666;
   text-align: center;
 }
 
 .step-done .label,
 .step-active .label {
-  color: #4a6cf7;
+  color: #3498db;
   font-weight: 500;
 }
 
@@ -542,7 +442,7 @@ onMounted(() => {
 
 .voir-button {
   width: 100%;
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1rem;
   background-color: #4a6cf7;
   color: #fff;
   border: none;
@@ -561,8 +461,29 @@ onMounted(() => {
   cursor: not-allowed;
 }
 
+/* Action buttons */
+.primary-btn {
+  padding: 0.75rem 1.25rem;
+  background-color: #3498db;
+  color: white;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+  margin-top: 1rem;
+}
+
+.primary-btn:hover {
+  background-color: #2980b9;
+}
+
 /* Responsive adjustments */
-@media screen and (max-width: 768px) {
+@media (max-width: 768px) {
+  .candidatures-container {
+    padding: 1rem;
+  }
+
   .candidature-grid {
     grid-template-columns: 1fr;
   }
@@ -575,6 +496,10 @@ onMounted(() => {
   .statut-filter {
     margin-top: 1rem;
     width: 100%;
+  }
+
+  .workflow-stepper {
+    overflow-x: auto;
   }
 }
 </style>

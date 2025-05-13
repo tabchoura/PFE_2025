@@ -65,6 +65,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // ─── Postuler à une offre ─────────────────────────────────────────────
     Route::post('/offres/{id}/postuler', [CandidatureController::class, 'postuler']); // Postuler route
+Route::post('/offreenregistrer/{offer_id}', [OfferController::class, 'enregistrerOffre']);
+Route::get('/mesoffres', [OfferController::class, 'getUserSelectedOffers']);
+Route::delete('/offreenregistrer/{offer_id}', [OfferController::class, 'supprimerEnregistrement'])->middleware('auth:sanctum');
+
 
     // ─── Candidatures ──────────────────────────────────────────────────────
     Route::put('/candidatures/{id}/accept', [CandidatureController::class, 'accept'])
@@ -91,8 +95,7 @@ Route::post('/candidatures/{candidatureId}/entretien', [CandidatureController::c
     // ─── Images ─────────────────────────────────────────────────────────────
     Route::post('/ajouterimage', [ImageController::class, 'uploadImage']);
 
-
-    
+ 
     // ─── Test accès candidat ────────────────────────────────────────────────
     Route::middleware('role:candidat')
          ->get('/test-candidat', fn() => response()->json(['message' => '✅ Accès autorisé pour le candidat.']));

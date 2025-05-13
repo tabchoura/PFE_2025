@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Offre;
-use App\Services\LocalEmbeddingService;
+use App\Models\User;
+
 use Illuminate\Http\Request;
 use App\Jobs\EvaluateOfferEmbedding;
-
+use App\Services\LocalEmbeddingService;
+use Illuminate\Support\Facades\Auth;
 
 class OfferController extends Controller
 {
@@ -27,9 +29,9 @@ class OfferController extends Controller
             'details'     => 'nullable|string|max:255',
         ]);
 
-       $offre = Offre::create($validated);
-       // // Appeler le job pour évaluer l'offre (générer l'**embedding**)
-    EvaluateOfferEmbedding::dispatch($offre);
+        $offre = Offre::create($validated);
+        // Appeler le job pour évaluer l'offre (générer l'**embedding**)
+        EvaluateOfferEmbedding::dispatch($offre);
 
         // Génération de l'embedding sur la description
         $vector = app(LocalEmbeddingService::class)
@@ -96,4 +98,88 @@ class OfferController extends Controller
 
         return response()->json($offre);
     }
+
+    // 6. Enregistrer l'offre pour l'utilisateur authentifié
+    public function enregistrerOffre($offer_id)
+    {
+        // Vérifier si l'offre existe
+        $offre = Offre::find($offer_id);
+        if (!$offre) {
+            return response()->json(['message' => 'Offre non trouvée'], 404);
+        }
+
+        // Récupérer l'ID de l'utilisateur authentifié
+        $userId = Auth::id();
+
+        if (!$userId) {
+            // Si l'utilisateur n'est pas authentifié, renvoyer une erreur
+            return response()->json(['message' => 'Vous devez être connecté pour enregistrer une offre.'], 401);
+        }
+
+        // Vérifier si l'offre est déjà enregistrée par cet utilisateur
+        $existingRecord = Offre::where('user_id', $userId)  // Vérifier la relation dans la table 'offres'
+                                   ->where('id', $offer_id) // Utiliser `id` pour identifier l'offre
+                                   ->first();
+
+        if ($existingRecord) {
+            // Si l'offre est déjà enregistrée, renvoyer une réponse indiquant que l'offre est déjà enregistrée
+            return response()->json(['message' => 'Cette offre est déjà enregistrée !'], 400);
+        }
+
+        // Enregistrer l'offre aimée dans la table Offre (ajouter user_id)
+        $offre->user_id = $userId;
+        $offre->save();
+
+        // Retourner une réponse de succès
+        return response()->json(['message' => 'Offre enregistrée avec succès !'], 200);
+    }
+   public function getUserSelectedOffers()
+{
+    // Récupérer l'ID de l'utilisateur authentifié
+    $userId = Auth::id();
+
+    // Vérifier si l'utilisateur est authentifié
+    if (!$userId) {
+        return response()->json(['message' => 'Utilisateur non authentifié'], 401);
+    }
+
+    // Récupérer l'utilisateur en utilisant l'ID
+    $user = User::find($userId); // Récupérer l'objet User
+
+    if (!$user) {
+        return response()->json(['message' => 'Utilisateur non trouvé'], 404);
+    }
+
+    // Récupérer les offres enregistrées par cet utilisateur
+    $offers = $user->offres;  // Utiliser la relation 'offres' de l'utilisateur
+
+    return response()->json($offers);
+}
+public function supprimerEnregistrement($offer_id)
+{
+    // Récupérer l'ID de l'utilisateur authentifié
+    $userId = Auth::id();
+
+    // Vérifier si l'utilisateur est authentifié
+    if (!$userId) {
+        return response()->json(['message' => 'Utilisateur non authentifié'], 401);
+    }
+
+    // Vérifier si l'offre existe pour l'utilisateur
+    $existingRecord = Offre::where('user_id', $userId)
+                           ->where('id', $offer_id)
+                           ->first();
+
+    // Si l'offre n'est pas trouvée, renvoyer une erreur
+    if (!$existingRecord) {
+        return response()->json(['message' => 'Offre non trouvée ou non enregistrée'], 404);
+    }
+
+    // Supprimer l'enregistrement de l'offre pour l'utilisateur
+    $existingRecord->delete();
+
+    // Retourner une réponse de succès
+    return response()->json(['message' => 'Offre supprimée avec succès !'], 200);
+}
+
 }

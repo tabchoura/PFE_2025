@@ -5,6 +5,7 @@
     <p><strong>Salaire:</strong> {{ offer.salaire }}</p>
     <p><strong>Détails:</strong> {{ offer.details }}</p>
     <div class="button-container">
+    <button @click="enregistrer">♥ Ajouter à mes offres enregistrés</button>
       <button class="btnapply" @click="Postuler">Postuler par ici</button>
     </div>
   </div>
@@ -20,7 +21,6 @@ const offer = ref({});
 const route = useRoute();
 const router = useRouter();
 const offerId = route.params.id;
-
 // Fonction pour récupérer les détails de l'offre uniquement si l'utilisateur est authentifié
 async function getOfferDetails() {
   try {
@@ -46,6 +46,21 @@ async function getOfferDetails() {
     alert("Une erreur est survenue lors de la récupération des détails de l'offre.");
   }
 }
+
+const enregistrer = async () => {
+  try {
+    const response = await axios.post(`/api/offreenregistrer/${offerId}`); // Envoie l'ID de l'offre dans l'URL
+
+    if (response.status === 200) {
+      alert("Offre enregistrée avec succès !");
+    } else {
+      alert("Erreur lors de l'enregistrement de l'offre.");
+    }
+  } catch (error) {
+    console.error("Erreur lors de l'enregistrement de l'offre:", error);
+    alert("Une erreur est survenue lors de l'enregistrement de l'offre.");
+  }
+};
 
 // Fonction pour postuler à l'offre
 const Postuler = () => {

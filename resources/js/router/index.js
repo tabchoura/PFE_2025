@@ -28,6 +28,8 @@ import Postuler from '../components/Postuler.vue';
 import Ajouterimage from '../components/Ajouterimage.vue';
 import Modifiercv from '../components/Modifiercv.vue';
 import Mescv from '../components/Mescv.vue';
+import Mesoffres from '../components/Mesoffres.vue';
+
 import Confirmationpostuler from '../components/Confirmationpostuler.vue';
 import Creercv from '../components/Creercv.vue';
 // import Aftercvpostuler from '../components/Aftercvpostuler.vue'
@@ -75,7 +77,9 @@ const routes = [
 
 ,
   
-  
+  { path: '/mesoffres', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Mesoffres', component: Mesoffres }
+  ]},
   { path: '/mescv', component: CompteCandidat, meta: { requiresAuth: true }, children: [
     { path: '', name: 'Mescv', component: Mescv }
   ]},

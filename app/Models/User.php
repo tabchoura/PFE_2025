@@ -34,10 +34,7 @@ class User extends Authenticatable
 {
     return $this->hasMany(Offre::class);
 }
-public function entretiens()
-{
-    return $this->hasMany(Entretien::class); // Un utilisateur peut avoir plusieurs entretiens
-}
+
 public function cvs()
     {
         return $this->hasMany(Cv::class); // Un utilisateur peut avoir plusieurs CVs
