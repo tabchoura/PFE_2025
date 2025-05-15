@@ -5,7 +5,6 @@
       <h2><i class="fas fa-user-check"></i> Mes candidatures</h2>
       <select v-model="filtreStatut" class="statut-filter">
         <option value="">Tous les statuts</option>
-        <option value="enattente">En attente</option>
         <option value="accepter">Acceptée</option>
         <option value="entretien">Entretien</option>
         <option value="embauche">Embauchée</option>
@@ -48,17 +47,20 @@
         <div class="candidature-header">
           <h3 class="title-offre">{{ c.offre?.titre || "Offre inconnue" }}</h3>
           
-          <!-- Affichage du statut IA avec condition -->
+          <!-- Affichage du statut IA avec correction -->
           <div
-            :class="[ 
-              'status-badge', 
-              `status-${(c.status_ia || '').toLowerCase().trim()}` 
+            :class="[
+              'status-badge',
+              `statut-${c.status_ia}`
             ]"
           >
             <span>
-              {{ c.status_ia === 'accepted' ? "Accepté ✅" : 
-                 c.status_ia === 'rejected' ? "Refusée ❌" :
-                 c.status_ia || "Statut inconnu" }}
+              {{ labels[c.status_ia] || "Statut inconnu" }}
+              {{ c.status_ia === 'accepter' ? "✅" : 
+                 c.status_ia === 'refuser' ? "❌" :
+                 c.status_ia === 'entretien' ? "🗓️" :
+                 c.status_ia === 'embauche' ? "🎉" :
+                 c.status_ia === 'enattente' ? "⏳" : "" }}
             </span>
           </div>
         </div>
@@ -86,13 +88,15 @@
             <i class="fas fa-calendar"></i>
             <p><strong>Date :</strong> {{ formatDate(c.created_at) }}</p>
           </div>
-        </div>
-        <div class="card-info-row">
-          <i class="fas fa-comment"></i>
-          <p>
-            <strong>Entretien :</strong>
-            {{ formatDateTime12h(c.date_entretien) || "Aucun entretien" }}
-          </p>
+          
+          <!-- Affichage amélioré de la date d'entretien -->
+          <div v-if="c.date_entretien" class="card-info-row">
+            <i class="fas fa-handshake"></i>
+            <p>
+              <strong>Entretien :</strong>
+              {{ formatDateTime12h(c.date_entretien) }}
+            </p>
+          </div>
         </div>
       </li>
     </ul>
@@ -110,11 +114,11 @@ const filtreStatut = ref("");
 
 // Status labels for display
 const labels = {
-  enattente: "En attente",
   accepter: "Acceptée",
   entretien: "Entretien",
   embauche: "Embauchée",
   refuser: "Refusée",
+  enattente: "En attente"
 };
 
 /**
@@ -134,22 +138,29 @@ function formatDate(dateString) {
   }
 }
 
+/**
+ * Format date and time with 12h format
+ */
 function formatDateTime12h(dateString) {
   if (!dateString) return "—";
-  const date = new Date(dateString);
+  try {
+    const date = new Date(dateString);
 
-  // Options pour Intl.DateTimeFormat
-  const options = {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-    hour12: true, // active le format 12 h avec AM/PM
-  };
+    // Options pour Intl.DateTimeFormat
+    const options = {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      hour12: true, // active le format 12h avec AM/PM
+    };
 
-  // Formatter en fr-FR (mais avec hour12: true pour avoir AM/PM)
-  return new Intl.DateTimeFormat("fr-FR", options).format(date);
+    // Formatter en fr-FR (mais avec hour12: true pour avoir AM/PM)
+    return new Intl.DateTimeFormat("fr-FR", options).format(date);
+  } catch (e) {
+    return dateString;
+  }
 }
 
 /**
@@ -164,13 +175,28 @@ const truncateText = (text, max) => {
  * Filter candidatures based on selected status
  */
 const candidaturesFiltrees = computed(() => {
+  // Si le filtre est vide, on retourne toutes les candidatures
   if (!filtreStatut.value) return candidatures.value;
-  return candidatures.value.filter((c) => c.statut === filtreStatut.value);
+
+  // Filtrer les candidatures en fonction du statut
+  return candidatures.value.filter((c) => {
+    switch(filtreStatut.value) {
+      case 'entretien':
+        // Pour "Entretien", montrer uniquement les candidatures avec date d'entretien
+        return c.date_entretien && c.date_entretien !== '';
+      case 'accepter':
+        // Pour "Acceptée", montrer uniquement les candidatures acceptées SANS date d'entretien
+        return c.status_ia === 'accepter' && (!c.date_entretien || c.date_entretien === '');
+      case 'refuser':
+        return c.status_ia === 'refuser';
+      case 'embauche':
+        return c.status_ia === 'embauche';
+      default:
+        return c.status_ia === filtreStatut.value;
+    }
+  });
 });
 
-/**
- * Fetch candidatures from API
- */
 async function getCandidatures() {
   loading.value = true;
   error.value = null;
@@ -184,17 +210,20 @@ async function getCandidatures() {
       withCredentials: true,
     });
 
-    // On s’assure que data est un tableau, sinon on remet un tableau vide
+    // On s'assure que data est un tableau, sinon on remet un tableau vide
     candidatures.value = Array.isArray(data)
       ? data.map((c) => {
-          // Si le statut IA est "rejected", on met "refuser" dans c.statut
+          // Traitement des statuts
           if (c.status_ia === "rejected") {
-            c.statut = "refuser"; // On assigne "refuser" dans c.statut
+            c.status_ia = "refuser"; 
           } else if (c.status_ia === "accepted") {
-            c.statut = "accepter"; // On assigne "accepter" dans c.statut
+            c.status_ia = "accepter";
           } else {
-            c.statut = "enattente"; // Sinon, le statut est "enattente"
+            c.status_ia = "enattente"; 
           }
+          
+          // Pas de modification du status_ia basé sur la date d'entretien
+          // Nous utiliserons le filtrage pour différencier les affichages
           return c;
         })
       : [];
@@ -296,8 +325,25 @@ onMounted(() => {
   transform: translateY(-4px);
 }
 
+/* Ajout de style pour l'en-tête de la carte (manquant) */
+.candidature-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  background-color: #f9fafb;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.title-offre {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #222;
+}
+
 /* Status badges */
-.statut-badge {
+.status-badge {
   display: inline-block;
   padding: 0.35rem 0.75rem;
   border-radius: 20px;
@@ -306,7 +352,6 @@ onMounted(() => {
   text-align: center;
   white-space: nowrap;
   text-transform: capitalize;
-  margin-left: 0.75rem;
 }
 
 .statut-enattente {
@@ -346,105 +391,66 @@ onMounted(() => {
 /* Card info row */
 .card-info-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 0.75rem;
 }
 
 .card-info-row i {
   margin-right: 0.5rem;
+  margin-top: 0.25rem;
   color: #6b7280;
+  min-width: 1rem;
 }
 
 .card-info-row p {
   margin: 0;
   color: #444;
   font-size: 1rem;
+  flex: 1;
 }
 
-/* Workflow stepper */
-.workflow-stepper {
-  display: flex;
-  align-items: center;
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #eaeaea;
-}
-
-.step {
+/* Loading state */
+.loading-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 1;
-  position: relative;
-}
-
-.step:not(:last-child)::after {
-  content: "";
-  position: absolute;
-  width: calc(100% - 30px);
-  height: 2px;
-  background-color: #ddd;
-  top: 13px;
-  left: calc(50% + 15px);
-  z-index: 1;
-}
-
-.step-done:not(:last-child)::after {
-  background-color: #3498db;
-}
-
-.circle {
-  display: flex;
-  align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background-color: #fff;
-  border: 2px solid #ddd;
-  color: #888;
-  font-size: 0.9rem;
-  font-weight: bold;
-  margin-bottom: 0.5rem;
-  z-index: 2;
-}
-
-.step-done .circle {
-  background-color: #3498db;
-  border-color: #3498db;
-  color: #fff;
-}
-
-.step-active .circle {
-  border-color: #3498db;
-  color: #3498db;
-  font-weight: bold;
-}
-
-.label {
-  font-size: 0.85rem;
+  padding: 3rem 0;
   color: #666;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error state */
+.error-state {
   text-align: center;
+  padding: 3rem 0;
+  color: #e74c3c;
 }
 
-.step-done .label,
-.step-active .label {
-  color: #3498db;
-  font-weight: 500;
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
 }
 
-/* Card footer */
-.candidature-card-footer {
-  padding: 1rem;
-  border-top: 1px solid #eaeaea;
-  text-align: center;
-}
-
-.voir-button {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  background-color: #4a6cf7;
-  color: #fff;
+.btn-retry {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #3498db;
+  color: white;
   border: none;
   border-radius: 6px;
   font-weight: 600;
@@ -452,30 +458,21 @@ onMounted(() => {
   transition: all 0.2s ease;
 }
 
-.voir-button:hover {
-  background-color: #3a57d5;
-}
-
-.voir-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-/* Action buttons */
-.primary-btn {
-  padding: 0.75rem 1.25rem;
-  background-color: #3498db;
-  color: white;
-  border-radius: 6px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.3s;
-  margin-top: 1rem;
-}
-
-.primary-btn:hover {
+.btn-retry:hover {
   background-color: #2980b9;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 3rem 0;
+  color: #7f8c8d;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #bdc3c7;
 }
 
 /* Responsive adjustments */
@@ -496,10 +493,6 @@ onMounted(() => {
   .statut-filter {
     margin-top: 1rem;
     width: 100%;
-  }
-
-  .workflow-stepper {
-    overflow-x: auto;
   }
 }
 </style>

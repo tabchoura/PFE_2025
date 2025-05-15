@@ -1,13 +1,12 @@
 <template>
   <div class="candidatures-container">
-    <!-- Header avec titre et filtre -->
+    <!-- Header with title and filter -->
     <div class="header-section">
       <h1><i class="fas fa-file-alt"></i> Candidatures Reçues</h1>
       <div class="actions-zone">
         <div class="filter-controls">
           <select v-model="filtreStatut" class="status-filter">
             <option value="">Tous les statuts</option>
-            <option value="enattente">En attente</option>
             <option value="accepter">Acceptée</option>
             <option value="entretien">Entretien</option>
             <option value="embauche">Embauchée</option>
@@ -17,152 +16,117 @@
       </div>
     </div>
 
-    <!-- Résumé du nombre de candidatures -->
-    <div class="stats-bar" v-if="!loading && candidaturesFiltrees.length > 0">
-      <p>
-        <span class="stats-count">{{ candidaturesFiltrees.length }}</span>
-        candidature{{ candidaturesFiltrees.length > 1 ? "s" : "" }}
-        {{ filtreStatut ? `avec statut "${labels(filtreStatut)}"` : "au total" }}
-      </p>
-    </div>
-
-    <!-- États conditionnels -->
+    <!-- States: loading, error, empty -->
     <div v-if="loading" class="loading-state">
       <div class="spinner"></div>
-      <p>Chargement des candidatures...</p>
+      <p>Chargement des candidatures…</p>
     </div>
-
     <div v-else-if="error" class="error-state">
-      <i class="fas fa-exclamation-circle error-icon"></i>
+      <i class="fas fa-exclamation-circle"></i>
       <p>{{ error }}</p>
-      <button @click="getCandidatures" class="btn-retry">
+      <button @click="getCandidatures" class="retry-button">
         <i class="fas fa-redo-alt"></i> Réessayer
       </button>
     </div>
-
-    <div v-else-if="candidatures.length === 0" class="empty-state">
+    <div v-else-if="!candidatures.length" class="empty-state">
       <i class="fas fa-inbox"></i>
       <h3>Aucune candidature reçue</h3>
       <p>Les candidatures apparaîtront ici dès que vous en recevrez.</p>
     </div>
-    <div v-else-if="candidaturesFiltrees.length === 0" class="empty-state">
-      <i class="fas fa-inbox empty-icon"></i>
-      <p>
-        Aucune candidature
-        {{ filtreStatut ? `avec le statut "${labels(filtreStatut)}"` : "" }} pour le
-        moment
-      </p>
-    </div>
+    <div v-else>
+      <!-- Stats bar -->
+      <div class="stats-bar" v-if="candidaturesFiltrees.length">
+        <p>
+          <span class="stats-count">{{ candidaturesFiltrees.length }}</span>
+          candidature{{ candidaturesFiltrees.length > 1 ? 's' : '' }}
+          {{ filtreStatut ? `avec statut "${labels(filtreStatut)}"` : 'au total' }}
+        </p>
+      </div>
 
-    <!-- Liste des candidatures -->
-    <div v-else class="candidatures-list">
-      <div
-        v-for="c in candidaturesFiltrees"
-        :key="c.id"
-        class="candidature-card"
-        :class="`status-${c.statut || 'enattente'}`"
-      >
-        <div class="candidature-main">
-          <div class="candidature-header">
-            <h3>{{ c.offre?.titre || "Offre inconnue" }}</h3>
-            
-            <!-- Affichage du statut IA avec condition -->
-            <div
-              :class="[ 
-                'status-badge', 
-                `status-${(c.status_ia || '').toLowerCase().trim()}` 
-              ]"
-            >
-              <span>
-                {{ c.status_ia === 'accepted' ? "CV pertinent ✅" : 
-                   c.status_ia === 'rejected' ? "CV non pertinent ❌" :
-                   c.status_ia || "Statut inconnu" }}
-              </span>
-            </div>
-          </div>
-
-          <div class="candidat-info">
-            <div class="avatar">
-              {{ getInitials(c.cv?.prenom, c.cv?.nom) }}
-            </div>
-            <div class="identity">
-              <h4>{{ c.cv?.prenom || "Prénom" }} {{ c.cv?.nom || "Nom" }}</h4>
-              <p class="email" v-if="c.cv?.email">
-                <i class="fas fa-envelope"></i> {{ c.cv.email }}
-              </p>
-              <p class="phone" v-if="c.cv?.telephone">
-                <i class="fas fa-phone"></i> {{ c.cv.telephone }}
-              </p>
-            </div>
-          </div>
-
-          <div class="candidature-details">
-            <div class="detail-item">
-              <i class="fas fa-calendar"></i>
-              <div>
-                <span class="label">Date de candidature</span>
-                <span class="value">{{ formatDate(c.created_at) }}</span>
-                <br />
-              </div>
-              <div>
-                <span class="label">Date de l'entretien</span>
-                <span class="value">{{ formatDateTime12h(c.date_entretien) }}</span>
+      <!-- Candidatures list -->
+      <div class="candidatures-list">
+        <div
+          v-for="c in candidaturesFiltrees"
+          :key="c.id"
+          class="candidature-card"
+          :class="`status-${c.statut}`"
+        >
+          <div class="candidature-main">
+            <!-- Header -->
+            <div class="candidature-header">
+              <h3>{{ c.offre?.titre || 'Offre inconnue' }}</h3>
+              <div :class="['status-badge', `status-badge-${c.statut}`]">
+                {{ labels(c.statut) }}
               </div>
             </div>
-            <div class="detail-item" v-if="c.message">
-              <i class="fas fa-comment"></i>
-              <div>
-                <span class="label">Message</span>
-                <span class="value">{{ truncateText(c.message, 100) }}</span>
+
+            <!-- Candidate info -->
+            <div class="candidat-info">
+              <div class="avatar">{{ getInitials(c.cv?.prenom, c.cv?.nom) }}</div>
+              <div class="identity">
+                <h4>{{ c.cv?.prenom }} {{ c.cv?.nom }}</h4>
+                <p v-if="c.cv?.email"><i class="fas fa-envelope"></i> {{ c.cv.email }}</p>
+                <p v-if="c.cv?.telephone"><i class="fas fa-phone"></i> {{ c.cv.telephone }}</p>
               </div>
             </div>
-            <div class="detail-item" v-if="c.cv?.experience">
-              <i class="fas fa-briefcase"></i>
-              <div>
-                <span class="label">Expérience</span>
-                <span class="value">{{ c.cv.experience }}</span>
+
+            <!-- Details -->
+            <div class="candidature-details">
+              <div class="detail-item">
+                <i class="fas fa-calendar"></i>
+                <div>
+                  <span class="label">Date de candidature</span>
+                  <span class="value">{{ formatDate(c.created_at) }}</span>
+                </div>
+              </div>
+              <div class="detail-item">
+                <i class="fas fa-calendar-alt"></i>
+               <div v-if="c.date_entretien" class="card-info-row">
+            <i class="fas fa-handshake"></i>
+            <p>
+              <strong>Entretien :</strong>
+              {{ formatDateTime12h(c.date_entretien) }}
+            </p>
+          </div>
+              </div>
+              <div class="detail-item" v-if="c.message">
+                <i class="fas fa-comment"></i>
+                <div>
+                  <span class="label">Message</span>
+                  <span class="value">{{ truncateText(c.message, 100) }}</span>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Workflow stepper dynamique basé sur le statut IA -->
-          <div class="workflow-stepper">
-            <div
-              v-for="(step, i) in getSteps(c.status_ia)"
-              :key="step.key"
-              class="step"
-              :class="{
-                'step-done': stepOrder(c.statut) > i,
-                'step-active': stepOrder(c.statut) === i,
-              }"
-            >
-              <span class="circle">{{ i + 1 }}</span>
-              <span class="label">{{ step.label }}</span>
-            </div>
-          </div>
-
-          <!-- Bouton "Planifier entretien" uniquement si accepté -->
-          <div v-if="c.status_ia === 'accepted'">
-            <button @click="planifierEntretien(c)" class="primary-btn">
-              <i class="fas fa-calendar-alt"></i> Planifier entretien
-            </button>
-          </div>
-        </div>
-
-        <div class="candidature-actions">
-          <div class="action-buttons">
-            <button @click="voirDetails(c)" class="primary-btn" :disabled="!c.id">
-              <i class="fas fa-eye"></i> Voir détails
-            </button>
-            <div class="quick-status-update">
-              <button
-                v-if="c.statut === 'entretien'"
-                class="primary-btn schedule-btn"
-                @click="planifierEntretien(c.id, selectedDate)"
+            <!-- Workflow stepper -->
+            <div class="workflow-stepper">
+              <div
+                v-for="(step, i) in getSteps(c.statut)"
+                :key="step.key"
+                class="step"
+                :class="{
+                  'step-done': stepOrder(c.statut) > i,
+                  'step-active': stepOrder(c.statut) === i
+                }"
               >
+                <span class="circle">{{ i + 1 }}</span>
+                <span class="label">{{ step.label }}</span>
+              </div>
+            </div>
+
+            <!-- Planifier entretien -->
+            <div v-if="c.statut === 'accepter'" class="actions">
+              <button @click="planifierEntretien(c)" class="primary-btn">
                 <i class="fas fa-calendar-alt"></i> Planifier entretien
               </button>
             </div>
+          </div>
+
+          <!-- Voir détails button -->
+          <div class="candidature-actions">
+            <button @click="voirDetails(c)" class="primary-btn">
+              <i class="fas fa-eye"></i> Voir détails
+            </button>
           </div>
         </div>
       </div>
@@ -171,141 +135,105 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
-import { useRouter } from "vue-router";
-import axios from "axios";
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import axios from 'axios';
 
 const candidatures = ref([]);
 const loading = ref(true);
 const error = ref(null);
-const filtreStatut = ref("");
-const selectedDate = ref("");
+const filtreStatut = ref('');
 const router = useRouter();
 
-
-const formatDate = (d) =>
+// Date formatting
+const formatDate = d =>
   d
-    ? new Date(d).toLocaleDateString("fr-FR", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })
-    : "Date non spécifiée";
-
-const formatDateTime12h = (dateString) => {
-  if (!dateString) return "—";
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat("fr-FR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-    hour12: true,
-  }).format(date);
+    ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+    : '—';
+const formatDateTime12h = d => {
+  if (!d) return '—';
+  const dt = new Date(d);
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true
+  }).format(dt);
 };
 
-const truncateText = (text, length = 100) =>
-  text && text.length > length ? text.slice(0, length) + "..." : text;
+// Utility functions
+const truncateText = (t, len = 100) => (t && t.length > len ? `${t.slice(0, len)}...` : t || '');
+const getInitials = (first, last) => `${(first||'').charAt(0)}${(last||'').charAt(0)}`.toUpperCase();
 
-const getInitials = (prenom, nom) =>
-  (prenom || "").charAt(0) + (nom || "").charAt(0) || "??";
+// Status labels
+const labels = statut => ({
+  enattente: 'En attente',
+  accepter: 'Acceptée',
+  entretien: 'Entretien',
+  embauche: 'Embauchée',
+  refuser: 'Refusée'
+}[statut] || '—');
 
-const labels = (statut) => {
-  const map = {
-    enattente: "En attente",
-    accepter: "Acceptée",
-    entretien: "Entretien",
-    embauche: "Embauchée",
-    refuser: "Refusée",
-  };
-  return map[statut] || "—";
-};
-
-const getSteps = (status_ia) => {
-  if (status_ia === "accepted") {
-    return [
-      { key: "accepter", label: "Acceptée" },
-      { key: "entretien", label: "Entretien" },
-      { key: "embauche", label: "Embauchée" },
-    ];
-  } else if (status_ia === "rejected") {
-    return [
-      { key: "refuser", label: "Refusée" }
-    ];
+// Define steps dynamically
+const getSteps = statut => {
+  if (statut === 'refuser') {
+    return [{ key: 'refuser', label: 'Refusée' }];
   }
+  // For accepted or entretien or embauche
   return [
-    { key: "enattente", label: "En attente" },
-    { key: "accepter", label: "Acceptée" },
-    { key: "entretien", label: "Entretien" },
-    { key: "embauche", label: "Embauchée" },
+    { key: 'accepter', label: 'Acceptée' },
+    { key: 'entretien', label: 'Entretien' },
+    { key: 'embauche',  label: 'Embauchée' }
   ];
 };
 
-const stepOrder = (statut) => {
-  const order = {
-    enattente: 0,
-    accepter: 1,
-    entretien: 2,
-    embauche: 3,
-    refuser: 1,
-  };
-  return order[statut] ?? 0;
+// Map status to step index
+const stepOrder = statut => ({
+  accepter: 0,
+  entretien: 1,
+  embauche: 2,
+  refuser: 0
+}[statut] || 0);
+
+// Navigation functions
+const voirDetails = c => {
+  localStorage.setItem('current_candidature', JSON.stringify(c));
+  router.push({ name: 'DetailsCandidature', params: { candidatureId: c.id } });
+};
+const planifierEntretien = c => {
+  router.push({ name: 'PlanifierEntretien', params: { candidatureId: c.id } });
 };
 
-function voirDetails(candidature) {
-  if (!candidature.id) return;
-
-  localStorage.setItem("current_candidature", JSON.stringify(candidature));
-
-  router.push({ name: "DetailsCandidature", params: { candidatureId: candidature.id } });
-}
-
+// Filter logic
 const candidaturesFiltrees = computed(() => {
   if (!filtreStatut.value) return candidatures.value;
-  return candidatures.value.filter((c) => c.statut === filtreStatut.value);
+  return candidatures.value.filter(c => {
+    if (filtreStatut.value === 'accepter') return c.statut === 'accepter' && !c.date_entretien;
+    if (filtreStatut.value === 'entretien') return !!c.date_entretien;
+    if (filtreStatut.value === 'embauche') return c.statut === 'embauche';
+    if (filtreStatut.value === 'refuser') return c.statut === 'refuser';
+    return false;
+  });
 });
 
-// Fonction pour planifier l'entretien
-async function planifierEntretien(candidature) {
-  if (!candidature.id) return;  // Vérifie si l'ID de la candidature existe
-
-  // Sauvegarde de la candidature actuelle dans le localStorage (facultatif)
-  localStorage.setItem("current_candidature", JSON.stringify(candidature));
-
-  // Passe à la route 'planifier-entretien' avec l'ID de la candidature
-  router.push({ name: "PlanifierEntretien", params: { candidatureId: candidature.id } });
-}
-
-
-
+// Fetch candidatures and assign statut
 const getCandidatures = async () => {
   loading.value = true;
   error.value = null;
   try {
-    const { data } = await axios.get("/api/candidatures");
-
+    const { data } = await axios.get('/api/candidatures');
     candidatures.value = Array.isArray(data)
-      ? data.map((c) => {
-          const iaStatus = c.status_ia || "";
-          let displayStatus = c.statut || "enattente";
-
-          if (iaStatus.toLowerCase().trim() === "accepted") {
-            displayStatus = "accepter";
-          } else if (iaStatus.toLowerCase().trim() === "rejected") {
-            displayStatus = "refuser";
-          }
-
-          return {
-            ...c,
-            status_ia_original: iaStatus,
-            statut: displayStatus, 
-          };
+      ? data.map(c => {
+          const ia = (c.status_ia||'').trim().toLowerCase();
+          let statut;
+          if (c.date_entretien) statut = 'entretien';
+          else if (ia === 'accepted') statut = 'accepter';
+          else if (ia === 'rejected') statut = 'refuser';
+          else if (c.statut === 'embauche' || c.statut === 'Embauchée') statut = 'embauche';
+          else statut = c.statut || 'enattente';
+          return { ...c, statut };
         })
       : [];
   } catch (e) {
-    console.error("Erreur de chargement des candidatures:", e);
-    error.value = e.response?.data?.message || "Erreur lors du chargement";
+    console.error(e);
+    error.value = e.response?.data?.message || 'Erreur lors du chargement';
   } finally {
     loading.value = false;
   }
@@ -313,7 +241,6 @@ const getCandidatures = async () => {
 
 onMounted(getCandidatures);
 </script>
-
 
 
 <style scoped>

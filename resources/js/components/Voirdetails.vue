@@ -1,5 +1,6 @@
 <template>
   <div class="offer-details">
+       
     <h1>{{ offer.titre }}</h1>
     <p><strong>Description:</strong> {{ offer.description }}</p>
     <p><strong>Salaire:</strong> {{ offer.salaire }}</p>

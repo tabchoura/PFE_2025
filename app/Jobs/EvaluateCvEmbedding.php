@@ -72,32 +72,7 @@ $statusIa = $similarityScore >= 0.7 ? 'accepted' : 'rejected';  // Assurez-vous 
     Log::info("Évaluation du CV terminée. Similarité : $similarityScore, Status IA : $statusIa");
     }
 
-    /**
-     * Calcul de la similarité cosinus entre deux embeddings
-     */
-    private function calculateSimilarity(array $embedding1, array $embedding2): float
-    {
-        // Produit scalaire
-        $dotProduct = array_sum(array_map(function ($x, $y) {
-            return $x * $y;
-        }, $embedding1, $embedding2));
-
-        // Norme des deux vecteurs
-        $magnitude1 = sqrt(array_sum(array_map(function ($x) {
-            return $x * $x;
-        }, $embedding1)));
-
-        $magnitude2 = sqrt(array_sum(array_map(function ($x) {
-            return $x * $x;
-        }, $embedding2)));
-
-        return $dotProduct / ($magnitude1 * $magnitude2);
-    }
-
-    /**
-     * Fonction d'extraction de texte en fonction du type de fichier (PDF, DOCX, etc.)
-     */
-    private function extractTextFromFile($filePath): string
+      private function extractTextFromFile($filePath): string
     {
         $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
 
@@ -123,6 +98,30 @@ $statusIa = $similarityScore >= 0.7 ? 'accepted' : 'rejected';  // Assurez-vous 
         $pdf = $parser->parseFile($path);
         return $pdf->getText();
     }
+    /**
+     * Calcul de la similarité cosinus entre deux embeddings
+     */
+    private function calculateSimilarity(array $embedding1, array $embedding2): float
+    {
+        // Produit scalaire
+        $dotProduct = array_sum(array_map(function ($x, $y) {
+            return $x * $y;
+        }, $embedding1, $embedding2));
+
+        // Norme des deux vecteurs
+        $magnitude1 = sqrt(array_sum(array_map(function ($x) {
+            return $x * $x;
+        }, $embedding1)));
+
+        $magnitude2 = sqrt(array_sum(array_map(function ($x) {
+            return $x * $x;
+        }, $embedding2)));
+
+        return $dotProduct / ($magnitude1 * $magnitude2);
+    }
+
+   
+  
 
    
    

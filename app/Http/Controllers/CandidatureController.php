@@ -11,6 +11,8 @@ use App\Services\LocalEmbeddingService;
 use App\Jobs\EvaluateCvEmbedding;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\EntretienPlanifie;
+use Carbon\Carbon;
+
 
 class CandidatureController extends Controller
 {
@@ -119,38 +121,44 @@ public function postuler(Request $request, $id)
     ---------------------------------------------
      * 3. Envoyer un entretien à un candidat
      * ------------------------------------------------------------------ */
-  
-    public function envoyerEntretien(Request $request, $id)
-    {
-        $validated = $request->validate([
-    'date_entretien' => ['required', 'date_format:d/m/Y'],  // Validation stricte au format jj/mm/aaaa
-        ]);
 
-        // 1. On récupère la candidature et on la met à jour
-        $candidature = Candidature::with('cv')->findOrFail($id);
-        $candidature->update([
-            'date_entretien' => $validated['date_entretien'],
-            'statut'         => 'entretien',
-        ]);
+public function envoyerEntretien(Request $request, $id)
+{
+    // Validation de la date d'entretien au format d/m/Y
+    $validated = $request->validate([
+        'date_entretien' => ['required', 'date_format:d/m/Y'],  // Validation stricte au format jj/mm/aaaa
+    ]);
 
-        // 2. On récupère l'email dans le CV lié
-        $recipientEmail = $candidature->cv->email;
-        if (! filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
-            return response()->json([
-                'message' => 'L’adresse e-mail du candidat est invalide.',
-            ], 422);
-        }
+    // Si la date est valide, elle sera déjà dans le bon format, vous pouvez la convertir si nécessaire
+    // Exemple de conversion avec Carbon pour être sûr que le format est correct
+    $validated['date_entretien'] = Carbon::createFromFormat('d/m/Y', $validated['date_entretien'])->format('Y-m-d');
 
-        // 3. On envoie l’email à cet e-mail
-        Mail::to($recipientEmail)
-            ->send(new EntretienPlanifie($candidature));
+    // 1. On récupère la candidature et on la met à jour
+    $candidature = Candidature::with('cv')->findOrFail($id);
+    $candidature->update([
+        'date_entretien' => $validated['date_entretien'],
+        'statut'         => 'entretien',
+    ]);
 
+    // 2. On récupère l'email dans le CV lié
+    $recipientEmail = $candidature->cv->email;
+    if (!filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
         return response()->json([
-            'message'        => 'Date d’entretien enregistrée et email envoyé à '.$recipientEmail,
-            'date_entretien' => $candidature->date_entretien,
-            'candidature'    => $candidature,
-        ], 200);
+            'message' => 'L’adresse e-mail du candidat est invalide.',
+        ], 422);
     }
+
+    // 3. On envoie l’email à cet e-mail
+    Mail::to($recipientEmail)
+        ->send(new EntretienPlanifie($candidature));
+
+    return response()->json([
+        'message'        => 'Date d’entretien enregistrée et email envoyé à '.$recipientEmail,
+        'date_entretien' => $candidature->date_entretien,
+        'candidature'    => $candidature,
+    ], 200);
+}
+
 
 
 

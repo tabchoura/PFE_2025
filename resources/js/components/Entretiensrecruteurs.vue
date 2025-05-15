@@ -56,7 +56,6 @@ function formatDate(d?: string) {
   }
 }
 
-// Fonction pour formater la date au format d/m/Y avant de l'envoyer
 function formatDateForApi(date: string | null) {
   if (!date) return "";  // Retourne une chaîne vide si la date est vide
   const d = new Date(date);

@@ -30,6 +30,24 @@
           </p>
           <p v-if="cv.adresse" class="info">📍 {{ cv.adresse }}</p>
         </div>
+                <div class="section">
+
+          <section v-if="cv.competences.length" class="section">
+            <h3 class="section-title1">Compétences</h3>
+            <ul>
+              <li v-for="(c, i) in cv.competences" :key="i">{{ c }}</li>
+            </ul>
+          </section>
+          </div>
+                  <div class="section">
+
+          <section v-if="cv.langues.length" class="section">
+            <h3 class="section-title1">Langues</h3>
+            <ul>
+              <li v-for="(l, i) in cv.langues" :key="i">{{ l }}</li>
+            </ul>
+          </section>
+        </div>
       </div>
 
       <div class="cv-right-column">
@@ -49,20 +67,7 @@
             <li v-for="(edu, i) in cv.educations_formations" :key="i">{{ edu }}</li>
           </ul>
         </section>
-        <div class="two-columns" v-if="cv.competences.length || cv.langues.length">
-          <section v-if="cv.competences.length" class="section">
-            <h3 class="section-title">Compétences</h3>
-            <ul>
-              <li v-for="(c, i) in cv.competences" :key="i">{{ c }}</li>
-            </ul>
-          </section>
-          <section v-if="cv.langues.length" class="section">
-            <h3 class="section-title">Langues</h3>
-            <ul>
-              <li v-for="(l, i) in cv.langues" :key="i">{{ l }}</li>
-            </ul>
-          </section>
-        </div>
+       
         <section v-if="cv.projets.length" class="section">
           <h3 class="section-title">Projets</h3>
           <ul>
@@ -321,6 +326,14 @@ async function deleteCv() {
   padding-bottom: 0.5rem;
 }
 
+.section-title1 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 0.5rem;
+}
 /* Listes */
 ul {
   list-style: none;

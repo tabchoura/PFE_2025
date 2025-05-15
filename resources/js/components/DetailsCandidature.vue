@@ -16,6 +16,22 @@
     <div v-else class="candidature-content">
       <h1>Détails de la candidature</h1>
 
+      <!-- WORKFLOW STEPPER -->
+      <div class="workflow-stepper">
+        <div
+          v-for="(step, i) in getSteps(statusKey)"
+          :key="step.key"
+          class="step"
+          :class="{
+            'step-done': stepOrder(statusKey) > i,
+            'step-active': stepOrder(statusKey) === i
+          }"
+        >
+          <span class="circle">{{ i + 1 }}</span>
+          <span class="label">{{ step.label }}</span>
+        </div>
+      </div>
+
       <!-- Offre -->
       <div class="section-card offer-details">
         <h2>Offre d'emploi</h2>
@@ -25,93 +41,93 @@
         <p v-if="offer.details"><strong>Détails :</strong> {{ offer.details }}</p>
         <p class="status-line">
           <strong>Statut :</strong>
-          <span :class="statusClass">{{ statutLabel }}</span>
+          <div :class="['status-badge', statusClass]">
+            {{ statutLabel }}
+          </div>
         </p>
       </div>
 
       <!-- Aperçu CV -->
       <div ref="cvElement" class="section-card cv-preview">
         <h2>CV du candidat</h2>
-        <div class="cv-content">
+        <div class="cv-form preview-form">
+          <!-- Gauche -->
           <div class="cv-left-column">
-            <div class="profile-picture-container">
-              <div class="profile-picture" :style="profileImageStyle"></div>
+            <div class="profile-section">
+              <div class="profile-picture-container">
+                <div class="profile-picture" :style="profileImageStyle"></div>
+              </div>
             </div>
-            <h3>{{ cv.prenom }} {{ cv.nom }}</h3>
-            <p v-if="cv.date_naissance">
+            <h1 class="cv-title-preview">{{ cv.prenom }} {{ cv.nom }}</h1>
+            <p v-if="cv.date_naissance" class="info">
               🗓️ Né(e) le {{ formatDate(cv.date_naissance) }}
             </p>
-            <p v-if="cv.email">
+            <p v-if="cv.email" class="info">
               📧 <a :href="`mailto:${cv.email}`">{{ cv.email }}</a>
             </p>
-            <p v-if="cv.adresse">📍 {{ cv.adresse }}</p>
+            <p v-if="cv.adresse" class="info">📍 {{ cv.adresse }}</p>
+            <!-- compétences / langues -->
+            <section v-if="cv.competences && cv.competences.length" class="section">
+              <h3 class="section-title1">Compétences</h3>
+              <ul>
+                <li v-for="(c, i) in cv.competences" :key="i">{{ c }}</li>
+              </ul>
+            </section>
+            <section v-if="cv.langues && cv.langues.length" class="section">
+              <h3 class="section-title1">Langues</h3>
+              <ul>
+                <li v-for="(l, i) in cv.langues" :key="i">{{ l }}</li>
+              </ul>
+            </section>
           </div>
+          <!-- Droite -->
           <div class="cv-right-column">
             <section v-if="cv.presentation" class="section">
-              <h4>Présentation</h4>
+              <h3 class="section-title">Présentation</h3>
               <p>{{ cv.presentation }}</p>
             </section>
-            <section v-if="cv.experiences.length" class="section">
-              <h4>Expériences</h4>
+            <section v-if="cv.experiences && cv.experiences.length" class="section">
+              <h3 class="section-title">Expériences professionnelles</h3>
               <ul>
-                <li v-for="(e, i) in cv.experiences" :key="i">{{ e }}</li>
+                <li v-for="(exp, i) in cv.experiences" :key="i">{{ exp }}</li>
               </ul>
             </section>
-            <section v-if="cv.educations_formations.length" class="section">
-              <h4>Éducation & Formation</h4>
+            <section v-if="cv.educations_formations && cv.educations_formations.length" class="section">
+              <h3 class="section-title">Éducation & Formation</h3>
               <ul>
-                <li v-for="(f, i) in cv.educations_formations" :key="i">{{ f }}</li>
+                <li v-for="(edu, i) in cv.educations_formations" :key="i">{{ edu }}</li>
               </ul>
             </section>
-            <div class="two-columns" v-if="cv.competences.length || cv.langues.length">
-              <section v-if="cv.competences.length" class="section">
-                <h4>Compétences</h4>
-                <ul>
-                  <li v-for="(c, i) in cv.competences" :key="i">{{ c }}</li>
-                </ul>
-              </section>
-              <section v-if="cv.langues.length" class="section">
-                <h4>Langues</h4>
-                <ul>
-                  <li v-for="(l, i) in cv.langues" :key="i">{{ l }}</li>
-                </ul>
-              </section>
-            </div>
-            <section v-if="cv.projets.length" class="section">
-              <h4>Projets</h4>
+            <section v-if="cv.projets && cv.projets.length" class="section">
+              <h3 class="section-title">Projets</h3>
               <ul>
                 <li v-for="(p, i) in cv.projets" :key="i">{{ p }}</li>
               </ul>
             </section>
           </div>
         </div>
-        <!-- Infos candidature -->
-        <div class="section-card candidature-info">
-          <h2>Infos candidature</h2>
-          <p><strong>Date :</strong> {{ formatDate(candidature.created_at) }}</p>
-          <div class="message-section">
-            <h3>Message du candidat</h3>
-            <div class="message-content">
-              <span class="value">{{ truncateText(candidature.message, 100) }}</span>
-            </div>
-          </div>
+      </div>
 
-          <!-- Boutons Accepter / Refuser - Ne s'affiche que si le statut est "en attente" et qu'aucun entretien n'est planifié -->
-          <div
-            class="action-buttons"
-            v-if="statusKey === 'pending' && !candidature.date_entretien"
-          >
-            <button @click="accepter" class="btn-accept">✅ Accepter</button>
-            <button @click="refuser" class="btn-refuse">❌ Refuser</button>
+      <!-- Infos candidature -->
+      <div class="section-card candidature-info">
+        <h2>Infos candidature</h2>
+        <p><strong>Date de dépot :</strong> {{ formatDate(candidature.created_at) }}</p>
+        <div class="message-section">
+          <h3>Message du candidat</h3>
+          <div class="message-content">
+            <span class="value">{{ truncateText(candidature.message, 100) }}</span>
           </div>
+        </div>
 
-          <!-- Afficher un message si la candidature a été acceptée et un entretien est prévu -->
-          <div v-if="candidature.date_entretien" class="entretien-info">
-            <p class="entretien-status">
-              ✅ Entretien planifié pour le
-              {{ formatDateTime12h(candidature.date_entretien) }}
-            </p>
-          </div>
+        <div class="action-buttons" v-if="statusKey === 'pending' && !candidature.date_entretien">
+          <button @click="accepter" class="btn-accept">✅ Accepter</button>
+          <button @click="refuser" class="btn-refuse">❌ Refuser</button>
+        </div>
+
+        <div v-if="statusKey === 'accepted' && candidature.date_entretien" class="entretien-info">
+          <p class="entretien-status">
+            ✅ Entretien planifié pour le {{ formatDateTime12h(candidature.date_entretien) }}
+          </p>
         </div>
       </div>
 
@@ -123,8 +139,9 @@
     </div>
   </div>
 </template>
+
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
 import html2pdf from "html2pdf.js";
@@ -133,148 +150,156 @@ const route = useRoute();
 const router = useRouter();
 const candidatureId = route.params.candidatureId;
 
-// États
 const loading = ref(true);
 const error = ref(null);
 const candidature = ref({});
 const offer = ref({});
-
 const cv = ref({
+  prenom: "",
+  nom: "",
+  date_naissance: "",
+  email: "",
+  adresse: "",
+  presentation: "",
   experiences: [],
   educations_formations: [],
   competences: [],
   langues: [],
   projets: [],
+  profilePictureUrl: ""
 });
+
 const cvElement = ref(null);
 
-const truncateText = (text, length = 100) =>
-  text && text.length > length ? text.slice(0, length) + "..." : text;
+const truncateText = (t, len = 100) =>
+  t && t.length > len ? t.slice(0, len) + "..." : t || "";
 
-// Normalisation du statut
+// Statut normalisé + libellés
 const statusKey = computed(() => {
-  const raw = (candidature.value.statut || "").toString().toLowerCase().trim();
-
-  if (candidature.value.date_entretien) {
-    return "accepted";
-  }
-  if (raw.includes("accept") || raw === "acceptee" || raw === "acceptée") {
-    return "accepted";
-  }
-  if (raw.includes("refus") || raw === "refusee" || raw === "refusée") {
-    return "refused";
-  }
-  if (raw.includes("attente") || raw === "enattente") {
-    return "pending";
-  }
+  const raw = (candidature.value.statut || "").toLowerCase();
+  if (candidature.value.date_entretien) return "entretien";
+  if (raw.includes("accept")) return "accepted";
+  if (raw.includes("refus")) return "refused";
   return "pending";
 });
 
 const statusClass = computed(() => `status-${statusKey.value}`);
-const statutLabel = computed(() => {
-  switch (statusKey.value) {
-    case "accepted":
-      return "Acceptée";
-    case "refused":
-      return "Refusée";
-    default:
-      return "En attente";
-  }
-});
 
-// Style de la photo de profil
-const profileImageStyle = computed(() => {
-  if (cv.value.profilePictureUrl) {
-    return {
-      backgroundImage: `url(${cv.value.profilePictureUrl})`,
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-    };
-  }
-  return { backgroundColor: "#ccc" };
-});
+const statutLabel = computed(() => ({
+  pending: "En attente",
+  accepted: "Acceptée",
+  refused: "Refusée",
+  entretien:"Entretien"
+}[statusKey.value]) || "En attente");
 
-// Formatage de date
-function formatDate(d) {
-  return d
+// Define steps dynamically
+const getSteps = (statut) => {
+  if (statut === 'refused') {
+    return [{ key: 'refused', label: 'Refusée' }];
+  }
+  // For accepted or entretien or embauche
+  return [
+    { key: 'accepted', label: 'Acceptée' },
+    { key: 'entretien', label: 'Entretien' },
+    { key: 'embauche',  label: 'Embauchée' }
+  ];
+};
+
+// Map status to step index
+const stepOrder = (statut) => {
+  if (statut === 'refused') return 0;
+  if (statut === 'pending') return 0;
+  if (statut === 'accepted') {
+    return candidature.value.date_entretien ? 1 : 0;
+  }
+  if (statut === 'entretien') return 1;
+  if (statut === 'embauche') return 2;
+  return 0;
+};
+
+// Style profil
+const profileImageStyle = computed(() =>
+  cv.value.profilePictureUrl
+    ? {
+        backgroundImage: `url(${cv.value.profilePictureUrl})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center"
+      }
+    : { backgroundColor: "#ccc" }
+);
+
+// Formats FR
+const formatDate = d =>
+  d
     ? new Date(d).toLocaleDateString("fr-FR", {
         day: "numeric",
         month: "long",
-        year: "numeric",
+        year: "numeric"
       })
     : "";
-}
 
-function formatDateTime12h(dateString) {
-  if (!dateString) return "—";
-  const date = new Date(dateString);
+const formatDateTime12h = d =>
+  d
+    ? new Intl.DateTimeFormat("fr-FR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+      }).format(new Date(d))
+    : "—";
 
-  // Options pour Intl.DateTimeFormat
-  const options = {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-    hour12: true, // active le format 12 h avec AM/PM
-  };
+// Fonctions d'actions de candidature
+const accepter = async () => {
+  try {
+    await axios.post(`/api/candidatures/${candidatureId}/accepter`);
+    // Mettre à jour le statut localement
+    candidature.value.statut = 'accepter';
+    // Recharger les données
+    await loadData();
+  } catch (err) {
+    console.error("Erreur lors de l'acceptation:", err);
+    error.value = "Erreur lors de l'acceptation de la candidature.";
+  }
+};
 
-  // Formatter en fr-FR (mais avec hour12: true pour avoir AM/PM)
-  return new Intl.DateTimeFormat("fr-FR", options).format(date);
-}
+const refuser = async () => {
+  try {
+    await axios.post(`/api/candidatures/${candidatureId}/refuser`);
+    // Mettre à jour le statut localement
+    candidature.value.statut = 'refuser';
+    // Recharger les données
+    await loadData();
+  } catch (err) {
+    console.error("Erreur lors du refus:", err);
+    error.value = "Erreur lors du refus de la candidature.";
+  }
+};
 
-// Chargement initial
+// Chargement API
 async function loadData() {
   loading.value = true;
   error.value = null;
   try {
     const { data } = await axios.get(`/api/candidatures/${candidatureId}`);
-    candidature.value = data;
-    offer.value = data.offre;
-    cv.value = data.cv;
+    // normalisation du statut IA / manuel
+    const ia = (data.status_ia || '').toLowerCase();
+    let s = data.statut || 'enattente';
+    if (data.date_entretien)           s = 'entretien';
+    else if (ia === 'accepted')       s = 'accepter';
+    else if (ia === 'rejected')       s = 'refuser';
+    else if (s.toLowerCase().includes('embauche')) s = 'embauche';
 
-    // Correction éventuelle du statut
-    if (
-      data.date_entretien &&
-      data.statut &&
-      data.statut.toString().toLowerCase().includes("attente")
-    ) {
-      candidature.value.statut = "acceptée";
-    }
+    // on met à jour notre ref
+    candidature.value = { ...data, statut: s };
+    offer.value = data.offre || {};
+    Object.assign(cv.value, data.cv || {});
   } catch (err) {
     console.error(err);
     error.value = "Impossible de charger les détails.";
   } finally {
     loading.value = false;
-  }
-}
-
-// Accepter / Refuser
-async function accepter() {
-  try {
-    await axios.put(`/api/candidatures/${candidatureId}/accept`);
-    alert("Candidature acceptée ✅");
-    candidature.value.statut = "acceptée";
-    router.push({ name: "Candidaturesrecruteur" });
-    setTimeout(() => {
-      router.push({
-        name: "Entretiens",
-        params: { candidatureId },
-      });
-    }, 1000);
-  } catch {
-    alert("Échec de l'acceptation.");
-  }
-}
-
-async function refuser() {
-  try {
-    await axios.put(`/api/candidatures/${candidatureId}/refuse`);
-    alert("Candidature refusée ❌");
-    candidature.value.statut = "refusée";
-    router.push({ name: "Candidaturesrecruteur" });
-  } catch {
-    alert("Échec du refus.");
   }
 }
 
@@ -286,7 +311,6 @@ function downloadPdf() {
     .from(cvElement.value)
     .save();
 }
-html2pdf;
 
 function goBack() {
   router.back();
@@ -316,6 +340,566 @@ onMounted(loadData);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   border: 1px solid #f0f4f8;
+}
+.step:not(:last-child):after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  right: -50%;
+  width: 100%;
+  height: 2px;
+  background-color: #e2e8f0;
+  z-index: 1;
+}
+
+.step-done:not(:last-child):after {
+  background-color: #3498db;
+}
+
+.step-active .circle {
+  background-color: #3498db;
+  color: white;
+  box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
+}
+.step .label {
+  font-size: 0.7rem;
+  color: #718096;
+  text-align: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.step-done .label,
+.step-active .label {
+  color: #3498db;
+  font-weight: 600;
+}
+
+.circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #e2e8f0;
+  color: #718096;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+  z-index: 2;
+  position: relative;
+}
+
+.step-done .circle {
+  background-color: #3498db;
+  color: white;
+}
+.step-active .circle {
+  background-color: #3498db;
+  color: white;
+  box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
+}
+
+.status-filter {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  font-size: 1rem;
+  color: #2c3e50;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.status-filter:focus-visible {
+  outline: 2px solid #4299e1;
+  outline-offset: 2px;
+}
+
+/* Stats bar */
+.stats-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: #edf2f7;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.stats-bar p {
+  margin: 0;
+  color: #4a5568;
+  font-size: 0.95rem;
+}
+
+.stats-count {
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+/* Special States */
+.loading-state,
+.error-state,
+.empty-state,
+.no-results-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(52, 152, 219, 0.2);
+  border-top-color: #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-state i,
+.empty-state i,
+.no-results-state i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #cbd5e0;
+}
+
+.error-state i {
+  color: #e53e3e;
+}
+
+.error-state h3 {
+  color: #c53030;
+}
+
+.empty-state h3,
+.no-results-state h3 {
+  color: #4a5568;
+}
+
+.retry-button,
+.reset-filters-btn {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.retry-button {
+  background: white;
+  color: #3498db;
+  border: 2px solid #3498db;
+}
+
+.retry-button:hover {
+  background: #3498db;
+  color: white;
+}
+
+.reset-filters-btn {
+  background: #e53e3e;
+  color: white;
+  border: none;
+}
+
+.reset-filters-btn:hover {
+  background: #c53030;
+}
+
+.retry-button i,
+.reset-filters-btn i {
+  margin-right: 0.5rem;
+}
+
+/* Candidature List */
+.candidatures-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.candidature-card {
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  border-left: 4px solid #cbd5e0;
+}
+
+.candidature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  border-left-width: 5px;
+}
+
+/* Status Colors */
+.status-enattente {
+  border-left-color: #805ad5;
+}
+
+.status-accepter {
+  border-left-color: #38a169;
+}
+
+.status-entretien {
+  border-left-color: #3182ce;
+}
+
+.status-embauche {
+  border-left-color: #dd6b20;
+}
+
+.status-refuser {
+  border-left-color: #e53e3e;
+}
+
+.status-badge {
+  padding: 0.4rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.status-badge.status-accepted {
+  background-color: #c6f6d5;
+  color: #2f855a;
+}
+
+.status-badge.status-refused {
+  background-color: #fed7d7;
+  color: #c53030;
+}
+
+.status-badge.status-entretien {
+  background-color: #e9d8fd;
+  color: #6b46c1;
+}
+
+/* Main Content */
+.candidature-main {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.candidature-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.candidature-header h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #2d3748;
+  font-weight: 600;
+}
+
+/* Candidate Info */
+.candidat-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #3498db;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-right: 1rem;
+}
+
+.identity h4 {
+  margin: 0 0 0.25rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.identity p {
+  margin: 0.2rem 0;
+  color: #718096;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+}
+
+.identity p i {
+  margin-right: 0.5rem;
+  width: 16px;
+  color: #4a5568;
+}
+
+/* Détails */
+.candidature-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.detail-item {
+  display: flex;
+  align-items: flex-start;
+}
+
+.detail-item i {
+  margin-right: 0.75rem;
+  color: #4a5568;
+  margin-top: 0.25rem;
+  width: 16px;
+}
+
+.detail-item .label {
+  font-size: 0.8rem;
+  color: #718096;
+  margin-bottom: 0.1rem;
+}
+
+.detail-item .value {
+  color: #2d3748;
+  font-size: 0.95rem;
+}
+
+/* Workflow Stepper */
+.workflow-stepper {
+  display: flex;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #edf2f7;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  position: relative;
+}
+
+.step:not(:last-child):after {
+  content: "";
+  position: absolute;
+  top: 12px;
+  right: -50%;
+  width: 100%;
+  height: 2px;
+  background-color: #e2e8f0;
+  z-index: 1;
+}
+
+.step-done:not(:last-child):after {
+  background-color: #3498db;
+}
+
+.circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #e2e8f0;
+  color: #718096;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+  z-index: 2;
+  position: relative;
+}
+
+.step-done .circle {
+  background-color: #3498db;
+  color: white;
+}
+
+.step-active .circle {
+  background-color: #3498db;
+  color: white;
+  box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.2);
+}
+
+.step .label {
+  font-size: 0.7rem;
+  color: #718096;
+  text-align: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.step-done .label,
+.step-active .label {
+  color: #3498db;
+  font-weight: 600;
+}
+
+/* Footer actions */
+.candidature-actions {
+  padding: 1rem 1.5rem;
+  background-color: #f7fafc;
+  border-top: 1px solid #edf2f7;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.primary-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.primary-btn i {
+  margin-right: 0.5rem;
+}
+
+.primary-btn:hover {
+  background: #2980b9;
+}
+
+.primary-btn:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+}
+
+.quick-status-update {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.status-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.accept-btn {
+  background-color: #c6f6d5;
+  color: #2f855a;
+}
+
+.accept-btn:hover {
+  background-color: #38a169;
+  color: white;
+}
+
+.interview-btn {
+  background-color: #bee3f8;
+  color: #2b6cb0;
+}
+
+.interview-btn:hover {
+  background-color: #3182ce;
+  color: white;
+}
+
+.reject-btn {
+  background-color: #fed7d7;
+  color: #c53030;
+}
+
+.reject-btn:hover {
+  background-color: #e53e3e;
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .candidatures-container {
+    padding: 1.5rem 1rem;
+    margin: 1rem;
+  }
+
+  .actions-zone {
+    flex-direction: column;
+  }
+
+  .filter-controls {
+    width: 100%;
+  }
+
+  .stats-bar {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .candidature-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .quick-status-update {
+    justify-content: space-between;
+  }
+
+  .workflow-stepper {
+    overflow-x: auto;
+    padding-bottom: 1rem;
+  }
+
+  .step .label {
+    font-size: 0.65rem;
+    max-width: 70px;
+  }
 }
 
 .section-card:hover {
@@ -378,6 +962,7 @@ h4 {
   padding: 0.75rem 0;
   border-top: 1px dashed #e2e8f0;
 }
+
 
 .status-line strong {
   color: #1a365d;
@@ -483,7 +1068,13 @@ h4 {
   gap: 1.5rem;
   margin-top: 2rem;
 }
-
+.workflow-stepper {
+  display: flex;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #edf2f7;
+}
 .btn-accept,
 .btn-refuse {
   flex: 1;
@@ -538,125 +1129,253 @@ h4 {
   margin: 0;
   font-size: 1.05rem;
 }
+/* Container général */
+.cv-container {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  max-width: 900px;
+  margin: 2rem auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+}
+.section-title1 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 0.5rem;
+}
 
-/* CV */
-.cv-content {
+/* Loader */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+}
+.loader {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.loading-text {
+  color: #555;
+  font-size: 1.1rem;
+}
+
+/* Erreur */
+.error-message {
+  padding: 2rem;
+  background: #fdecea;
+  color: #c0392b;
+  border-radius: 8px;
+  text-align: center;
+  margin: 2rem;
+}
+.retry-btn {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: #c0392b;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.retry-btn:hover {
+  background: #a93226;
+}
+
+/* Aperçu */
+.cv-form.preview-form {
   display: flex;
   flex-wrap: wrap;
-  gap: 2.5rem;
-  margin-top: 1rem;
+  min-height: 100vh;
+  animation: fadeIn 0.5s;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
+.cv-left-column,
+.cv-right-column {
+  padding: 2.5rem 2rem;
+}
 .cv-left-column {
   flex: 1;
-  min-width: 250px;
-  background: linear-gradient(135deg, #2c5282, #1a365d);
-  color: #fff;
-  padding: 2.5rem;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(26, 54, 93, 0.2);
+  min-width: 260px;
+  background: #0f3164;
+  color: white;
+}
+.cv-right-column {
+  flex: 2;
+  min-width: 400px;
+  background: #fff;
 }
 
+/* Photo de profil */
 .profile-picture-container {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
-
 .profile-picture {
   width: 150px;
   height: 150px;
   border-radius: 50%;
-  background-size: cover;
   background-position: center;
-  margin: 0 auto 1.5rem;
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
+  background-size: cover;
+  border: 4px solid #3498db;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  margin: 0 auto;
+  transition: transform 0.3s;
 }
-
 .profile-picture:hover {
   transform: scale(1.05);
-  border-color: rgba(255, 255, 255, 0.5);
 }
 
-.cv-left-column h3 {
-  margin-bottom: 1.5rem;
-  color: white;
+/* Titres & infos */
+.cv-title-preview {
   text-align: center;
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
 }
-
-.cv-left-column p {
-  margin-bottom: 1rem;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 1rem;
+.info {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  font-size: 0.95rem;
+  margin-bottom: 0.8rem;
 }
-
-.cv-left-column a {
-  color: #90cdf4;
+.info a {
+  color: #3498db;
   text-decoration: none;
-  transition: color 0.2s ease;
 }
-
-.cv-left-column a:hover {
-  color: #63b3ed;
+.info a:hover {
   text-decoration: underline;
 }
 
-.cv-right-column {
-  flex: 2;
-  min-width: 300px;
-  padding: 2.5rem;
-  background: #f8fafc;
-  border-radius: 16px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-  border: 1px solid #edf2f7;
-}
-
+/* Sections */
 .section {
   margin-bottom: 2rem;
-  position: relative;
 }
-
-.section h4 {
-  color: #2b6cb0;
-  border-bottom: 2px solid #e2e8f0;
-  padding-bottom: 0.5rem;
+.section-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #2c3e50;
   margin-bottom: 1rem;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 0.5rem;
 }
 
-.section ul {
-  list-style-type: none;
-  padding-left: 0;
-}
 
-.section ul li {
+/* Listes */
+ul {
+  list-style: none;
+  padding: 0;
+}
+ul li {
   position: relative;
-  padding-left: 1.5rem;
-  margin-bottom: 0.8rem;
-  line-height: 1.6;
+  padding-left: 1.2rem;
+  margin-bottom: 0.7rem;
 }
-
-.section ul li::before {
+ul li::before {
   content: "•";
   position: absolute;
   left: 0;
-  color: #3182ce;
+  color: #3498db;
   font-weight: bold;
-  font-size: 1.2rem;
 }
 
+/* Deux colonnes */
 .two-columns {
   display: flex;
   gap: 2rem;
 }
 
-.two-columns section {
-  flex: 1;
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-top: 1px solid #eee;
+}
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.download-btn {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-color);
+}
+.download-btn:hover {
+  background: var(--btn-primary-hover);
+  transform: translateY(-2px);
+}
+
+.edit-btn {
+  background: var(--btn-edit-bg);
+  color: var(--btn-edit-color);
+}
+.edit-btn:hover {
+  background: var(--btn-edit-hover);
+  transform: translateY(-2px);
+}
+
+.btn-delete {
+  background: var(--btn-delete-bg);
+  color: var(--btn-delete-color);
+}
+.btn-delete:hover {
+  background: var(--btn-delete-hover);
+  transform: translateY(-2px);
+}
+
+/* Impression PDF */
+.printing .cv-left-column {
+  background: #0f3164 !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cv-form.preview-form {
+    flex-direction: column;
+  }
+  .two-columns {
+    flex-direction: column;
+  }
+  .form-actions {
+    flex-wrap: wrap;
+  }
+  .action-btn {
+    flex: 1;
+    text-align: center;
+  }
 }
 
 /* Message du candidat */
