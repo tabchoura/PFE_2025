@@ -82,12 +82,12 @@
               <div class="detail-item">
                 <i class="fas fa-calendar-alt"></i>
                <div v-if="c.date_entretien" class="card-info-row">
-            <i class="fas fa-handshake"></i>
-            <p>
-              <strong>Entretien :</strong>
+                <i class="fas fa-handshake"></i>
+               <p>
+                <strong>Entretien :</strong>
               {{ formatDateTime12h(c.date_entretien) }}
-            </p>
-          </div>
+              </p>
+              </div>
               </div>
               <div class="detail-item" v-if="c.message">
                 <i class="fas fa-comment"></i>
@@ -171,12 +171,11 @@ const labels = statut => ({
   refuser: 'Refusée'
 }[statut] || '—');
 
-// Define steps dynamically
+// retourne les étapes du workflow selon le statut :
 const getSteps = statut => {
   if (statut === 'refuser') {
     return [{ key: 'refuser', label: 'Refusée' }];
   }
-  // For accepted or entretien or embauche
   return [
     { key: 'accepter', label: 'Acceptée' },
     { key: 'entretien', label: 'Entretien' },
@@ -184,7 +183,7 @@ const getSteps = statut => {
   ];
 };
 
-// Map status to step index
+//Donne l’index de l’étape courante dans le workflow :
 const stepOrder = statut => ({
   accepter: 0,
   entretien: 1,
@@ -194,7 +193,6 @@ const stepOrder = statut => ({
 
 // Navigation functions
 const voirDetails = c => {
-  localStorage.setItem('current_candidature', JSON.stringify(c));
   router.push({ name: 'DetailsCandidature', params: { candidatureId: c.id } });
 };
 const planifierEntretien = c => {
@@ -204,29 +202,25 @@ const planifierEntretien = c => {
 // Filter logic
 const candidaturesFiltrees = computed(() => {
   if (!filtreStatut.value) return candidatures.value;
-  return candidatures.value.filter(c => {
-    if (filtreStatut.value === 'accepter') return c.statut === 'accepter' && !c.date_entretien;
-    if (filtreStatut.value === 'entretien') return !!c.date_entretien;
-    if (filtreStatut.value === 'embauche') return c.statut === 'embauche';
-    if (filtreStatut.value === 'refuser') return c.statut === 'refuser';
-    return false;
-  });
+  return candidatures.value.filter(c => c.statut === filtreStatut.value);
 });
 
-// Fetch candidatures and assign statut
 const getCandidatures = async () => {
   loading.value = true;
   error.value = null;
   try {
-    const { data } = await axios.get('/api/candidatures');
+    const response  = await axios.get('/api/candidatures');
+    const data=response.data;
     candidatures.value = Array.isArray(data)
+    //pour chaque c on creer un nv object et  change la statut 
+    //map creer un nv tableau 
       ? data.map(c => {
           const ia = (c.status_ia||'').trim().toLowerCase();
           let statut;
           if (c.date_entretien) statut = 'entretien';
-          else if (ia === 'accepted') statut = 'accepter';
-          else if (ia === 'rejected') statut = 'refuser';
-          else if (c.statut === 'embauche' || c.statut === 'Embauchée') statut = 'embauche';
+          else if (c.status_ia === 'accepted') statut = 'accepter';
+          else if (c.status_ia === 'rejected') statut = 'refuser';
+          else if (c.status_ia.statut === 'embauche' || c.statut === 'Embauchée') statut = 'embauche';
           else statut = c.statut || 'enattente';
           return { ...c, statut };
         })

@@ -342,7 +342,9 @@ async function submitCv() {
   const offreId = route.query.offreId;
 
   try {
-    const { data } = await axios.post("/api/cv", form, { timeout: 30000 });
+    const response = await axios.post("/api/cv", form, { timeout: 30000 });
+    const data = response.data;
+
     toast.success("CV créé avec succès !");
 
     if (from === "postuler" && offreId) {
@@ -350,7 +352,6 @@ async function submitCv() {
         await axios.post(`/api/offres/${offreId}/postuler`, {
           cv_id: data.id,
           message: null,
-          statut: "enattente",
         });
         toast.success("Candidature envoyée automatiquement !");
         router.push("/candidature");

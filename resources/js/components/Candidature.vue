@@ -59,8 +59,8 @@
               {{ c.status_ia === 'accepter' ? "✅" : 
                  c.status_ia === 'refuser' ? "❌" :
                  c.status_ia === 'entretien' ? "🗓️" :
-                 c.status_ia === 'embauche' ? "🎉" :
-                 c.status_ia === 'enattente' ? "⏳" : "" }}
+                 c.status_ia === 'embauche' ? "🎉" :""
+              }}
             </span>
           </div>
         </div>
@@ -174,27 +174,10 @@ const truncateText = (text, max) => {
 /**
  * Filter candidatures based on selected status
  */
-const candidaturesFiltrees = computed(() => {
-  // Si le filtre est vide, on retourne toutes les candidatures
-  if (!filtreStatut.value) return candidatures.value;
 
-  // Filtrer les candidatures en fonction du statut
-  return candidatures.value.filter((c) => {
-    switch(filtreStatut.value) {
-      case 'entretien':
-        // Pour "Entretien", montrer uniquement les candidatures avec date d'entretien
-        return c.date_entretien && c.date_entretien !== '';
-      case 'accepter':
-        // Pour "Acceptée", montrer uniquement les candidatures acceptées SANS date d'entretien
-        return c.status_ia === 'accepter' && (!c.date_entretien || c.date_entretien === '');
-      case 'refuser':
-        return c.status_ia === 'refuser';
-      case 'embauche':
-        return c.status_ia === 'embauche';
-      default:
-        return c.status_ia === filtreStatut.value;
-    }
-  });
+ const candidaturesFiltrees = computed(() => {
+  if (!filtreStatut.value) return candidatures.value;
+  return candidatures.value.filter((c) => c.status_ia === filtreStatut.value);
 });
 
 async function getCandidatures() {
@@ -206,13 +189,15 @@ async function getCandidatures() {
     await axios.get("/sanctum/csrf-cookie");
 
     // Récupère les candidatures
-    const { data } = await axios.get("/api/mescandidatures", {
+    const response  = await axios.get("/api/mescandidatures", {
       withCredentials: true,
     });
+    const data=response.data;
 
     // On s'assure que data est un tableau, sinon on remet un tableau vide
     candidatures.value = Array.isArray(data)
       ? data.map((c) => {
+        
           // Traitement des statuts
           if (c.status_ia === "rejected") {
             c.status_ia = "refuser"; 

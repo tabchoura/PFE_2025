@@ -1,6 +1,8 @@
 <template>
   <div class="cv-container">
     <!-- Loader -->
+            <button @click="rollback">retourner</button>
+
     <div v-if="isLoading" class="loading-container">
       <div class="loader"></div>
       <p class="loading-text">Chargement du CV…</p>
@@ -13,7 +15,10 @@
     </div>
 
     <!-- Aperçu du CV -->
+    
+    
     <div v-else ref="cvElement" class="cv-form preview-form">
+    
       <div class="cv-left-column">
         <div class="profile-section">
           <div class="profile-picture-container">
@@ -101,7 +106,6 @@ const isLoading = ref(true);
 const error = ref(null);
 const cvElement = ref(null);
 
-// Charger le CV
 async function loadCv() {
   const idcv = route.params.id;
   isLoading.value = true;
@@ -123,7 +127,6 @@ async function loadCv() {
   }
 }
 onMounted(loadCv);
-
 // Image de profil
 const DEFAULT_PROFILE = "/assets/default-profile.png";
 const profileImageStyle = computed(() => ({
@@ -138,7 +141,9 @@ function formatDate(d) {
     year: "numeric",
   });
 }
-
+function rollback(){
+  router.push('/mescv')
+}
 // Télécharger en PDF
 function downloadPdf() {
   if (!cvElement.value) return;

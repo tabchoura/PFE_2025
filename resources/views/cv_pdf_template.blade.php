@@ -45,3 +45,5 @@
     <div class="section content">{{ implode(', ', $cv->projets) }}</div>
 </body>
 </html>
+
+//donnees recuperer bl compat dakhalnelou $cv bech ynajm tsir generation pdf 

@@ -47,6 +47,7 @@ class CvController extends Controller
 
             // Sauvegarder le fichier PDF dans le dossier de stockage
             $pdfPath = 'cv_files/cv_' . $cv->id . '.pdf';
+            // emchi ll storage/app odkhl ll pdf path hotlou lcontenue mteeou generer
             file_put_contents(storage_path('app/' . $pdfPath), $pdfContent);
 
             // Enregistrer le chemin du fichier PDF dans la base de données
@@ -65,20 +66,25 @@ class CvController extends Controller
 
         // Options de DomPDF
         $options = new Options();
+        //active le support du HTML5 moderne
         $options->set('isHtml5ParserEnabled', true);
+        //: autorise du PHP dans le code HTML (utile avec Blade si tu fais des conditions, des boucles, etc.)
         $options->set('isPhpEnabled', true);
+        //application  des options 
         $dompdf->setOptions($options);
 
         // Créer le contenu du PDF
+        //jbed ml template 	el compat Prépare les données à injecter dans la vue Blade $cv render hia Transforme le Blade en vrai HTML final prêt à imprimer bech ynajm bib yaml telechargement khatrou visible ken ll html purrr
         $html = view('cv_pdf_template', compact('cv'))->render(); // Récupérer un template Blade pour générer le HTML
 
         // Charger le contenu HTML dans DomPDF
+        //loadthtml tebaa bib dompdf telechargili html recuperer ml template yaani 
         $dompdf->loadHtml($html);
 
         // (Optional) Définir la taille du papier
         $dompdf->setPaper('A4', 'portrait');
 
-        // Générer le PDF
+//concertie html en pdf 
         $dompdf->render();
 
         // Retourner le contenu du PDF

@@ -119,10 +119,6 @@
           </div>
         </div>
 
-        <div class="action-buttons" v-if="statusKey === 'pending' && !candidature.date_entretien">
-          <button @click="accepter" class="btn-accept">✅ Accepter</button>
-          <button @click="refuser" class="btn-refuse">❌ Refuser</button>
-        </div>
 
         <div v-if="statusKey === 'accepted' && candidature.date_entretien" class="entretien-info">
           <p class="entretien-status">
@@ -250,32 +246,7 @@ const formatDateTime12h = d =>
       }).format(new Date(d))
     : "—";
 
-// Fonctions d'actions de candidature
-const accepter = async () => {
-  try {
-    await axios.post(`/api/candidatures/${candidatureId}/accepter`);
-    // Mettre à jour le statut localement
-    candidature.value.statut = 'accepter';
-    // Recharger les données
-    await loadData();
-  } catch (err) {
-    console.error("Erreur lors de l'acceptation:", err);
-    error.value = "Erreur lors de l'acceptation de la candidature.";
-  }
-};
 
-const refuser = async () => {
-  try {
-    await axios.post(`/api/candidatures/${candidatureId}/refuser`);
-    // Mettre à jour le statut localement
-    candidature.value.statut = 'refuser';
-    // Recharger les données
-    await loadData();
-  } catch (err) {
-    console.error("Erreur lors du refus:", err);
-    error.value = "Erreur lors du refus de la candidature.";
-  }
-};
 
 // Chargement API
 async function loadData() {

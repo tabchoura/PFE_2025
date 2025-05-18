@@ -109,6 +109,7 @@ public function postuler(Request $request, $id)
     }
  public function show($id)
     {
+        //with permet de charger offre et cv ensemble 
         $candidature = Candidature::with(['offre', 'cv', ])->find($id);
 
         if (! $candidature) {
@@ -161,31 +162,6 @@ public function envoyerEntretien(Request $request, $id)
 
 
 
-
-    /* ------------------------------------------------------------------
-     * 4. Comparer les embeddings entre CV et offre
-     * ------------------------------------------------------------------ */
-    // private function compareEmbeddings($cvEmbedding, $offerEmbedding)
-    // {
-    //     // Calcul de la similarité cosinus entre les deux embeddings
-    //     $dotProduct = 0.0;
-    //     $cvNorm = 0.0;
-    //     $offerNorm = 0.0;
-
-    //     $length = min(count($cvEmbedding), count($offerEmbedding));
-
-    //     for ($i = 0; $i < $length; $i++) {
-    //         $dotProduct += $cvEmbedding[$i] * $offerEmbedding[$i];
-    //         $cvNorm += $cvEmbedding[$i] ** 2;
-    //         $offerNorm += $offerEmbedding[$i] ** 2;
-    //     }
-
-    //     return ($cvNorm && $offerNorm) ? $dotProduct / (sqrt($cvNorm) * sqrt($offerNorm)) : 0.0;
-    // }
-
-    /* ------------------------------------------------------------------
-     * 5. Lister et afficher les candidatures
-     * ------------------------------------------------------------------ */
     public function index()
     {
         return response()->json(
