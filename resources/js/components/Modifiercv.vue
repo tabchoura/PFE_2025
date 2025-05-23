@@ -1,8 +1,9 @@
 <template>
+  <div class="page-wrapper">
     <div class="cv-container">
       <form @submit.prevent="submitCv" class="cv-form">
-        <h1 class="cv-title">Créer Votre CV&nbsp;!</h1>
-  
+        <h1 class="cv-title">Modifier votre CV&nbsp;!</h1>
+
         <!-- Colonne gauche -->
         <div class="cv-left-column">
           <!-- Photo de profil -->
@@ -10,7 +11,9 @@
             <div class="profile-picture-container">
               <div
                 class="profile-picture"
-                :style="{ backgroundImage: profilePicture ? `url(${profilePicture})` : '' }"
+                :style="{
+                  backgroundImage: profilePicture ? `url(${profilePicture})` : '',
+                }"
               />
               <label for="image" class="upload-label">Ajouter photo</label>
               <input
@@ -22,20 +25,25 @@
               />
               <span v-if="errors.image" class="error">{{ errors.image }}</span>
             </div>
-  
+
             <!-- Nom / Prénom -->
             <div class="section">
-            <div class="input-group">
-              <label for="nom">Nom</label>
-              <input id="nom" v-model="form.nom" type="text" placeholder="Nom" />
-            </div>
-            <div class="input-group">
-              <label for="prenom">Prénom</label>
-              <input id="prenom" v-model="form.prenom" type="text" placeholder="Prénom" />
+              <div class="input-group">
+                <label for="nom">Nom</label>
+                <input id="nom" v-model="form.nom" type="text" placeholder="Nom" />
+              </div>
+              <div class="input-group">
+                <label for="prenom">Prénom</label>
+                <input
+                  id="prenom"
+                  v-model="form.prenom"
+                  type="text"
+                  placeholder="Prénom"
+                />
+              </div>
             </div>
           </div>
-          </div>
-  
+
           <!-- Infos personnelles -->
           <div class="section">
             <div class="input-group">
@@ -51,7 +59,7 @@
               <input id="email" v-model="form.email" type="email" />
             </div>
           </div>
-  
+
           <!-- Compétences -->
           <div class="section">
             <h3 class="section-title">Compétences</h3>
@@ -61,201 +69,251 @@
                 type="text"
                 placeholder="Ex : Python, Excel…"
               />
-              <button 
-                v-if="form.competences.length > 1 || i > 0" 
-                type="button" 
-                @click="removeItem('competences', i)" 
-                class="delete-btn">✕</button>
+              <button
+                v-if="form.competences.length > 1 || i > 0"
+                type="button"
+                @click="removeItem('competences', i)"
+                class="delete-btn"
+              >
+                ✕
+              </button>
             </div>
-            <button type="button" class="add-btn" @click="addItem('competences')">+ Ajouter une compétence</button>
+            <button type="button" class="add-btn" @click="addItem('competences')">
+              + Ajouter une compétence
+            </button>
           </div>
-  
+
           <!-- Langues -->
           <div class="section">
             <h3 class="section-title">Langues</h3>
             <div v-for="(lang, i) in form.langues" :key="i" class="dynamic-field">
               <input v-model="form.langues[i]" type="text" placeholder="Français (C2)" />
-              <button 
-                v-if="form.langues.length > 1 || i > 0" 
-                type="button" 
-                @click="removeItem('langues', i)" 
-                class="delete-btn">✕</button>
+              <button
+                v-if="form.langues.length > 1 || i > 0"
+                type="button"
+                @click="removeItem('langues', i)"
+                class="delete-btn"
+              >
+                ✕
+              </button>
             </div>
-            <button type="button" class="add-btn" @click="addItem('langues')">+ Ajouter une langue</button>
+            <button type="button" class="add-btn" @click="addItem('langues')">
+              + Ajouter une langue
+            </button>
           </div>
         </div>
-  
+
         <!-- Colonne droite -->
         <div class="cv-right-column">
           <!-- Présentation -->
           <div class="section">
             <h3 class="section-title">Présentation</h3>
-            <textarea id="presentation" v-model="form.presentation" rows="4" placeholder="Quelques lignes pour vous présenter…" />
+            <textarea
+              id="presentation"
+              v-model="form.presentation"
+              rows="4"
+              placeholder="Quelques lignes pour vous présenter…"
+            />
           </div>
-  
+
           <!-- Expériences -->
           <div class="section">
             <h3 class="section-title">Expériences professionnelles</h3>
             <div v-for="(exp, i) in form.experiences" :key="i" class="dynamic-field">
-              <textarea v-model="form.experiences[i]" rows="3" placeholder="2023 | Entreprise ● Poste…" />
-              <button 
-                v-if="form.experiences.length > 1 || i > 0" 
-                type="button" 
-                @click="removeItem('experiences', i)" 
-                class="delete-btn">✕</button>
+              <textarea
+                v-model="form.experiences[i]"
+                rows="3"
+                placeholder="2023 | Entreprise ● Poste…"
+              />
+              <button
+                v-if="form.experiences.length > 1 || i > 0"
+                type="button"
+                @click="removeItem('experiences', i)"
+                class="delete-btn"
+              >
+                ✕
+              </button>
             </div>
-            <button type="button" class="add-btn" @click="addItem('experiences')">+ Ajouter une expérience</button>
+            <button type="button" class="add-btn" @click="addItem('experiences')">
+              + Ajouter une expérience
+            </button>
           </div>
-  
+
           <!-- Éducation -->
           <div class="section">
             <h3 class="section-title">Éducation & Formation</h3>
-            <div v-for="(edu, i) in form.educations_formations" :key="i" class="dynamic-field">
-              <textarea v-model="form.educations_formations[i]" rows="3" placeholder="2020-2024 | Université ● Diplôme…" />
-              <button 
-                v-if="form.educations_formations.length > 1 || i > 0" 
-                type="button" 
-                @click="removeItem('educations_formations', i)" 
-                class="delete-btn">✕</button>
+            <div
+              v-for="(edu, i) in form.educations_formations"
+              :key="i"
+              class="dynamic-field"
+            >
+              <textarea
+                v-model="form.educations_formations[i]"
+                rows="3"
+                placeholder="2020-2024 | Université ● Diplôme…"
+              />
+              <button
+                v-if="form.educations_formations.length > 1 || i > 0"
+                type="button"
+                @click="removeItem('educations_formations', i)"
+                class="delete-btn"
+              >
+                ✕
+              </button>
             </div>
-            <button type="button" class="add-btn" @click="addItem('educations_formations')">+ Ajouter une formation</button>
+            <button
+              type="button"
+              class="add-btn"
+              @click="addItem('educations_formations')"
+            >
+              + Ajouter une formation
+            </button>
           </div>
-  
+
           <!-- Projets -->
           <div class="section">
             <h3 class="section-title">Projets</h3>
             <div v-for="(proj, i) in form.projets" :key="i" class="dynamic-field">
-              <textarea v-model="form.projets[i]" rows="2" placeholder="Projet personnel / académique…" />
-              <button 
-                v-if="form.projets.length > 1 || i > 0" 
-                type="button" 
-                @click="removeItem('projets', i)" 
-                class="delete-btn">✕</button>
+              <textarea
+                v-model="form.projets[i]"
+                rows="2"
+                placeholder="Projet personnel / académique…"
+              />
+              <button
+                v-if="form.projets.length > 1 || i > 0"
+                type="button"
+                @click="removeItem('projets', i)"
+                class="delete-btn"
+              >
+                ✕
+              </button>
             </div>
-            <button type="button" class="add-btn" @click="addItem('projets')">+ Ajouter un projet</button>
+            <button type="button" class="add-btn" @click="addItem('projets')">
+              + Ajouter un projet
+            </button>
           </div>
-  
+
           <div class="form-actions">
             <div class="form-actions">
-  <button type="submit" class="submit-btn">Générer mon CV</button>
-  <button type="button" class="cancel-btn" @click="cancelEdit">Annuler</button>
-</div>
-
+              <button type="submit" class="submit-btn">Générer mon CV</button>
+              <button type="button" class="cancel-btn" @click="cancelEdit">
+                Annuler
+              </button>
+            </div>
           </div>
         </div>
       </form>
     </div>
-  </template>
-  
-  <script setup lang="ts">
-  import { reactive, ref } from 'vue'
-  import { useRoute, useRouter } from 'vue-router'  
-  import axios from 'axios'
-  import { useToast } from 'vue-toastification'
-  
-  import html2pdf from 'html2pdf.js'
-  
+  </div>
+</template>
 
-  const route  = useRoute()
-const router = useRouter()
-  interface CvForm {
-    nom: string
-    prenom: string
-    email: string
-    date_naissance: string
-    adresse: string
-    presentation: string
-    competences: string[]
-    langues: string[]
-    experiences: string[]
-    educations_formations: string[]
-    projets: string[]
-    image: string,
-    
+<script setup lang="ts">
+import { reactive, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import axios from "axios";
+import { useToast } from "vue-toastification";
+
+import html2pdf from "html2pdf.js";
+
+const route = useRoute();
+const router = useRouter();
+interface CvForm {
+  nom: string;
+  prenom: string;
+  email: string;
+  date_naissance: string;
+  adresse: string;
+  presentation: string;
+  competences: string[];
+  langues: string[];
+  experiences: string[];
+  educations_formations: string[];
+  projets: string[];
+  image: string;
+}
+
+const toast = useToast();
+/* --- Données réactives --- */
+const form = reactive<CvForm>({
+  nom: "",
+  prenom: "",
+  email: "",
+  date_naissance: "",
+  adresse: "",
+  presentation: "",
+  competences: [""],
+  langues: [""],
+  experiences: [""],
+  educations_formations: [""],
+  projets: [""],
+  image: "",
+});
+
+const profilePicture = ref<string>("");
+const errors = ref<Record<string, string>>({});
+
+/* --- Helpers dynamiques --- */
+function addItem(field: keyof CvForm) {
+  (form[field] as string[]).push("");
+}
+function removeItem(field: keyof CvForm, index: number) {
+  const list = form[field] as string[];
+  list.splice(index, 1);
+  if (!list.length) list.push("");
+}
+
+/* --- Upload image --- */
+
+async function handleImage(e: Event) {
+  const input = e.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+  profilePicture.value = URL.createObjectURL(file);
+
+  const fd = new FormData();
+  fd.append("image", file);
+  try {
+    // Utilisez le bon endpoint de votre API
+    const { data } = await axios.post("/api/ajouterimage", fd);
+
+    // Stockez l'URL retournée dans votre formulaire
+    form.image = data.image_url;
+
+    // Mettez à jour l'aperçu avec l'URL du serveur
+    profilePicture.value = data.image_url;
+
+    toast.success("Image téléchargée avec succès");
+  } catch (err) {
+    errors.value.image = "Échec d'upload de l'image";
+    toast.error("Échec d'upload de l'image");
   }
-  
-  const toast=useToast()
-  /* --- Données réactives --- */
-  const form = reactive<CvForm>({
-    nom: '',
-    prenom: '',
-    email: '',
-    date_naissance: '',
-    adresse: '',
-    presentation: '',
-    competences: [''],
-    langues: [''],
-    experiences: [''],
-    educations_formations: [''],
-    projets: [''],
-    image: '',
-  })
-  
-  const profilePicture = ref<string>('')
-  const errors = ref<Record<string, string>>({})
-  
-  /* --- Helpers dynamiques --- */
-  function addItem(field: keyof CvForm) {
-    ;(form[field] as string[]).push('')
-  }
-  function removeItem(field: keyof CvForm, index: number) {
-    const list = form[field] as string[]
-    list.splice(index, 1)
-    if (!list.length) list.push('')
-  }
-  
-  /* --- Upload image --- */
-  
-  
-  
-  
-  async function handleImage(e: Event) {
-    const input = e.target as HTMLInputElement
-    const file = input.files?.[0]
-    if (!file) return
-    profilePicture.value = URL.createObjectURL(file)
-  
-    const fd = new FormData()
-    fd.append('image', file)
-    try {
-      // Utilisez le bon endpoint de votre API
-      const { data } =    await axios.post('/api/ajouterimage', fd)
-  
-      
-      // Stockez l'URL retournée dans votre formulaire
-      form.image = data.image_url
-      
-      // Mettez à jour l'aperçu avec l'URL du serveur
-      profilePicture.value = data.image_url
-      
-      toast.success('Image téléchargée avec succès')
-    } catch (err) {
-      errors.value.image = "Échec d'upload de l'image"
-      toast.error("Échec d'upload de l'image")
-    }
-  }
- 
-  function cancelEdit() {
+}
+
+function cancelEdit() {
   router.back(); // ⬅️ Cela revient à la page précédente
 }
 
-  async function submitCv() {
-  const id = route.params.id as string
+async function submitCv() {
+  const id = route.params.id as string;
 
   try {
-    const { data } = await axios.put(`/api/cv/${id}`, form)
-    toast.success('CV mis à jour avec succès !')
+    const { data } = await axios.put(`/api/cv/${id}`, form);
+    toast.success("CV mis à jour avec succès !");
     // redirection vers la page "VoirCv"
-    router.push({ name: 'VoirCv', params: { id: data.id } })
+    router.push({ name: "VoirCv", params: { id: data.id } });
   } catch (err: any) {
-    toast.error('Erreur lors de la mise à jour du CV')
+    toast.error("Erreur lors de la mise à jour du CV");
   }
 }
-
-  </script>
-  
+</script>
 
 <style scoped>
+.page-wrapper {
+  background: linear-gradient(135deg, #e0eafc, #cfdef3);
+  min-height: 100vh;
+  padding: 2rem;
+  border-radius: 3%;
+}
 .cv-container {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   max-width: 900px;
@@ -272,17 +330,15 @@ const router = useRouter()
 }
 
 .cv-title {
-  position: absolute;
-  top: 0;
-  right:150px;
+  position: absolute; /* Pas besoin d'absolute sauf si tu veux superposer */
   width: 100%;
   color: #2c3e50;
   text-align: center;
-  padding: 1rem;
-  margin: 0;
+  padding: 1rem 0; /* Padding positif pour espacer */
+  margin: 0 0 2rem 0; /* Marge en bas pour espacer du contenu */
   font-size: 1.8rem;
   font-weight: 500;
-  z-index: 10;
+  z-index: 10; /* Optionnel si pas d'overlay */
 }
 
 .cv-left-column {
@@ -447,6 +503,25 @@ textarea {
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.cancel-btn {
+  background-color: transparent; /* fond transparent */
+  color: #3498db; /* bleu */
+  border: 2px solid #3498db; /* bordure bleu */
+  padding: 1rem 2rem;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+}
+
+.cancel-btn:hover,
+.cancel-btn:focus-visible {
+  background-color: #3498db; /* fond bleu au hover */
+  color: white;
+  transform: translateY(-2px);
+  outline: none;
 }
 
 .submit-btn {

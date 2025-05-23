@@ -38,8 +38,8 @@
       <div class="stats-bar" v-if="candidaturesFiltrees.length">
         <p>
           <span class="stats-count">{{ candidaturesFiltrees.length }}</span>
-          candidature{{ candidaturesFiltrees.length > 1 ? 's' : '' }}
-          {{ filtreStatut ? `avec statut "${labels(filtreStatut)}"` : 'au total' }}
+          candidature{{ candidaturesFiltrees.length > 1 ? "s" : "" }}
+          {{ filtreStatut ? `avec statut "${labels(filtreStatut)}"` : "au total" }}
         </p>
       </div>
 
@@ -54,7 +54,7 @@
           <div class="candidature-main">
             <!-- Header -->
             <div class="candidature-header">
-              <h3>{{ c.offre?.titre || 'Offre inconnue' }}</h3>
+              <h3>{{ c.offre?.titre || "Offre inconnue" }}</h3>
               <div :class="['status-badge', `status-badge-${c.statut}`]">
                 {{ labels(c.statut) }}
               </div>
@@ -66,7 +66,9 @@
               <div class="identity">
                 <h4>{{ c.cv?.prenom }} {{ c.cv?.nom }}</h4>
                 <p v-if="c.cv?.email"><i class="fas fa-envelope"></i> {{ c.cv.email }}</p>
-                <p v-if="c.cv?.telephone"><i class="fas fa-phone"></i> {{ c.cv.telephone }}</p>
+                <p v-if="c.cv?.telephone">
+                  <i class="fas fa-phone"></i> {{ c.cv.telephone }}
+                </p>
               </div>
             </div>
 
@@ -81,13 +83,13 @@
               </div>
               <div class="detail-item">
                 <i class="fas fa-calendar-alt"></i>
-               <div v-if="c.date_entretien" class="card-info-row">
-                <i class="fas fa-handshake"></i>
-               <p>
-                <strong>Entretien :</strong>
-              {{ formatDateTime12h(c.date_entretien) }}
-              </p>
-              </div>
+                <div v-if="c.date_entretien" class="card-info-row">
+                  <i class="fas fa-handshake"></i>
+                  <p>
+                    <strong>Entretien :</strong>
+                    {{ formatDateTime12h(c.date_entretien) }}
+                  </p>
+                </div>
               </div>
               <div class="detail-item" v-if="c.message">
                 <i class="fas fa-comment"></i>
@@ -106,7 +108,7 @@
                 class="step"
                 :class="{
                   'step-done': stepOrder(c.statut) > i,
-                  'step-active': stepOrder(c.statut) === i
+                  'step-active': stepOrder(c.statut) === i,
                 }"
               >
                 <span class="circle">{{ i + 1 }}</span>
@@ -135,99 +137,113 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import axios from 'axios';
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import axios from "axios";
 
 const candidatures = ref([]);
 const loading = ref(true);
 const error = ref(null);
-const filtreStatut = ref('');
+const filtreStatut = ref("");
 const router = useRouter();
 
 // Date formatting
-const formatDate = d =>
+const formatDate = (d) =>
   d
-    ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
-    : '—';
-const formatDateTime12h = d => {
-  if (!d) return '—';
+    ? new Date(d).toLocaleDateString("fr-FR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "—";
+const formatDateTime12h = (d) => {
+  if (!d) return "—";
   const dt = new Date(d);
-  return new Intl.DateTimeFormat('fr-FR', {
-    day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
   }).format(dt);
 };
 
 // Utility functions
-const truncateText = (t, len = 100) => (t && t.length > len ? `${t.slice(0, len)}...` : t || '');
-const getInitials = (first, last) => `${(first||'').charAt(0)}${(last||'').charAt(0)}`.toUpperCase();
+const truncateText = (t, len = 100) =>
+  t && t.length > len ? `${t.slice(0, len)}...` : t || "";
+const getInitials = (first, last) =>
+  `${(first || "").charAt(0)}${(last || "").charAt(0)}`.toUpperCase();
 
 // Status labels
-const labels = statut => ({
-  enattente: 'En attente',
-  accepter: 'Acceptée',
-  entretien: 'Entretien',
-  embauche: 'Embauchée',
-  refuser: 'Refusée'
-}[statut] || '—');
+const labels = (statut) =>
+  ({
+    enattente: "En attente",
+    accepter: "Acceptée",
+    entretien: "Entretien",
+    embauche: "Embauchée",
+    refuser: "Refusée",
+  }[statut] || "—");
 
 // retourne les étapes du workflow selon le statut :
-const getSteps = statut => {
-  if (statut === 'refuser') {
-    return [{ key: 'refuser', label: 'Refusée' }];
+const getSteps = (statut) => {
+  if (statut === "refuser") {
+    return [{ key: "refuser", label: "Refusée" }];
   }
   return [
-    { key: 'accepter', label: 'Acceptée' },
-    { key: 'entretien', label: 'Entretien' },
-    { key: 'embauche',  label: 'Embauchée' }
+    { key: "accepter", label: "Acceptée" },
+    { key: "entretien", label: "Entretien" },
+    { key: "embauche", label: "Embauchée" },
   ];
 };
 
 //Donne l’index de l’étape courante dans le workflow :
-const stepOrder = statut => ({
-  accepter: 0,
-  entretien: 1,
-  embauche: 2,
-  refuser: 0
-}[statut] || 0);
+const stepOrder = (statut) =>
+  ({
+    accepter: 0,
+    entretien: 1,
+    embauche: 2,
+    refuser: 0,
+  }[statut] || 0);
 
 // Navigation functions
-const voirDetails = c => {
-  router.push({ name: 'DetailsCandidature', params: { candidatureId: c.id } });
+const voirDetails = (c) => {
+  router.push({ name: "DetailsCandidature", params: { candidatureId: c.id } });
 };
-const planifierEntretien = c => {
-  router.push({ name: 'PlanifierEntretien', params: { candidatureId: c.id } });
+const planifierEntretien = (c) => {
+  router.push({ name: "PlanifierEntretien", params: { candidatureId: c.id } });
 };
 
 // Filter logic
 const candidaturesFiltrees = computed(() => {
   if (!filtreStatut.value) return candidatures.value;
-  return candidatures.value.filter(c => c.statut === filtreStatut.value);
+  return candidatures.value.filter((c) => c.statut === filtreStatut.value);
 });
 
 const getCandidatures = async () => {
   loading.value = true;
   error.value = null;
   try {
-    const response  = await axios.get('/api/candidatures');
-    const data=response.data;
+    const response = await axios.get("/api/candidatures");
+    const data = response.data;
     candidatures.value = Array.isArray(data)
-    //pour chaque c on creer un nv object et  change la statut 
-    //map creer un nv tableau 
-      ? data.map(c => {
-          const ia = (c.status_ia||'').trim().toLowerCase();
+      ? //pour chaque c on creer un nv object et  change la statut
+        //map creer un nv tableau
+        data.map((c) => {
+          const ia = (c.status_ia || "").trim().toLowerCase();
           let statut;
-          if (c.date_entretien) statut = 'entretien';
-          else if (c.status_ia === 'accepted') statut = 'accepter';
-          else if (c.status_ia === 'rejected') statut = 'refuser';
-          else if (c.status_ia.statut === 'embauche' || c.statut === 'Embauchée') statut = 'embauche';
-          else statut = c.statut || 'enattente';
+          if (c.date_entretien) statut = "entretien";
+          else if (c.status_ia === "accepted") statut = "accepter";
+          else if (c.status_ia === "rejected") statut = "refuser";
+          else if (c.status_ia.statut === "embauche" || c.statut === "Embauchée")
+            statut = "embauche";
+          else statut = c.statut || "enattente";
           return { ...c, statut };
         })
       : [];
   } catch (e) {
     console.error(e);
-    error.value = e.response?.data?.message || 'Erreur lors du chargement';
+    error.value = e.response?.data?.message || "Erreur lors du chargement";
   } finally {
     loading.value = false;
   }
@@ -235,7 +251,6 @@ const getCandidatures = async () => {
 
 onMounted(getCandidatures);
 </script>
-
 
 <style scoped>
 .candidatures-container {

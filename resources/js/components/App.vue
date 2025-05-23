@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue';
 import logo from "../../assets/logo.png";
-import search from "../../assets/search.png";
 
 // State to control mobile menu visibility
 const mobileMenuOpen = ref(false);
@@ -37,10 +36,7 @@ const closeMenu = () => {
           <router-link to="/" class="nav-btn" @click="closeMenu">Accueil</router-link>
           <router-link to="/Apropos" class="nav-btn" @click="closeMenu">A propos</router-link>
           <router-link to="/Offres" class="nav-btn" @click="closeMenu">Nos Offres</router-link>
-          <div class="search">
-            <input class="search-input" type="text" placeholder="Trouvez votre job" />
-            <img class="search-img" :src="search" alt="Search" />
-          </div>
+         
           <router-link to="/authentification" class="nav-btn auth-btn" @click="closeMenu">Mon Espace</router-link>
         </div>
       </div>
@@ -123,27 +119,6 @@ const closeMenu = () => {
 
 .auth-btn {
   font-weight: 600;
-}
-
-.search {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-
-.search-input {
-  padding: 8px 14px;
-  border: 1px solid #ccc;
-  border-radius: 30px;
-  font-size: 14px;
-  width: 200px;
-  outline: none;
-}
-
-.search-img {
-  height: 24px;
-  width: auto;
-  cursor: pointer;
 }
 
 /* Hamburger menu styling */

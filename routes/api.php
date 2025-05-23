@@ -23,6 +23,7 @@ use App\Services\LocalEmbeddingService;
 // Routes publiques
 Route::post('/login',    [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
+Route::get('offres/titres', [OfferController::class, 'titles']);
 
  
 
@@ -67,7 +68,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/offres/{id}/postuler', [CandidatureController::class, 'postuler']); // Postuler route
 Route::post('/offreenregistrer/{offer_id}', [OfferController::class, 'enregistrerOffre']);
 Route::get('/mesoffres', [OfferController::class, 'getUserSelectedOffers']);
-Route::delete('/offreenregistrer/{offer_id}', [OfferController::class, 'supprimerEnregistrement'])->middleware('auth:sanctum');
+Route::delete('/offreenregistrer/{offer_id}', [OfferController::class, 'deselectionnerOffre']);
+
 
 
     // ─── Candidatures ──────────────────────────────────────────────────────
@@ -87,10 +89,10 @@ Route::post('/candidatures/{candidatureId}/entretien', [CandidatureController::c
 
  
     // ─── Entreprises ────────────────────────────────────────────────────────
-    Route::get(   '/entreprises',      [EntrepriseController::class, 'index']);
-    Route::post(  '/entreprises',      [EntrepriseController::class, 'store']);
-    Route::put(   '/entreprises/{id}', [EntrepriseController::class, 'update']);
-    Route::delete('/entreprises/{id}', [EntrepriseController::class, 'destroy']);
+    // Route::get(   '/entreprises',      [EntrepriseController::class, 'index']);
+    // Route::post(  '/entreprises',      [EntrepriseController::class, 'store']);
+    // Route::put(   '/entreprises/{id}', [EntrepriseController::class, 'update']);
+    // Route::delete('/entreprises/{id}', [EntrepriseController::class, 'destroy']);
 
     // ─── Images ─────────────────────────────────────────────────────────────
     Route::post('/ajouterimage', [ImageController::class, 'uploadImage']);

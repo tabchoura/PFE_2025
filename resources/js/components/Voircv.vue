@@ -1,94 +1,111 @@
 <template>
-  <div class="cv-container">
-    <!-- Loader -->
-            <button @click="rollback">retourner</button>
+  <div class="page-wrapper">
+    <div class="cv-container">
+      <!-- Loader -->
+      <div v-if="isLoading" class="loading-container" role="status" aria-live="polite">
+        <div class="loader"></div>
+        <p class="loading-text">Chargement du CV…</p>
+      </div>
 
-    <div v-if="isLoading" class="loading-container">
-      <div class="loader"></div>
-      <p class="loading-text">Chargement du CV…</p>
-    </div>
+      <!-- Message d'erreur -->
+      <div v-else-if="error" class="error-message" role="alert">
+        <p>{{ error }}</p>
+        <button @click="loadCv" class="retry-btn">Réessayer</button>
+      </div>
 
-    <!-- Error Message -->
-    <div v-else-if="error" class="error-message">
-      <p>{{ error }}</p>
-      <button @click="loadCv" class="retry-btn">Réessayer</button>
-    </div>
-
-    <!-- Aperçu du CV -->
-    
-    
-    <div v-else ref="cvElement" class="cv-form preview-form">
-    
-      <div class="cv-left-column">
-        <div class="profile-section">
-          <div class="profile-picture-container">
-            <div class="profile-picture" :style="profileImageStyle"></div>
+      <!-- Aperçu du CV -->
+      <div v-else ref="cvElement" class="cv-form preview-form">
+        <div class="cv-left-column">
+          <div class="profile-section">
+            <div class="profile-picture-container">
+              <div class="profile-picture" :style="profileImageStyle"></div>
+            </div>
           </div>
-        </div>
-        <div class="section">
-          <h1 class="cv-title-preview">{{ cv.prenom }} {{ cv.nom }}</h1>
-          <p v-if="cv.date_naissance" class="info">
-            🗓️ Né(e) le {{ formatDate(cv.date_naissance) }}
-          </p>
-          <p v-if="cv.email" class="info">
-            📧 <a :href="`mailto:${cv.email}`">{{ cv.email }}</a>
-          </p>
-          <p v-if="cv.adresse" class="info">📍 {{ cv.adresse }}</p>
-        </div>
-                <div class="section">
-
-          <section v-if="cv.competences.length" class="section">
+          <div class="section">
+            <h1 class="cv-title-preview">{{ cv.prenom }} {{ cv.nom }}</h1>
+            <p v-if="cv.date_naissance" class="info">
+              🗓️ Né(e) le {{ formatDate(cv.date_naissance) }}
+            </p>
+            <p v-if="cv.email" class="info">
+              📧 <a :href="`mailto:${cv.email}`">{{ cv.email }}</a>
+            </p>
+            <p v-if="cv.adresse" class="info">📍 {{ cv.adresse }}</p>
+          </div>
+          <div class="section" v-if="cv.competences.length">
             <h3 class="section-title1">Compétences</h3>
             <ul>
               <li v-for="(c, i) in cv.competences" :key="i">{{ c }}</li>
             </ul>
-          </section>
           </div>
-                  <div class="section">
-
-          <section v-if="cv.langues.length" class="section">
+          <div class="section" v-if="cv.langues.length">
             <h3 class="section-title1">Langues</h3>
             <ul>
               <li v-for="(l, i) in cv.langues" :key="i">{{ l }}</li>
             </ul>
+          </div>
+        </div>
+
+        <div class="cv-right-column">
+          <section v-if="cv.presentation" class="section">
+            <h3 class="section-title">Présentation</h3>
+            <p>{{ cv.presentation }}</p>
+          </section>
+          <section v-if="cv.experiences.length" class="section">
+            <h3 class="section-title">Expériences professionnelles</h3>
+            <ul>
+              <li v-for="(exp, i) in cv.experiences" :key="i">{{ exp }}</li>
+            </ul>
+          </section>
+          <section v-if="cv.educations_formations.length" class="section">
+            <h3 class="section-title">Éducation & Formation</h3>
+            <ul>
+              <li v-for="(edu, i) in cv.educations_formations" :key="i">{{ edu }}</li>
+            </ul>
+          </section>
+
+          <section v-if="cv.projets.length" class="section">
+            <h3 class="section-title">Projets</h3>
+            <ul>
+              <li v-for="(p, i) in cv.projets" :key="i">{{ p }}</li>
+            </ul>
           </section>
         </div>
-      </div>
-
-      <div class="cv-right-column">
-        <section v-if="cv.presentation" class="section">
-          <h3 class="section-title">Présentation</h3>
-          <p>{{ cv.presentation }}</p>
-        </section>
-        <section v-if="cv.experiences.length" class="section">
-          <h3 class="section-title">Expériences professionnelles</h3>
-          <ul>
-            <li v-for="(exp, i) in cv.experiences" :key="i">{{ exp }}</li>
-          </ul>
-        </section>
-        <section v-if="cv.educations_formations.length" class="section">
-          <h3 class="section-title">Éducation & Formation</h3>
-          <ul>
-            <li v-for="(edu, i) in cv.educations_formations" :key="i">{{ edu }}</li>
-          </ul>
-        </section>
-       
-        <section v-if="cv.projets.length" class="section">
-          <h3 class="section-title">Projets</h3>
-          <ul>
-            <li v-for="(p, i) in cv.projets" :key="i">{{ p }}</li>
-          </ul>
-        </section>
       </div>
     </div>
 
     <!-- Boutons d'actions -->
-    <div v-if="cv && !isLoading" class="form-actions">
-      <button @click="downloadPdf" class="action-btn download-btn">
-        📥 Télécharger PDF
+    <div
+      v-if="cv && !isLoading"
+      class="form-actions"
+      role="group"
+      aria-label="Actions sur le CV"
+    >
+      <button
+        class="btn-retour"
+        @click="rollback"
+        aria-label="Retourner à la liste des CVs"
+      >
+        ← Retourner
       </button>
-      <button @click="modifyCv" class="action-btn edit-btn">✏️ Modifier</button>
-      <button @click="deleteCv" class="action-btn btn-delete">🗑️ Supprimer</button>
+      <div class="btn-group-right">
+        <button
+          @click="downloadPdf"
+          class="action-btn download-btn"
+          aria-label="Télécharger le CV au format PDF"
+        >
+          📥 Télécharger PDF
+        </button>
+        <button @click="modifyCv" class="action-btn edit-btn" aria-label="Modifier le CV">
+          ✏️ Modifier
+        </button>
+        <button
+          @click="deleteCv"
+          class="action-btn btn-delete"
+          aria-label="Supprimer le CV"
+        >
+          🗑️ Supprimer
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -127,13 +144,12 @@ async function loadCv() {
   }
 }
 onMounted(loadCv);
-// Image de profil
+
 const DEFAULT_PROFILE = "/assets/default-profile.png";
 const profileImageStyle = computed(() => ({
   backgroundImage: `url(${cv.value?.image || DEFAULT_PROFILE})`,
 }));
 
-// Formatage de date FR
 function formatDate(d) {
   return new Date(d).toLocaleDateString("fr-FR", {
     day: "numeric",
@@ -141,10 +157,10 @@ function formatDate(d) {
     year: "numeric",
   });
 }
-function rollback(){
-  router.push('/mescv')
+function rollback() {
+  router.push("/mescv");
 }
-// Télécharger en PDF
+
 function downloadPdf() {
   if (!cvElement.value) return;
   cvElement.value.classList.add("printing");
@@ -161,13 +177,11 @@ function downloadPdf() {
     .then(() => cvElement.value?.classList.remove("printing"));
 }
 
-// Modifier
 function modifyCv() {
   const idcv = route.params.id;
   router.push(`/modifiercv/${idcv}`);
 }
 
-// Supprimer
 async function deleteCv() {
   const idcv = route.params.id;
   if (
@@ -186,6 +200,13 @@ async function deleteCv() {
 </script>
 
 <style scoped>
+.page-wrapper {
+  background: linear-gradient(135deg, #e0eafc, #cfdef3);
+  min-height: 100vh;
+  padding: 2rem;
+  border-radius: 3%;
+}
+
 /* Container général */
 .cv-container {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -339,6 +360,7 @@ async function deleteCv() {
   border-bottom: 2px solid #3498db;
   padding-bottom: 0.5rem;
 }
+
 /* Listes */
 ul {
   list-style: none;
@@ -363,53 +385,101 @@ ul li::before {
   gap: 2rem;
 }
 
+/* Form actions */
 .form-actions {
   display: flex;
-  justify-content: center;
-  gap: 1rem;
-  padding: 1.5rem;
-  background: #f8f9fa;
-  border-top: 1px solid #eee;
-}
-.action-btn {
-  display: inline-flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  padding: 1.5rem 2rem;
+  border-top: 1px solid #eee;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* Bouton Retour */
+.form-actions .btn-retour {
+  background-color: #10b981;
+  color: white;
+  padding: 0.8rem 1.8rem;
+  font-weight: 700;
+  border-radius: 25px;
   border: none;
-  border-radius: 4px;
-  font-weight: 600;
-  font-size: 0.95rem;
   cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.5);
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  user-select: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 140px;
+  order: 1;
+}
+.btn-retour:hover,
+.btn-retour:focus-visible {
+  background-color: #047857;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(4, 120, 87, 0.7);
+  outline: none;
+}
+
+/* Groupe boutons à droite */
+.form-actions .btn-group-right {
+  display: flex;
+  gap: 1rem;
+  order: 2;
+  flex-wrap: wrap;
+  flex-grow: 1;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+/* Styles communs aux autres boutons */
+.action-btn {
+  padding: 0.8rem 2.2rem;
+  font-weight: 700;
+  border-radius: 25px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  user-select: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 140px;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
 }
 
 .download-btn {
-  background: var(--btn-primary-bg);
-  color: var(--btn-primary-color);
+  background-color: #2563eb;
+  color: white;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
 }
-.download-btn:hover {
-  background: var(--btn-primary-hover);
-  transform: translateY(-2px);
+.download-btn:hover,
+.download-btn:focus-visible {
+  background-color: #1e40af;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(30, 64, 175, 0.7);
 }
 
 .edit-btn {
-  background: var(--btn-edit-bg);
-  color: var(--btn-edit-color);
+  background-color: #ca8a04;
+  color: white;
+  box-shadow: 0 6px 20px rgba(107, 114, 128, 0.5);
 }
-.edit-btn:hover {
-  background: var(--btn-edit-hover);
-  transform: translateY(-2px);
+.edit-btn:hover,
+.edit-btn:focus-visible {
+  background-color: #4b5563;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(75, 85, 99, 0.7);
 }
 
 .btn-delete {
-  background: var(--btn-delete-bg);
-  color: var(--btn-delete-color);
+  background-color: #ef4444;
+  color: white;
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
 }
-.btn-delete:hover {
-  background: var(--btn-delete-hover);
-  transform: translateY(-2px);
+.btn-delete:hover,
+.btn-delete:focus-visible {
+  background-color: #b91c1c;
+  box-shadow: 0 12px 32px rgba(185, 28, 28, 0.7);
 }
 
 /* Impression PDF */
@@ -426,11 +496,19 @@ ul li::before {
     flex-direction: column;
   }
   .form-actions {
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: stretch;
   }
+  .btn-retour,
   .action-btn {
-    flex: 1;
-    text-align: center;
+    width: 100%;
+    min-width: auto;
+    flex-shrink: 1;
+  }
+  .form-actions .btn-group-right {
+    justify-content: center;
+    order: 3;
+    margin-top: 1rem;
   }
 }
 </style>

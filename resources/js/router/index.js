@@ -27,7 +27,6 @@ import Modifiercv from '../components/Modifiercv.vue';
 import Mescv from '../components/Mescv.vue';
 import Mesoffres from '../components/Mesoffres.vue';
 
-import Confirmationpostuler from '../components/Confirmationpostuler.vue';
 import Creercv from '../components/Creercv.vue';
 // import Aftercvpostuler from '../components/Aftercvpostuler.vue'
 import DetailsCandidature from '../components/DetailsCandidature.vue';
@@ -84,6 +83,7 @@ const routes = [
     { path: '', name: 'CreerCv', component: Creercv }
   ]},
 
+  
   // { path: '/aftercvpostuler', component: CompteCandidat, meta: { requiresAuth: true }, children: [
   //   { path: '', name: 'Aftercvpostuler', component: Aftercvpostuler }
   // ]},
@@ -107,25 +107,15 @@ const routes = [
     { path: '', name: 'VoirCv', component: Voircv }
   ]},
  
+  { path: '/modifiercv/:id', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Modifiercv', component: Modifiercv }
+  ]},
+ 
+  
+  
 
-  
-  
-    {
-    path: '/modifiercv/:id',          // segment dynamique
-    name: 'Modifiercv',               // nom EXACT
-    component: Modifiercv,
-    meta: { requiresAuth: true },
-    props: true                   // si tu préfères passer l’id en prop
-  }, 
    
    // … vos autres routes …
-   {
-    path: '/postuler/confirm/:offerId',
-    name: 'Confirmationpostuler',
-    component: Confirmationpostuler,
-    props: true,
-    meta: { requiresAuth: true }
-  },
   
 ,  
   // { path: '/CreateLettre', component: CompteCandidat, meta: { requiresAuth: true }, children: [

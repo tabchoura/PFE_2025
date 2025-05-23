@@ -1,192 +1,275 @@
 <template>
-  <div class="offer-details">
-       
-    <h1>{{ offer.titre }}</h1>
-    <p><strong>Description:</strong> {{ offer.description }}</p>
-    <p><strong>Salaire:</strong> {{ offer.salaire }}</p>
-    <p><strong>Détails:</strong> {{ offer.details }}</p>
-    <div class="button-container">
-    <button @click="enregistrer">♥ Ajouter à mes offres enregistrés</button>
-      <button class="btnapply" @click="Postuler">Postuler par ici</button>
+  <div class="page-wrapper">
+    <div class="profil-container offer-details">
+      <h1>{{ offer.titre }}</h1>
+
+      <!-- Loading / Error -->
+      <div v-if="loading" class="loading">
+        <div class="loading-spinner"></div>
+        <p>Chargement des détails…</p>
+      </div>
+      <div v-else-if="error" class="error-message">
+        <span class="error-icon">⚠️</span>
+        <p>{{ error }}</p>
+        <button @click="getOfferDetails" class="retry-button">Réessayer</button>
+      </div>
+
+      <!-- Contenu de l'offre -->
+      <div v-else class="offer-content-grid">
+        <p><span>Description:</span> {{ offer.description }}</p>
+        <p><span>Salaire:</span> {{ offer.salaire }}</p>
+        <p><span>Détails:</span> {{ offer.details }}</p>
+        <p><span>Date de publication:</span> {{ formatDate(offer.created_at) }}</p>
+        <p v-if="offer.date_entretien">
+          <span>Entretien:</span> {{ formatDateTime12h(offer.date_entretien) }}
+        </p>
+      </div>
+
+      <!-- Boutons d'action -->
+      <div class="button-container">
+        <button @click="enregistrer">
+          <i class="fas fa-heart"></i>
+          Ajouter à mes offres
+        </button>
+        <button class="btnapply" @click="Postuler">
+          <i class="fas fa-paper-plane"></i>
+          Postuler
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
-import { useRoute } from "vue-router";
-import { useRouter } from "vue-router";
+import { useToast } from "vue-toastification";
+const toast = useToast();
 
 const offer = ref({});
+const loading = ref(true);
+const error = ref(null);
+
 const route = useRoute();
 const router = useRouter();
 const offerId = route.params.id;
-// Fonction pour récupérer les détails de l'offre uniquement si l'utilisateur est authentifié
+
+function formatDate(d) {
+  if (!d) return "—";
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(d));
+}
+
+function formatDateTime12h(d) {
+  if (!d) return "—";
+  return new Intl.DateTimeFormat("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true,
+  }).format(new Date(d));
+}
+
 async function getOfferDetails() {
+  loading.value = true;
+  error.value = null;
   try {
-    // Vérifier si l'utilisateur est authentifié en obtenant le cookie CSRF
     await axios.get("/sanctum/csrf-cookie");
-
-    // Vérifier si l'utilisateur est connecté (session existante)
-    const userSession =
+    const session =
       localStorage.getItem("userSession") || sessionStorage.getItem("userSession");
-
-    if (!userSession) {
-      // Rediriger l'utilisateur vers la page de connexion s'il n'est pas authentifié
-      alert("Veuillez vous connecter pour voir les détails de l'offre.");
-      router.push("/logincandidat"); // Redirection vers la page de connexion
+    if (!session) {
+      alert("Veuillez vous connecter pour voir cette offre.");
+      router.push("/logincandidat");
       return;
     }
-
-    // L'utilisateur est authentifié, on récupère les détails de l'offre
-    const response = await axios.get(`/api/offres/${offerId}`);
-    offer.value = response.data;
-  } catch (error) {
-    console.error("Erreur lors de la récupération des détails de l'offre:", error);
-    alert("Une erreur est survenue lors de la récupération des détails de l'offre.");
+    const { data } = await axios.get(`/api/offres/${offerId}`);
+    offer.value = data;
+  } catch (err) {
+    console.error(err);
+    error.value = "Impossible de charger les détails.";
+  } finally {
+    loading.value = false;
   }
 }
 
-const enregistrer = async () => {
+async function enregistrer() {
   try {
-    const response = await axios.post(`/api/offreenregistrer/${offerId}`); // Envoie l'ID de l'offre dans l'URL
-
-    if (response.status === 200) {
-      alert("Offre enregistrée avec succès !");
-    } else {
-      alert("Erreur lors de l'enregistrement de l'offre.");
+    const res = await axios.post(`/api/offreenregistrer/${offerId}`);
+    if (res.status === 200) {
+      toast.success("Offre enregistrées!");
     }
-  } catch (error) {
-    console.error("Erreur lors de l'enregistrement de l'offre:", error);
-    alert("Une erreur est survenue lors de l'enregistrement de l'offre.");
+  } catch (err) {
+    console.error(err);
+    alert("Échec de l'enregistrement.");
   }
-};
+}
 
-// Fonction pour postuler à l'offre
-const Postuler = () => {
-  const offreId = route.params.id;
-  router.push(`/postuler/${offreId}`);
-};
+function Postuler() {
+  router.push(`/postuler/${offerId}`);
+}
 
-onMounted(() => {
-  getOfferDetails(); // Appel de la fonction pour récupérer les détails de l'offre lors du montage du composant
-});
+onMounted(getOfferDetails);
 </script>
 
 <style scoped>
-/* Styles pour la section des offres */
-.offer-details {
-  max-width: 900px;
-  margin: 30px auto;
-  margin-top: 100px;
-  padding: 30px;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease-in-out;
-  min-height: 300px; /* Hauteur minimale pour éviter que la section soit trop petite */
-  max-height: 400px; /* Hauteur maximale */
-  overflow-y: auto; /* Permet le défilement vertical si le contenu dépasse */
+.page-wrapper {
+  background: linear-gradient(135deg, #e0eafc, #cfdef3);
+  min-height: 100vh;
+  padding: 2rem;
+  border-radius: 3%;
 }
 
-.offer-details:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+.profil-container {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 1rem;
+  max-width: 900px;
+  margin: 6rem auto 2rem;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.profil-container:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
+.offer-details h1 {
+  font-size: 2.4rem;
+  text-align: center;
+  color: #2980b9;
+  margin-bottom: 1rem;
+}
+.offer-details h1::after {
+  content: "";
+  display: block;
+  width: 100px;
+  height: 4px;
+  background: #09a1cb;
+  margin: 0.5rem auto 0;
+  border-radius: 2px;
+}
+
+.loading,
+.error-message {
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(59, 130, 246, 0.2);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.retry-button {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.error-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.offer-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem 3rem;
+  margin-top: 1.5rem;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+.offer-content-grid::-webkit-scrollbar {
+  width: 6px;
+}
+.offer-content-grid::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+.offer-content-grid p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #555;
+}
+.offer-content-grid p span {
+  font-weight: 600;
+  color: #2c3e50;
 }
 
 .button-container {
   display: flex;
-  justify-content: flex-end; /* Aligne le contenu à droite */
-  margin-top: 20px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2rem;
 }
-
-.btnapply {
-  padding: 12px 24px;
-  background-color: #09a1cb;
-  color: #fff;
+.button-container button {
+  flex: 1 1 48%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.2s, transform 0.1s;
 }
 
+.button-container button:first-child {
+  background: #e74c3c;
+  color: #fff;
+}
+.button-container button:first-child:hover {
+  background: #c0392b;
+  transform: translateY(-2px);
+}
+
+.btnapply {
+  background: #09a1cb;
+  color: #fff;
+}
 .btnapply:hover {
-  background-color: #428beb;
-}
-
-h1 {
-  font-size: 2rem;
-  text-align: center;
-  color: #2980b9;
-  margin-bottom: 20px;
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-p {
-  font-size: 1.1rem;
-  line-height: 1.8;
-  color: #555;
-  margin-bottom: 15px;
-}
-
-strong {
-  color: #2c3e50;
-  font-weight: 600;
-}
-
-.offer-details p:first-child {
-  margin-top: 0;
-}
-
-.offer-details p:last-child {
-  margin-bottom: 0;
-}
-
-.offer-details .offer-header {
-  background-color: #2980b9;
-  color: white;
-  padding: 15px;
-  border-radius: 10px;
-  margin-bottom: 25px;
-  font-size: 1.2rem;
-  font-weight: bold;
-  text-align: center;
-}
-
-.offer-details .btn {
-  background-color: #2ecc71;
-  color: white;
-  padding: 12px 30px;
-  font-size: 1.1rem;
-  border-radius: 8px;
-  text-align: center;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  margin-top: 20px;
-  display: block;
-  width: 100%;
-}
-
-.offer-details .btn:hover {
-  background-color: #27ae60;
+  background: #07a0b5;
+  transform: translateY(-2px);
 }
 
 @media (max-width: 768px) {
-  .offer-details {
-    padding: 20px;
-  }
-
-  h1 {
+  .offer-details h1 {
     font-size: 1.8rem;
   }
-
-  p {
-    font-size: 1rem;
+  .offer-content-grid {
+    grid-template-columns: 1fr;
+    max-height: none;
+  }
+  .button-container {
+    flex-direction: column;
+  }
+  .button-container button {
+    width: 100%;
   }
 }
 </style>

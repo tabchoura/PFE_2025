@@ -1,128 +1,138 @@
 <template>
-  <div class="mes-cv-container">
-    <div class="header">
-      <h1>Mes CV</h1>
-      <button @click="ajoutercv" class="ajouter-button">
-        <span class="icon">+</span>
-        <span class="text">Nouveau CV</span>
-      </button>
-    </div>
+  <div class="page-wrapper">
+    <div class="mes-cv-container">
+      <div class="header">
+        <h1>Mes CV</h1>
+        <button @click="ajoutercv" class="ajouter-button">
+          <span class="icon">+</span>
+          <span class="text">Nouveau CV</span>
+        </button>
+      </div>
 
-    <!-- État de chargement -->
-    <div v-if="loading" class="loading-state">
-      <div class="spinner"></div>
-      <p>Chargement de vos CV...</p>
-    </div>
+      <!-- État de chargement -->
+      <div v-if="loading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Chargement de vos CV...</p>
+      </div>
 
-    <!-- Liste de CV -->
-    <div v-else-if="cvs.length" class="cv-list">
-      <div v-for="cv in cvs" :key="cv.id" class="cv-card">
-        <div class="cv-info">
-          <span class="cv-name">{{ cv.prenom }} {{ cv.nom }}</span>
-          <span class="cv-date"
-            >Dernière modification: {{ formatDate(cv.updatedAt) }}</span
-          >
-        </div>
-        <div class="cv-actions">
-          <button
-            @click="consulterCv(cv.id)"
-            class="action-button view"
-            title="Consulter"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+      <!-- Liste de CV -->
+      <div v-else-if="cvs.length" class="cv-list">
+        <div v-for="cv in cvs" :key="cv.id" class="cv-card">
+          <div class="cv-info">
+            <span class="cv-name">{{ cv.prenom }} {{ cv.nom }}</span>
+            <span class="cv-date"
+              >Dernière modification: {{ formatDate(cv.updatedAt) }}</span
             >
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
-          </button>
-          <button @click="modifierCv(cv.id)" class="action-button edit" title="Modifier">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+          </div>
+          <div class="cv-actions">
+            <button
+              @click="consulterCv(cv.id)"
+              class="action-button view"
+              title="Consulter"
             >
-              <path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-            </svg>
-          </button>
-          <button
-            @click="confirmerSuppression(cv)"
-            class="action-button delete"
-            title="Supprimer"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+            <button
+              @click="modifierCv(cv.id)"
+              class="action-button edit"
+              title="Modifier"
             >
-              <polyline points="3 6 5 6 21 6"></polyline>
-              <path
-                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-              ></path>
-            </svg>
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+              </svg>
+            </button>
+            <button
+              @click="confirmerSuppression(cv)"
+              class="action-button delete"
+              title="Supprimer"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path
+                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                ></path>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- État vide -->
-    <div v-else class="empty-state">
-      <div class="empty-icon">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="32"
-          height="32"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-          <line x1="16" y1="13" x2="8" y2="13"></line>
-          <line x1="16" y1="17" x2="8" y2="17"></line>
-          <polyline points="10 9 9 9 8 9"></polyline>
-        </svg>
+      <!-- État vide -->
+      <div v-else class="empty-state">
+        <div class="empty-icon">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+        </div>
+        <p>Vous n'avez encore créé aucun CV</p>
+        <p class="empty-subtitle">Créez votre premier CV pour commencer</p>
+        <button @click="ajoutercv" class="empty-cta">Créer mon premier CV</button>
       </div>
-      <p>Vous n'avez encore créé aucun CV</p>
-      <p class="empty-subtitle">Créez votre premier CV pour commencer</p>
-      <button @click="ajoutercv" class="empty-cta">Créer mon premier CV</button>
-    </div>
 
-    <!-- Modal de confirmation de suppression -->
-    <div v-if="showConfirmModal" class="modal-overlay" @click="showConfirmModal = false">
-      <div class="modal-content" @click.stop>
-        <h3>Confirmation de suppression</h3>
-        <p>
-          Êtes-vous sûr de vouloir supprimer le CV de
-          <strong>{{ cvToDelete?.prenom }} {{ cvToDelete?.nom }}</strong> ?
-        </p>
-        <p class="modal-warning">Cette action est irréversible.</p>
-        <div class="modal-actions">
-          <button @click="showConfirmModal = false" class="btn-cancel">Annuler</button>
-          <button @click="confirmerEtSupprimer" class="btn-confirm">Supprimer</button>
+      <!-- Modal de confirmation de suppression -->
+      <div
+        v-if="showConfirmModal"
+        class="modal-overlay"
+        @click="showConfirmModal = false"
+      >
+        <div class="modal-content" @click.stop>
+          <h3>Confirmation de suppression</h3>
+          <p>
+            Êtes-vous sûr de vouloir supprimer le CV de
+            <strong>{{ cvToDelete?.prenom }} {{ cvToDelete?.nom }}</strong> ?
+          </p>
+          <p class="modal-warning">Cette action est irréversible.</p>
+          <div class="modal-actions">
+            <button @click="showConfirmModal = false" class="btn-cancel">Annuler</button>
+            <button @click="confirmerEtSupprimer" class="btn-confirm">Supprimer</button>
+          </div>
         </div>
       </div>
     </div>
@@ -219,100 +229,114 @@ onMounted(async () => {
   }
 });
 </script>
-
 <style scoped>
-.mes-cv-container {
-  max-width: 900px;
-  margin: 2rem auto;
-  padding: 2.5rem;
-  font-family: "Inter", "Segoe UI", sans-serif;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+/* === BASE STYLES === */
+.page-wrapper {
+  background: linear-gradient(135deg, #f0f7ff, #e6f0ff);
+  min-height: 100vh;
+  padding: 2rem;
 }
 
-/* Header */
+.mes-cv-container {
+  background: white;
+  border-radius: 16px;
+  padding: 2.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* === HEADER STYLES === */
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2.5rem;
-  border-bottom: 1px solid #f0f0f0;
   padding-bottom: 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .header h1 {
   margin: 0;
-  font-size: 2rem;
-  color: #1a365d;
+  font-size: 1.8rem;
   font-weight: 700;
-  letter-spacing: -0.5px;
+  color: #1e3a8a;
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+
+.header h1::after {
+  content: "";
+  position: absolute;
+  bottom: -1.5rem;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: #3b82f6;
+  border-radius: 3px;
 }
 
 .ajouter-button {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.8rem 1.4rem;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
   background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: #fff;
+  color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(59, 130, 246, 0.3);
 }
 
 .ajouter-button:hover {
   background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
-}
-
-.ajouter-button:active {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
 }
 
 .ajouter-button .icon {
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-size: 1.1rem;
+  font-weight: bold;
 }
 
-/* Liste */
+/* === CV LIST STYLES === */
 .cv-list {
   display: grid;
-  gap: 1.2rem;
-  margin-bottom: 2rem;
+  gap: 1rem;
 }
 
 .cv-card {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #f8fafc;
+  padding: 1.25rem 1.5rem;
+  background: white;
   border-radius: 12px;
-  padding: 1.2rem 1.8rem;
-  border-left: 5px solid #3b82f6;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-  transition: all 0.25s ease;
+  border-left: 4px solid #3b82f6;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border: 1px solid #e2e8f0;
 }
 
 .cv-card:hover {
-  transform: translateY(-4px);
-  background: #f0f7ff;
-  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.08);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+  border-color: #cbd5e1;
 }
 
 .cv-info {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.25rem;
 }
 
 .cv-name {
+  font-size: 1.1rem;
   font-weight: 600;
-  font-size: 1.2rem;
   color: #1e293b;
 }
 
@@ -321,10 +345,10 @@ onMounted(async () => {
   color: #64748b;
 }
 
-/* Actions */
+/* === ACTION BUTTONS === */
 .cv-actions {
   display: flex;
-  gap: 0.7rem;
+  gap: 0.5rem;
 }
 
 .action-button {
@@ -335,113 +359,107 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
   cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  color: white;
 }
 
 .action-button.view {
   background: #3b82f6;
 }
 
-.action-button.view:hover {
-  background: #2563eb;
-  transform: scale(1.12);
-  box-shadow: 0 3px 8px rgba(59, 130, 246, 0.3);
-}
-
 .action-button.edit {
   background: #eab308;
-}
-
-.action-button.edit:hover {
-  background: #ca8a04;
-  transform: scale(1.12);
-  box-shadow: 0 3px 8px rgba(234, 179, 8, 0.3);
 }
 
 .action-button.delete {
   background: #ef4444;
 }
 
-.action-button.delete:hover {
-  background: #dc2626;
-  transform: scale(1.12);
-  box-shadow: 0 3px 8px rgba(239, 68, 68, 0.3);
+.action-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-/* Empty & Loading */
+.action-button.view:hover {
+  background: #2563eb;
+}
+
+.action-button.edit:hover {
+  background: #ca8a04;
+}
+
+.action-button.delete:hover {
+  background: #dc2626;
+}
+
+/* === EMPTY STATE === */
 .empty-state {
   text-align: center;
-  padding: 4rem 2rem;
+  padding: 3rem 2rem;
   background: #f8fafc;
-  border-radius: 14px;
+  border-radius: 12px;
   border: 2px dashed #e2e8f0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  margin-top: 1rem;
 }
 
 .empty-icon {
-  font-size: 3.5rem;
-  margin-bottom: 1.5rem;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1.5rem;
   color: #94a3b8;
-  width: 80px;
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f1f5f9;
-  border-radius: 50%;
 }
 
 .empty-state p {
   margin: 0.5rem 0;
   color: #475569;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
 }
 
 .empty-subtitle {
-  font-size: 1rem;
   color: #64748b;
+  font-size: 0.95rem;
   margin-bottom: 1.5rem;
 }
 
 .empty-cta {
-  margin-top: 1rem;
-  padding: 0.8rem 1.6rem;
+  padding: 0.75rem 1.5rem;
   background: #3b82f6;
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .empty-cta:hover {
   background: #2563eb;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 3px 6px rgba(59, 130, 246, 0.3);
 }
 
+/* === LOADING STATE === */
 .loading-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 4rem;
+  padding: 3rem;
 }
 
 .spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid rgba(59, 130, 246, 0.2);
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(59, 130, 246, 0.1);
   border-top-color: #3b82f6;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1.5rem;
+}
+
+.loading-state p {
+  color: #64748b;
 }
 
 @keyframes spin {
@@ -450,12 +468,7 @@ onMounted(async () => {
   }
 }
 
-.loading-state p {
-  color: #64748b;
-  font-size: 1.1rem;
-}
-
-/* Modal de confirmation */
+/* === MODAL STYLES === */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -466,24 +479,24 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
-  backdrop-filter: blur(3px);
+  z-index: 1000;
+  backdrop-filter: blur(4px);
   animation: fadeIn 0.2s ease-out;
 }
 
 .modal-content {
   background: white;
-  border-radius: 14px;
+  border-radius: 12px;
   padding: 2rem;
   width: 90%;
-  max-width: 450px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  animation: slideIn 0.3s ease-out;
+  max-width: 400px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.3s ease-out;
 }
 
 .modal-content h3 {
   margin-top: 0;
-  font-size: 1.4rem;
+  margin-bottom: 1rem;
   color: #1e293b;
 }
 
@@ -507,8 +520,7 @@ onMounted(async () => {
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .btn-cancel:hover {
@@ -516,21 +528,20 @@ onMounted(async () => {
 }
 
 .btn-confirm {
-  padding: 0.6rem 1.4rem;
+  padding: 0.6rem 1.2rem;
   background: #ef4444;
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .btn-confirm:hover {
   background: #dc2626;
 }
 
-/* Notification / Toast */
+/* === NOTIFICATION STYLES === */
 .notification {
   position: fixed;
   bottom: 20px;
@@ -538,11 +549,11 @@ onMounted(async () => {
   background: #1e293b;
   color: white;
   padding: 1rem 1.5rem;
-  border-radius: 10px;
+  border-radius: 8px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
   transform: translateY(100px);
   opacity: 0;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
   z-index: 1000;
 }
 
@@ -551,7 +562,7 @@ onMounted(async () => {
   opacity: 1;
 }
 
-/* Animations */
+/* === ANIMATIONS === */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -561,9 +572,9 @@ onMounted(async () => {
   }
 }
 
-@keyframes slideIn {
+@keyframes slideUp {
   from {
-    transform: translateY(-30px);
+    transform: translateY(20px);
     opacity: 0;
   }
   to {
@@ -572,45 +583,55 @@ onMounted(async () => {
   }
 }
 
-/* Responsive */
+/* === RESPONSIVE STYLES === */
 @media (max-width: 768px) {
+  .page-wrapper {
+    padding: 1rem;
+  }
+
   .mes-cv-container {
-    padding: 1.8rem;
-    margin: 1rem;
-    border-radius: 12px;
+    padding: 1.5rem;
   }
 
   .header {
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
     gap: 1rem;
-    margin-bottom: 2rem;
   }
 
-  .header h1 {
-    margin-bottom: 1rem;
+  .header h1::after {
+    bottom: -1rem;
   }
 
   .ajouter-button {
     width: 100%;
     justify-content: center;
   }
-}
 
-@media (max-width: 640px) {
   .cv-card {
     flex-direction: column;
-    align-items: stretch;
-    gap: 1.2rem;
-    padding: 1.2rem;
+    align-items: flex-start;
+    gap: 1rem;
   }
 
   .cv-actions {
+    width: 100%;
     justify-content: flex-end;
   }
+}
 
+@media (max-width: 480px) {
   .modal-content {
     padding: 1.5rem;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .btn-cancel,
+  .btn-confirm {
+    width: 100%;
   }
 }
 </style>

@@ -1,40 +1,42 @@
 <template>
-  <div class="supprimer-offre-container">
-    <div class="confirmation-card">
-      <h2>Confirmer la suppression</h2>
+  <div class="page-wrapper">
+    <div class="supprimer-offre-container">
+      <div class="confirmation-card">
+        <h2>Confirmer la suppression</h2>
 
-      <div v-if="loading" class="loading-state">
-        <p>Chargement des informations...</p>
-      </div>
-
-      <div v-else-if="error" class="error-state">
-        <p>{{ error }}</p>
-        <button @click="chargerOffre" class="btn-retry">Réessayer</button>
-        <button @click="retourListe" class="btn-retour">Retour à la liste</button>
-      </div>
-
-      <div v-else class="confirmation-content">
-        <p class="confirmation-message">
-          Êtes-vous sûr de vouloir supprimer l'offre <strong>{{ offre.titre }}</strong> ?
-        </p>
-
-        <div class="warning-message">
-          <p>
-            ⚠️ Cette action est irréversible et supprimera définitivement cette offre.
-          </p>
+        <div v-if="loading" class="loading-state">
+          <p>Chargement des informations...</p>
         </div>
 
-        <div class="action-buttons">
-          <button
-            @click="confirmerSuppression"
-            class="btn-supprimer"
-            :disabled="suppressionEnCours"
-          >
-            <span v-if="suppressionEnCours">Suppression...</span>
-            <span v-else>Confirmer la suppression</span>
-          </button>
+        <div v-else-if="error" class="error-state">
+          <p>{{ error }}</p>
+          <button @click="chargerOffre" class="btn-retry">Réessayer</button>
+          <button @click="retourListe" class="btn-retour">Retour à la liste</button>
+        </div>
 
-          <button @click="retourListe" class="btn-annuler">Annuler</button>
+        <div v-else class="confirmation-content">
+          <p class="confirmation-message">
+            Êtes-vous sûr de vouloir supprimer l'offre
+            <strong>{{ offre.titre }}</strong> ?
+          </p>
+
+          <div class="warning-message">
+            <p>
+              ⚠️ Cette action est irréversible et supprimera définitivement cette offre.
+            </p>
+          </div>
+
+          <div class="action-buttons">
+            <button
+              @click="confirmerSuppression"
+              class="btn-supprimer"
+              :disabled="suppressionEnCours"
+            >
+              <span v-if="suppressionEnCours">Suppression...</span>
+              <span v-else>Confirmer la suppression</span>
+            </button>
+            <button @click="retourListe" class="btn-annuler">Annuler</button>
+          </div>
         </div>
       </div>
     </div>
@@ -58,13 +60,11 @@ const suppressionEnCours = ref(false);
 const chargerOffre = async () => {
   loading.value = true;
   error.value = null;
-
   try {
-    const response = await axios.get(`/api/offres/${offreId}`);
-    offre.value = response.data;
+    const { data } = await axios.get(`/api/offres/${offreId}`);
+    offre.value = data;
   } catch (err) {
     error.value = "Erreur lors du chargement de l'offre. Veuillez réessayer.";
-    console.error("Erreur lors du chargement de l'offre:", err);
   } finally {
     loading.value = false;
   }
@@ -72,96 +72,104 @@ const chargerOffre = async () => {
 
 const confirmerSuppression = async () => {
   suppressionEnCours.value = true;
-
   try {
     await axios.delete(`/api/offres/${offreId}`);
-    router.push("/Offresrecruteur");
+    router.push("/offresrecruteur");
   } catch (err) {
     error.value = "Erreur lors de la suppression de l'offre. Veuillez réessayer.";
-    console.error("Erreur lors de la suppression:", err);
     suppressionEnCours.value = false;
   }
 };
 
-// const retourListe = () => {
-//   router.push('/Offresrecruteur');
-// };
+const retourListe = () => {
+  router.push("/offresrecruteur");
+};
 
-onMounted(() => {
-  chargerOffre();
-});
+onMounted(chargerOffre);
 </script>
 
 <style scoped>
-.supprimer-offre-container {
-  max-width: 600px;
-  margin: 50px auto;
-  padding: 20px;
+/* Wrapper global avec fond bleu */
+.page-wrapper {
+  background: linear-gradient(135deg, #e0eafc, #cfdef3);
+  min-height: 100vh;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 3%;
 }
 
+/* Conteneur transparent pour laisser transparaître le bleu */
+.supprimer-offre-container {
+  width: 100%;
+  max-width: 600px;
+  background: transparent;
+}
+
+/* Carte blanche de confirmation */
 .confirmation-card {
-  background-color: #fff;
+  background-color: #ffffff;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   padding: 30px;
 }
 
+/* Titre */
 .confirmation-card h2 {
   color: #2c3e50;
-  margin-top: 0;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 15px;
-  margin-bottom: 20px;
+  margin: 0 0 20px;
+  text-align: center;
+  position: relative;
+}
+.confirmation-card h2:after {
+  content: "";
+  display: block;
+  width: 60px;
+  height: 3px;
+  background-color: #3498db;
+  margin: 10px auto 0;
+  border-radius: 2px;
 }
 
+/* États loading & error */
 .loading-state,
 .error-state {
   text-align: center;
   padding: 20px 0;
   color: #555;
 }
-
 .error-state {
   color: #e74c3c;
 }
 
+/* Boutons retry & retour */
 .btn-retry,
 .btn-retour {
-  margin-top: 15px;
   padding: 8px 20px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  font-weight: 500;
+  margin: 0 5px;
 }
-
 .btn-retry {
   background-color: #3498db;
-  color: white;
-  margin-right: 10px;
+  color: #fff;
 }
-
 .btn-retour {
   background-color: #95a5a6;
-  color: white;
+  color: #fff;
 }
 
+/* Message de confirmation */
 .confirmation-message {
   font-size: 1.1rem;
   margin-bottom: 20px;
   color: #2c3e50;
 }
 
-.offer-details {
-  background-color: #f8f9fa;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-
-.offer-details p {
-  margin: 8px 0;
-}
-
+/* Alerte warning */
 .warning-message {
   background-color: #fff3cd;
   border-left: 4px solid #ffc107;
@@ -170,46 +178,37 @@ onMounted(() => {
   color: #856404;
 }
 
+/* Boutons d'action */
 .action-buttons {
   display: flex;
-  justify-content: space-between;
-  margin-top: 30px;
+  gap: 10px;
 }
-
 .btn-supprimer,
 .btn-annuler {
-  padding: 10px 20px;
+  flex: 1;
+  padding: 10px 0;
   border: none;
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.3s, transform 0.2s;
 }
-
 .btn-supprimer {
   background-color: #e74c3c;
-  color: white;
-  flex-grow: 1;
-  margin-right: 10px;
+  color: #fff;
 }
-
 .btn-supprimer:hover:not(:disabled) {
   background-color: #c0392b;
   transform: translateY(-2px);
 }
-
 .btn-supprimer:disabled {
   background-color: #e74c3c99;
   cursor: not-allowed;
 }
-
 .btn-annuler {
   background-color: #95a5a6;
-  color: white;
-  flex-grow: 1;
-  margin-left: 10px;
+  color: #fff;
 }
-
 .btn-annuler:hover {
   background-color: #7f8c8d;
   transform: translateY(-2px);
@@ -217,31 +216,18 @@ onMounted(() => {
 
 /* Responsive */
 @media (max-width: 768px) {
+  .page-wrapper {
+    padding: 1rem;
+  }
   .supprimer-offre-container {
-    padding: 10px;
-    margin: 20px auto;
+    margin: 0 auto;
   }
-
-  .confirmation-card {
-    padding: 20px;
-  }
-
   .action-buttons {
     flex-direction: column;
   }
-
   .btn-supprimer,
   .btn-annuler {
-    width: 100%;
     margin: 5px 0;
-  }
-
-  .btn-supprimer {
-    margin-right: 0;
-  }
-
-  .btn-annuler {
-    margin-left: 0;
   }
 }
 </style>

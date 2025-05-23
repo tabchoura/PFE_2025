@@ -19,7 +19,7 @@ class User extends Authenticatable
     
     
     
- 
+ //masquage 
     protected $hidden = [
         'password',
         'remember_token',

@@ -14,7 +14,7 @@
 
       <!-- FORM SECTION -->
       <div class="form-section">
-        <h1 class="form-title">Créez votre compte</h1>
+        <h1 class="form-title">Créez votre compte</h1>  &²  
 
         <!-- STEPPER NAVIGATION -->
         <div class="stepper">
@@ -47,7 +47,7 @@
             <legend>Informations personnelles</legend>
             <div class="grid two-columns">
               <!-- NOM -->
-              <div
+           <div
                 class="form-group"
                 @mouseenter="showHint('nom')"
                 @mouseleave="hideHint('nom')"
@@ -518,6 +518,7 @@ const maxDate = computed(() => {
 
 const isStepValid = computed(() => {
   const { value: step } = currentStep;
+  
   return (
     (step === 0 &&
       validFields.nom &&
@@ -675,6 +676,8 @@ watch(termsAccepted, (val) => {
 </script>
 
 <style scoped>
+
+
 /* Reset de base */
 *,
 *::before,

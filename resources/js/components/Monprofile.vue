@@ -1,76 +1,84 @@
 <template>
-  <div class="profil-container">
-    <h2 class="title">👤 Bienvenue {{ profile.prenom }} {{ profile.nom }}</h2>
+  <div class="page-wrapper">
+    <div class="profil-container">
+      <h2 class="title">👤 Bienvenue {{ profile.prenom }} {{ profile.nom }}</h2>
 
-    <ul class="profil-details" v-if="!editMode">
-      <li>
-        <strong>Date de naissance :</strong> {{ formatDate(profile.date_naissance) }}
-      </li>
-      <li><strong>Numéro de téléphone :</strong> {{ profile.phone }}</li>
-      <li><strong>CIN :</strong> {{ profile.cin }}</li>
-      <li><strong>Lieu de naissance :</strong> {{ profile.lieudenaissance }}</li>
-      <li><strong>Email :</strong> {{ profile.email }}</li>
-    </ul>
+      <ul class="profil-details" v-if="!editMode">
+        <li><strong>Email :</strong> {{ profile.email }}</li>
+        <li><strong>CIN :</strong> {{ profile.cin }}</li>
 
-    <button
-      class="btn-edit"
-      @click="toggleEditMode"
-      :aria-label="editMode ? 'Annuler la modification' : 'Modifier le profil'"
-    >
-      {{ editMode ? "❌ Annuler" : "✏️ Modifier le profil" }}
-    </button>
+        <li>
+          <strong>Date de naissance :</strong> {{ formatDate(profile.date_naissance) }}
+        </li>
+        <li><strong>Lieu de naissance :</strong> {{ profile.lieudenaissance }}</li>
+        <li><strong>Numéro de téléphone :</strong> {{ profile.phone }}</li>
+      </ul>
 
-    <form v-if="editMode" @submit.prevent="updateProfile" class="edit-form">
-      <div class="form-group">
-        <label for="nom">Nom</label>
-        <input type="text" id="nom" v-model="form.nom" required />
-      </div>
-      <div class="form-group">
-        <label for="prenom">Prénom</label>
-        <input type="text" id="prenom" v-model="form.prenom" required />
-      </div>
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" v-model="form.email" required />
-      </div>
-      <div class="form-group">
-        <label for="phone">Téléphone</label>
-        <input
-          type="tel"
-          id="phone"
-          v-model="form.phone"
-          required
-          pattern="[0-9]{8,}"
-          title="Numéro de téléphone valide (minimum 8 chiffres)"
-        />
-      </div>
-      <div class="form-group">
-        <label for="date_naissance">Date de naissance</label>
-        <input type="date" id="date_naissance" v-model="form.date_naissance" required />
-      </div>
-      <div class="form-group">
-        <label for="lieudenaissance">Lieu de naissance</label>
-        <input type="text" id="lieudenaissance" v-model="form.lieudenaissance" required />
-      </div>
-      <div class="form-group">
-        <label for="cin">CIN</label>
-        <input
-          type="text"
-          id="cin"
-          v-model="form.cin"
-          required
-          pattern="[0-9]+"
-          title="CIN doit contenir uniquement des chiffres"
-        />
-      </div>
+      <button
+        class="btn-edit"
+        @click="toggleEditMode"
+        :aria-label="editMode ? 'Annuler la modification' : 'Modifier le profil'"
+      >
+        {{ editMode ? "❌ Annuler" : "✏️ Modifier le profil" }}
+      </button>
 
-      <div class="form-actions">
-        <button type="button" class="btn-cancel" @click="toggleEditMode">
-          ❌ Annuler
-        </button>
-        <button type="submit" class="btn-save">💾 Enregistrer</button>
-      </div>
-    </form>
+      <form v-if="editMode" @submit.prevent="updateProfile" class="edit-form">
+        <div class="form-group">
+          <label for="nom">Nom</label>
+          <input type="text" id="nom" v-model="form.nom" required />
+        </div>
+        <div class="form-group">
+          <label for="prenom">Prénom</label>
+          <input type="text" id="prenom" v-model="form.prenom" required />
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" v-model="form.email" required />
+        </div>
+        <div class="form-group">
+          <label for="phone">Téléphone</label>
+          <input
+            type="tel"
+            id="phone"
+            v-model="form.phone"
+            required
+            pattern="[0-9]{8,}"
+            title="Numéro de téléphone valide (minimum 8 chiffres)"
+          />
+        </div>
+        <div class="form-group">
+          <label for="date_naissance">Date de naissance</label>
+          <input type="date" id="date_naissance" v-model="form.date_naissance" required />
+        </div>
+        <div class="form-group">
+          <label for="lieudenaissance">Lieu de naissance</label>
+          <input
+            type="text"
+            id="lieudenaissance"
+            v-model="form.lieudenaissance"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="cin">CIN</label>
+          <input
+            type="text"
+            id="cin"
+            v-model="form.cin"
+            required
+            pattern="[0-9]+"
+            title="CIN doit contenir uniquement des chiffres"
+          />
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" @click="toggleEditMode">
+            ❌ Annuler
+          </button>
+          <button type="submit" class="btn-save">💾 Enregistrer</button>
+        </div>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -209,188 +217,225 @@ onMounted(() => {
   loadProfileData();
 });
 </script>
-
 <style scoped>
+/* === BASE STYLES === */
+.page-wrapper {
+  background: linear-gradient(135deg, #f0f7ff, #e6f0ff);
+  min-height: 100vh;
+  padding: 2rem;
+}
+
 .profil-container {
-  max-width: 900px;
-  padding: 4rem;
-  background: #ffffff;
-  border-radius: 1.25rem;
-  border-top: 60%;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  font-family: "Roboto", sans-serif;
-  transition: all 0.3s ease;
-  margin: auto; /* Centre le contenu */
-  margin-top: 60px; /* Espace ajouté entre la barre de navigation et le conteneur */
+  background: white;
+  border-radius: 16px;
+  padding: 2.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .profil-container:hover {
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
+/* === TYPOGRAPHY === */
 .title {
   text-align: center;
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 700;
-  color: #0055a5;
-  margin-bottom: 2rem;
+  color: #1e3a8a;
+  margin-bottom: 2.5rem;
+  position: relative;
+  padding-bottom: 0.5rem;
 }
 
+.title::after {
+  content: "";
+  position: absolute;
+  bottom: -1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: #3b82f6;
+  border-radius: 2px;
+}
+
+/* === PROFILE DETAILS === */
 .profil-details {
   list-style: none;
   padding: 0;
-  font-size: 1.1rem;
-  color: #374151;
+  margin: 2rem 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
 }
 
 .profil-details li {
-  margin-bottom: 20px;
-  position: relative;
-  padding-left: 1.5em;
-}
-
-.profil-details li::before {
-  content: "•";
-  color: #2563eb;
-  font-weight: bold;
-  position: absolute;
-  left: 0;
-  font-size: 1.2rem;
-}
-
-.btn-edit {
-  margin-top: 20px;
-  background-color: #2563eb;
-  color: white;
-  padding: 14px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem;
+  background: #f8fafc;
   border-radius: 8px;
-  border: none;
-  font-weight: bold;
-  cursor: pointer;
+  border-left: 3px solid #3b82f6;
+}
+
+.profil-details strong {
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.profil-details span {
+  font-size: 1.1rem;
+  color: #1e293b;
+  font-weight: 500;
+}
+
+/* === BUTTONS === */
+.btn-edit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
   width: 100%;
-  transition: all 0.3s ease;
-  text-align: center;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 1.5rem;
+  box-shadow: 0 2px 5px rgba(59, 130, 246, 0.3);
 }
 
 .btn-edit:hover {
-  background-color: #1e40af;
-  transform: scale(1.03);
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
 }
 
-.btn-edit:focus {
-  outline: 3px solid rgba(37, 99, 235, 0.5);
-  outline-offset: 2px;
-}
-
+/* === EDIT FORM === */
 .edit-form {
-  margin-top: 30px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  margin-top: 2rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
-label {
+.form-group label {
+  font-size: 0.95rem;
+  color: #475569;
   font-weight: 500;
-  color: #4b5563;
 }
 
-input {
-  padding: 12px;
-  border: 1px solid #ddd;
+.form-group input {
+  padding: 0.875rem 1rem;
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
   font-size: 1rem;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  background: #f8fafc;
 }
 
-input:focus {
-  border-color: #2563eb;
+.form-group input:focus {
   outline: none;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
-}
-
-input:invalid {
-  border-color: #ef4444;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  background: white;
 }
 
 .form-actions {
+  grid-column: 1 / -1;
   display: flex;
-  gap: 15px;
-  margin-top: 20px;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
 }
 
 .btn-cancel {
-  background-color: #f3f4f6;
-  color: #4b5563;
-  padding: 14px 20px;
+  padding: 0.875rem 1.5rem;
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  font-weight: bold;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  flex: 1;
+  transition: all 0.2s ease;
 }
 
 .btn-cancel:hover {
-  background-color: #e5e7eb;
+  background: #e2e8f0;
 }
 
 .btn-save {
-  background-color: #16a34a;
+  padding: 0.875rem 1.5rem;
+  background: #10b981;
   color: white;
-  padding: 14px 20px;
-  border-radius: 8px;
   border: none;
-  font-weight: bold;
+  border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  flex: 1;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(16, 185, 129, 0.3);
 }
 
 .btn-save:hover {
-  background-color: #15803d;
-  transform: scale(1.03);
+  background: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
 }
 
-.btn-save:focus {
-  outline: 3px solid rgba(22, 163, 74, 0.5);
-  outline-offset: 2px;
-}
-
+/* === NOTIFICATION === */
 .success-notification {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background-color: #16a34a;
-  color: white;
-  padding: 15px 25px;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  bottom: 2rem;
+  right: 2rem;
+  background: white;
+  color: #065f46;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   z-index: 1000;
+  border-left: 4px solid #10b981;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .success-notification.show {
-  opacity: 1;
   transform: translateY(0);
+  opacity: 1;
 }
 
+/* === RESPONSIVE === */
 @media (max-width: 768px) {
   .profil-container {
     padding: 2rem;
-    margin: 0 15px;
-    border-radius: 1rem;
+    margin: 0 1rem;
   }
 
-  .title {
-    font-size: 1.5rem;
+  .profil-details {
+    grid-template-columns: 1fr;
+  }
+
+  .edit-form {
+    grid-template-columns: 1fr;
   }
 
   .form-actions {
@@ -400,6 +445,20 @@ input:invalid {
   .btn-cancel,
   .btn-save {
     width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-wrapper {
+    padding: 1rem;
+  }
+
+  .profil-container {
+    padding: 1.5rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
   }
 }
 </style>

@@ -3,6 +3,12 @@
     <!-- Titre de la section des offres -->
     <div class="header-actions">
       <h2>Liste des offres</h2>
+      <div class="search">
+        <select v-model="selectedTitle" class="filter-select">
+          <option value="">Tous les titres</option>
+          <option v-for="t in titles" :key="t" :value="t">{{ t }}</option>
+        </select>
+      </div>
     </div>
 
     <!-- Gestion des états de chargement -->
@@ -17,13 +23,13 @@
     </div>
 
     <!-- Affichage quand il n'y a pas d'offres -->
-    <div v-else-if="offres.length === 0" class="empty-state">
+    <div v-else-if="filteredOffers.length === 0" class="empty-state">
       <p>Aucune offre disponible pour le moment</p>
     </div>
 
     <!-- Affichage des offres -->
     <div v-else class="offers-grid">
-      <div class="offer-card" v-for="offer in offres" :key="offer.id">
+      <div class="offer-card" v-for="offer in filteredOffers" :key="offer.id">
         <div class="offer-card-header">
           <h3 class="title-offre">{{ offer.titre }}</h3>
         </div>
@@ -37,9 +43,6 @@
           </div>
         </div>
 
-        <div></div>
-
-        <!-- Bouton Voir plus pour afficher le modal d'authentification -->
         <button class="btn-see-more" @click="checkAuthentication(offer.id)">
           Voir plus
         </button>
@@ -58,12 +61,10 @@
       <div class="modal-content" :class="{ showing: modalShowing }">
         <button class="close-button" @click="closeAuthModal">×</button>
 
-        <!-- Login Form -->
         <div class="auth-container">
           <div class="login-layout">
             <!-- VISUEL GAUCHE -->
             <div class="image-container">
-              <!-- L'image est volontairement remplacée par un dégradé pour une première impression plus légère -->
               <div class="image-overlay">
                 <h1 class="platform-name">Jobgo</h1>
                 <p class="platform-slogan">Connectez talents et opportunités</p>
@@ -71,7 +72,6 @@
             </div>
             <div class="form-container">
               <div v-if="page === 'login'" class="auth-box">
-                <!-- Logo -->
                 <div class="logo-container">
                   <i class="fas fa-briefcase logo-icon"></i>
                 </div>
@@ -91,7 +91,6 @@
                   <span :class="{ active: isRecruteur }">Recruteur</span>
                 </div>
                 <form @submit.prevent="login" novalidate>
-                  <!-- Email -->
                   <div class="input-group">
                     <label for="email">Email</label>
                     <div class="input-with-icon">
@@ -111,7 +110,6 @@
                     </p>
                   </div>
 
-                  <!-- Mot de passe -->
                   <div class="input-group">
                     <label for="password">Mot de passe</label>
                     <div class="input-with-icon">
@@ -187,33 +185,29 @@
                     </p>
                   </div>
 
-                  <!-- Souvenir / lien mdp -->
                   <div class="remember-forgot">
                     <label class="remember-me">
                       <input type="checkbox" v-model="rememberMe" />
                       <span class="checkmark"></span>
                       Se souvenir de moi
                     </label>
-                    <a href="#" class="forgot-password">Mot de passe oublié&nbsp;?</a>
+                    <a href="#" class="forgot-password">Mot de passe oublié ?</a>
                   </div>
 
-                  <!-- Bouton connexion -->
                   <button :disabled="isLoading" type="submit" class="btn-submit">
                     <span v-if="isLoading" class="loading-spinner"></span>
                     <span v-else><i class="fas fa-sign-in-alt"></i> Se connecter</span>
                   </button>
 
-                  <!-- Séparateur -->
                   <div class="or-divider"><span>OU</span></div>
 
-                  <!-- Création compte -->
                   <div class="signup-prompt">
                     <h3>
                       Vous n'avez pas de compte
                       <span class="highlight">{{
                         isRecruteur ? "Recruteur" : "Candidat"
-                      }}</span
-                      >&nbsp;?
+                      }}</span>
+                       ?
                     </h3>
                     <button class="btn-create" @click.prevent="goToSignup">
                       <i class="fas fa-user-plus"></i> Créer un compte
@@ -230,20 +224,24 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
-import recrutlogin from "../../assets/authentification.jpg";
+import search from "../../assets/search.png";
 
 const router = useRouter();
 const offres = ref([]);
+const titles = ref([]);
 const loading = ref(true);
 const error = ref(null);
+const selectedTitle = ref("");
+
+// Auth modal state
 const authModalVisible = ref(false);
 const modalShowing = ref(false);
 const selectedOfferId = ref(null);
 
-// Auth variables
+// Auth form data
 const email = ref("");
 const password = ref("");
 const isRecruteur = ref(false);
@@ -255,99 +253,77 @@ const showPassword = ref(false);
 const rememberMe = ref(false);
 const togglePassword = () => (showPassword.value = !showPassword.value);
 
-// Fonction pour récupérer les offres depuis l'API
-async function getOffres() {
+// Fetch offers and titles
+const getOffres = async () => {
   loading.value = true;
   error.value = null;
-
   try {
-    const response = await axios.get("/api/offres");
-    offres.value = response.data;
+    const [offersRes, titlesRes] = await Promise.all([
+      axios.get("/api/offres"),
+      axios.get("/api/offres/titres"),
+    ]);
+    offres.value = offersRes.data;
+    titles.value = titlesRes.data;
   } catch (err) {
     error.value = "Erreur lors de la récupération des offres. Veuillez réessayer.";
-    console.error("Erreur lors de la récupération des offres:", err);
+    console.error(err);
   } finally {
     loading.value = false;
   }
-}
-
-onMounted(() => {
-  getOffres();
-});
-
-// Fonction pour tronquer le texte (pour la description)
-const truncateText = (text, maxLength) => {
-  if (!text) return "";
-  return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 };
 
-// // Fonction pour formater le salaire (si nécessaire)
-// const formatSalaire = (salaire) => {
-//   if (!salaire) return "Non précisé";
-//   return salaire;
-// };
+onMounted(getOffres);
 
+// Computed filtered list
+// Variante « one-liner »
+const filteredOffers = computed(() => {
+  if (!selectedTitle.value) {
+    // pas de filtre → on affiche toutes les offres
+    return offres.value;
+  }
+  // sinon on ne garde que celles qui ont le titre sélectionné
+  return offres.value.filter((o) => o.titre === selectedTitle.value);
+});
+
+// Utility
+const truncateText = (text, maxLength) =>
+  text && text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+
+// Authentication flow
 const checkAuthentication = (offerId) => {
   const userSession =
     localStorage.getItem("userSession") || sessionStorage.getItem("userSession");
-
   if (!userSession) {
-    // Ouvrir le modal d'authentification au lieu de rediriger
     openAuthModal(offerId);
   } else {
-    // Si l'utilisateur est connecté, rediriger vers les détails de l'offre
     router.push(`/voirdetails/${offerId}`);
   }
 };
-
-// Fonction pour ouvrir le modal d'authentification avec animation
 const openAuthModal = (offerId) => {
   selectedOfferId.value = offerId;
-  console.log("ID de l'offre sélectionnée:", offerId);
   authModalVisible.value = true;
-  setTimeout(() => {
-    modalShowing.value = true;
-  }, 10);
+  setTimeout(() => (modalShowing.value = true), 10);
 };
-
-// Fonction pour fermer le modal d'authentification avec animation
 const closeAuthModal = () => {
   modalShowing.value = false;
-  setTimeout(() => {
-    authModalVisible.value = false;
-  }, 300);
+  setTimeout(() => (authModalVisible.value = false), 300);
 };
-
-// Fonction de validation du formulaire de connexion
 const validateForm = () => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   emailError.value = !emailRegex.test(email.value);
   passwordError.value = password.value.length < 6;
   return !emailError.value && !passwordError.value;
 };
-
-// Fonction de connexion avec redirection forcée
 const login = async () => {
   if (!validateForm()) return;
   isLoading.value = true;
-
   try {
-    // ⚠️ CSRF-cookie obligatoire pour Sanctum
     await axios.get("/sanctum/csrf-cookie");
-
-    // ✅ Appel login avec email & password uniquement
     const response = await axios.post(
       "/api/login",
-      {
-        email: email.value,
-        password: password.value,
-      },
-      {
-        withCredentials: true,
-      }
+      { email: email.value, password: password.value },
+      { withCredentials: true }
     );
-
-    // ✅ Vérification du type de compte
     if (
       (isRecruteur.value && response.data.type !== "recruteur") ||
       (!isRecruteur.value && response.data.type !== "candidat")
@@ -356,32 +332,18 @@ const login = async () => {
       isLoading.value = false;
       return;
     }
-
-    // ✅ Enregistrement de la session (localStorage ou sessionStorage)
-    const userData = response.data;
     const storage = rememberMe.value ? localStorage : sessionStorage;
-    storage.setItem("userSession", JSON.stringify(userData));
-
-    // ✅ Récupération de l'ID pour la redirection
+    storage.setItem("userSession", JSON.stringify(response.data));
     const targetId = selectedOfferId.value;
-
-    // Fermeture du modal avant la redirection
     closeAuthModal();
-
-    // Vérifiez si l'ID de l'offre est bien récupéré avant de rediriger
-    if (targetId) {
-      router.replace(`/voirdetails/${targetId}`);
-    } else {
-      alert("❌ Offre introuvable.");
-    }
-  } catch (error) {
+    if (targetId) router.replace(`/voirdetails/${targetId}`);
+    else alert("❌ Offre introuvable.");
+  } catch (err) {
     alert("❌ Identifiants incorrects ou utilisateur non trouvé");
-    console.error("Erreur lors de la connexion:", error);
+    console.error(err);
     isLoading.value = false;
   }
 };
-
-// Fonction pour aller à la page d'inscription
 const goToSignup = () => {
   page.value = isRecruteur.value ? "registerRecruteur" : "registerCandidat";
   router.push(
@@ -389,183 +351,139 @@ const goToSignup = () => {
   );
 };
 </script>
-
 <style scoped>
-/* Styles pour la section des offres */
-.offers-section {
-  max-width: 1200px;
-  margin: 50px auto;
-  padding: 40px 20px;
-  background-color: #f8f9fa;
-  border-radius: 15px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-  position: relative;
+/* Conteneur général */
+body {
+  background: linear-gradient(135deg, #e0eafc, #cfdef3); /* Dégradé léger */
+  font-family: "Inter", sans-serif;
+  margin: 0;
+  padding: 0;
 }
-
+.offers-section {
+  padding: 2rem;
+  border-radius: 3%;
+  background-color: #e7f1f8;
+}
 .header-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #eaeaea;
+  margin-bottom: 1.5rem;
+}
+/* Effet d'ombre lors du survol de la section */
+.offers-section:hover {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
 }
 
 .header-actions h2 {
+  font-size: 1.75rem;
+  color: #3d63ea;
+
   margin: 0;
+  font-weight: bold;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+}
+
+.filter-select {
+  appearance: none;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #0468bf;
+  border-radius: 2rem;
+  background: #fff url("../../assets/arrow-down.svg") no-repeat calc(100% - 1rem) center;
+  background-size: 1rem;
+  font-size: 1rem;
   color: #2c3e50;
-  font-size: 1.6rem;
+  min-width: 200px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #024a8c;
+  box-shadow: 0 4px 16px rgba(2, 74, 140, 0.2);
 }
 
 /* Grille d'offres */
 .offers-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  transition: grid-template-columns 0.3s ease;
 }
 
+/* Carte d'offre */
 .offer-card {
-  background-color: #fff;
-  padding: 25px;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+  background: #fff;
+  border: 1px solid #e1e5ea;
+  border-radius: 1rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s, box-shadow 0.2s;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 100%;
-  min-height: 250px;
-  position: relative;
-  overflow: hidden;
-  border: none;
-  /* Remplacer le border-top par un design plus subtil */
-  border-left: 4px solid #3498db;
+  padding: 1.5rem;
+  cursor: pointer;
 }
 
+/* Ajout d'un effet sur le survol de la carte d'offre */
 .offer-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 15px 35px rgba(52, 152, 219, 0.15);
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
 }
 
-/* Badge pour mettre en valeur des informations clés */
-.offer-badge {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  background-color: rgba(52, 152, 219, 0.1);
-  color: #3498db;
-  padding: 5px 10px;
-  border-radius: 20px;
-  font-size: 0.8rem;
+/* En-tête de la carte */
+.offer-card-header h3 {
+  font-size: 1.6rem;
+  color: #03315c;
+  margin-bottom: 1rem;
   font-weight: 600;
 }
 
-/* Style amélioré pour le titre de l'offre */
-.offer-card-header h3 {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #2c3e50;
-  margin: 0 0 15px 0;
-  line-height: 1.3;
-  /* Ajout d'un dégradé subtil */
-  background: linear-gradient(to right, #2c3e50, #4a6785);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-.offer-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.offer-card-header {
-  margin-bottom: 15px;
-}
-
-.offer-card-header h3 {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #2c3e50;
-  margin: 0 0 8px 0;
-  line-height: 1.3;
-}
-
-.offer-card-body {
-  flex-grow: 1;
-}
-
-.offer-card-body p {
+/* Description et détails */
+.description {
   font-size: 0.95rem;
   color: #555;
+  line-height: 1.5;
+  margin-bottom: 1rem;
 }
 
-.offer-details {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid #eee;
+.salaire {
+  color: #1d4ed8;
+  font-weight: 600;
+  margin-top: 0.5rem;
 }
 
+/* Bouton Voir plus */
 .btn-see-more {
-  padding: 12px 24px;
-  background-color: #2980b9;
+  background: linear-gradient(135deg, #0468bf, #0284c7);
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: 999px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(2, 74, 140, 0.3);
+  transition: background 0.3s, transform 0.2s;
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  transition: background-color 0.3s ease;
-  margin-top: 15px;
+  margin-top: 1rem;
+  display: block;
   width: 100%;
 }
 
 .btn-see-more:hover {
-  background-color: #3498db;
+  background: linear-gradient(135deg, #1d4d7a, #046297);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(2, 74, 140, 0.4);
 }
 
-/* États de chargement et d'erreur */
-.loading-state,
-.error-state,
-.empty-state {
-  padding: 40px;
-  text-align: center;
-  background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.loading-state {
-  position: relative;
-}
-
-.loading-state:after {
-  content: "";
-  width: 40px;
-  height: 40px;
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #2980b9;
-  border-radius: 50%;
-  display: block;
-  margin: 15px auto;
-  animation: spin 1s linear infinite;
-}
-
-.btn-retry {
-  margin-top: 15px;
-  padding: 8px 20px;
-  background-color: #2980b9;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-retry:hover {
-  background-color: #3498db;
-}
-
-/* Styles pour le modal d'authentification */
+/* Modal Authentification avec effet visuel amélioré */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -578,11 +496,12 @@ const goToSignup = () => {
   background-color: rgba(0, 0, 0, 0.7);
   z-index: 1099;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .modal-overlay.showing {
   opacity: 1;
+  transform: translateY(0); /* Effet d'animation pour l'ouverture */
 }
 
 .modal-content {
@@ -607,6 +526,7 @@ const goToSignup = () => {
   opacity: 1;
 }
 
+/* Auth Modal Close Button */
 .close-button {
   position: absolute;
   top: 15px;
@@ -632,368 +552,41 @@ const goToSignup = () => {
   background-color: rgba(255, 255, 255, 1);
 }
 
-/* --- Layout général --- */
+/* Authentification - Transition modale améliorée */
 .auth-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f7f9fc;
+  background: linear-gradient(
+    135deg,
+    #1f3d7a,
+    #3c64c8
+  ); /* Dégradé pour l'authentification */
   font-family: "Inter", sans-serif;
 }
 
-.login-layout {
-  display: flex;
-  width: 960px;
-  max-width: 100%;
-  background: #ffffff;
-  border-radius: 1.5rem;
-  overflow: hidden;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-}
-
-/* --- Visuel gauche --- */
-.image-container {
-  flex: 1;
-  position: relative;
-  background: linear-gradient(135deg, #1f3d7a 0%, #3c64c8 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-}
-
-.image-overlay {
-  text-align: center;
-  color: #ffffff;
-}
-
-.platform-name {
-  font-size: clamp(2rem, 5vw, 3rem);
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.platform-slogan {
-  font-size: clamp(1rem, 2.5vw, 1.25rem);
-  opacity: 0.9;
-  max-width: 20ch;
-  margin-inline: auto;
-}
-
-/* --- Formulaire --- */
-.form-container {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2.5rem 2rem;
-}
-
-.auth-box {
-  width: min(100%, 380px);
-}
-
-.logo-container {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 1rem auto;
-  border-radius: 50%;
-  /* background: #0468BF; */
-  display: grid;
-  place-items: center;
-  color: #ffffff;
-}
-
-.logo-icon {
-  font-size: 1.75rem;
-}
-
-h2 {
-  font-size: 1.5rem;
-  text-align: center;
-  margin-bottom: 1.5rem;
-  font-weight: 600;
-}
-
-/* Bascule rôle */
-.toggle-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-  font-weight: 600;
-}
-
-.toggle-container span {
-  transition: 0.3s;
-  user-select: none;
-}
-
-.toggle-container span.active {
-  color: #0468bf;
-}
-
-.switch {
-  position: relative;
-  display: inline-block;
-  width: 46px;
-  height: 24px;
-}
-
-.switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  inset: 0;
-  background: #d9d9d9;
-  border-radius: 24px;
-  cursor: pointer;
-  transition: 0.4s;
-}
-
-.slider::before {
-  content: "";
-  position: absolute;
-  height: 18px;
-  width: 18px;
-  left: 3px;
-  bottom: 3px;
-  background: #ffffff;
-  border-radius: 50%;
-  transition: 0.4s;
-}
-
-input:checked + .slider {
-  background: #1f3d7a;
-}
-
-input:checked + .slider::before {
-  transform: translateX(22px);
-}
-
-/* Champs texte */
-.input-group {
-  margin-bottom: 1.25rem;
-}
-
-.input-group label {
-  display: block;
-  margin-bottom: 0.25rem;
-  font-weight: 600;
-}
-
-.input-with-icon {
-  position: relative;
-}
-
-.input-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #9ca3af;
-}
-
-.input-with-icon input {
-  width: 100%;
-  padding: 0.65rem 0.75rem 0.65rem 40px;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  outline: none;
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-.input-with-icon input:focus {
-  border-color: #1f3d7a;
-  box-shadow: 0 0 0 3px rgba(31, 61, 122, 0.15);
-}
-
-.input-with-icon input.error {
-  border-color: #e11d48;
-}
-
-.error-message {
-  margin-top: 0.3rem;
-  color: #e11d48;
-  font-size: 0.875rem;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.toggle-password {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #9ca3af;
-  padding: 0 4px;
-}
-
-/* Souvenir & mdp oublié */
-.remember-forgot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1.25rem;
-  font-size: 0.875rem;
-}
-
-.remember-me {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  user-select: none;
-  position: relative;
-}
-
-.remember-me input {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-}
-
-.checkmark {
-  width: 16px;
-  height: 16px;
-  border: 2px solid #d1d5db;
-  border-radius: 3px;
-  background: #ffffff;
-  display: inline-block;
-}
-
-.remember-me input:checked + .checkmark {
-  background: #1f3d7a;
-  border-color: #1f3d7a;
-}
-
-.remember-me input:checked + .checkmark::after {
-  content: "";
-  position: absolute;
-  left: 4px;
-  top: 0;
-  width: 4px;
-  height: 8px;
-  border: solid #ffffff;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
-.forgot-password {
-  color: #1f3d7a;
-  text-decoration: none;
-}
-
-/* Boutons */
-.btn-submit {
-  width: 100%;
-  padding: 0.75rem;
-  background: #0468bf;
-  color: #ffffff;
-  border: none;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.btn-submit:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-}
-
-.btn-submit:hover:not(:disabled) {
-  background: #0468bf;
-  transform: translateY(-2px);
-}
-
-.loading-spinner {
-  width: 18px;
-  height: 18px;
-  border: 3px solid #fff;
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Séparateur */
-.or-divider {
-  display: flex;
-  align-items: center;
-  margin: 1.5rem 0;
-}
-
-.or-divider::before,
-.or-divider::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: #e5e7eb;
-}
-
-.or-divider span {
-  margin: 0 0.75rem;
-  color: #6b7280;
-  font-weight: 600;
-}
-
-/* Création compte */
-.signup-prompt {
-  text-align: center;
-}
-
-.signup-prompt h3 {
-  font-size: 1rem;
-  margin-bottom: 0.75rem;
-}
-
-.highlight {
-  color: #0468bf;
-  font-weight: 700;
-}
-
-.btn-create {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.65rem 1.25rem;
-  border: 2px solid #1f3d7a;
-  background: transparent;
-  color: #0468bf;
-  border-radius: 0.5rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.btn-create:hover {
-  background: #0468bf;
-  color: #ffffff;
-}
-
-/* Responsive */
+/* Responsive: Ajustement pour les petits écrans */
 @media (max-width: 768px) {
+  .offers-section {
+    padding: 2rem;
+  }
+
+  .offers-grid {
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(200px, 1fr)
+    ); /* Grille plus compacte */
+  }
+
+  .offer-card {
+    padding: 1rem;
+  }
+
+  .modal-content {
+    width: 95%;
+  }
+
   .login-layout {
     flex-direction: column;
   }

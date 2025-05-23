@@ -20,14 +20,6 @@
         >
           Candidatures reçues
         </li>
-        <li
-          @click="navigateTo('/entretiensrecrutuer')"
-          :class="{ active: isActive('/entretiensrecrutuer') }"
-          role="button"
-          tabindex="0"
-        >
-          Entretiens
-        </li>
 
         <li
           @click="navigateTo('/Offresrecruteur')"

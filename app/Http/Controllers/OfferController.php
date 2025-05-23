@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Jobs\EvaluateOfferEmbedding;
 use App\Services\LocalEmbeddingService;
+use App\Jobs\EvaluateCvEmbedding;
 use Illuminate\Support\Facades\Auth;
 
 class OfferController extends Controller
@@ -18,33 +19,37 @@ class OfferController extends Controller
         return response()->json(Offre::all());
     }
 
+   public function titles()
+{
+    // Eloquent : on applique directement distinct() puis pluck()
+    return response()->json(
+        Offre::distinct()->pluck('titre')
+    );
+}
+
     // 2. Crée une nouvelle offre
-    public function store(Request $request)
-    {
-        // Validation
-        $validated = $request->validate([
-            'titre'       => 'required|string|max:255',
-            'description' => 'required|string|max:10000',
-            'salaire'     => 'nullable|string',
-            'details'     => 'nullable|string|max:255',
-        ]);
+ public function store(Request $request)
+{
+    // Validation
+    $validated = $request->validate([
+        'titre'       => 'required|string|max:255',
+        'description' => 'required|string|max:10000',
+        'salaire'     => 'nullable|string',
+        'details'     => 'nullable|string|max:255',
+    ]);
 
-        $offre = Offre::create($validated);
-        // Appeler le job pour évaluer l'offre (générer l'**embedding**)
-        EvaluateOfferEmbedding::dispatch($offre);
+    $offre = Offre::create($validated);
 
-        // Génération de l'embedding sur la description
-        $vector = app(LocalEmbeddingService::class)
-                     ->embedText($offre->description);
+    // Génération de l'embedding pour l'offre
+    $vector = app(LocalEmbeddingService::class)
+                 ->embedText($offre->description);
 
-        // Mise à jour de l'offre avec l'embedding
-        $offre->update(['embedding' => json_encode($vector)]); // Stockage sous forme JSON
+    // Mise à jour de l'offre avec l'embedding
+    $offre->update(['embedding' => json_encode($vector)]); // Stockage sous forme JSON
 
-        // Retourne l'offre complète (avec embedding)
-        return response()->json($offre, 201);
-    }
-
-    // 3. Met à jour une offre existante
+    // Retourne l'offre complète (avec embedding)
+    return response()->json($offre, 201);
+}
     public function update(Request $request, $id)
     {
         $offre = Offre::find($id);
@@ -155,31 +160,28 @@ class OfferController extends Controller
 
     return response()->json($offers);
 }
-public function supprimerEnregistrement($offer_id)
+public function deselectionnerOffre($offer_id)
 {
-    // Récupérer l'ID de l'utilisateur authentifié
     $userId = Auth::id();
 
-    // Vérifier si l'utilisateur est authentifié
     if (!$userId) {
         return response()->json(['message' => 'Utilisateur non authentifié'], 401);
     }
 
-    // Vérifier si l'offre existe pour l'utilisateur
-    $existingRecord = Offre::where('user_id', $userId)
-                           ->where('id', $offer_id)
-                           ->first();
+    // Chercher l'offre liée à cet utilisateur
+    $offre = Offre::where('id', $offer_id)
+                  ->where('user_id', $userId)
+                  ->first();
 
-    // Si l'offre n'est pas trouvée, renvoyer une erreur
-    if (!$existingRecord) {
-        return response()->json(['message' => 'Offre non trouvée ou non enregistrée'], 404);
+    if (!$offre) {
+        return response()->json(['message' => "Offre non trouvée ou non enregistrée par cet utilisateur."], 404);
     }
 
-    // Supprimer l'enregistrement de l'offre pour l'utilisateur
-    $existingRecord->delete();
+    // Désassocier l'offre de l'utilisateur (remet user_id à null ou autre valeur par défaut)
+    $offre->user_id = null;
+    $offre->save();
 
-    // Retourner une réponse de succès
-    return response()->json(['message' => 'Offre supprimée avec succès !'], 200);
+    return response()->json(['message' => 'Offre désélectionnée avec succès !'], 200);
 }
 
 }

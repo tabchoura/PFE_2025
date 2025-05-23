@@ -1,102 +1,104 @@
 <template>
-  <div class="postuler-container">
-    <h1 class="title">Postuler à l'offre</h1>
+  <div class="page-wrapper">
+    <div class="postuler-container">
+      <h1 class="title">Postuler à l'offre</h1>
 
-    <!-- Chargement -->
-    <div v-if="loading" class="loading-container">
-      <div class="loader"></div>
-      <p class="loading-text">Chargement ...</p>
-    </div>
-
-    <!-- Si pas de CV -->
-    <div v-else-if="cvs.length === 0" class="empty-state">
-      <div class="empty-icon">📝</div>
-      <h3>Vous n'avez pas encore de CV</h3>
-      <p>Pour postuler à cette offre, vous devez d'abord créer votre CV.</p>
-      <button @click="Creercv" class="primary-button create-cv-button">
-        <span class="button-icon">➕</span> Créer votre CV
-      </button>
-    </div>
-
-    <!-- Etat de confirmation -->
-    <div v-else class="confirmation-state">
-      <div class="offre-info" v-if="detailsoffre">
-        <h3 class="offre-title">{{ detailsoffre.titre }}</h3>
-        <p class="offre-company">{{ detailsoffre.description }}</p>
-        <p class="offre-location">{{ detailsoffre.salaire }}</p>
-        <p>{{ detailsoffre.details }}</p>
+      <!-- Chargement -->
+      <div v-if="loading" class="loading-container">
+        <div class="loader"></div>
+        <p class="loading-text">Chargement ...</p>
       </div>
 
-      <div class="cv-selection" v-if="cvs.length > 1">
-        <h3>Sélectionnez le CV à utiliser</h3>
-        <div class="cv-list">
-          <div
-            v-for="(cv, index) in cvs"
-            :key="index"
-            :class="['cv-item', { selected: selectedCvId === cv.id }]"
-            @click="selectedCvId = cv.id"
-          >
-            <div class="cv-item-content">
-              <span class="cv-name">{{ cv.nom }} {{ cv.prenom }}</span>
-              <span class="cv-date"
-                >Mis à jour: {{ formatDate(cv.updated_at || cv.created_at) }}</span
-              >
+      <!-- Si pas de CV -->
+      <div v-else-if="cvs.length === 0" class="empty-state">
+        <div class="empty-icon">📝</div>
+        <h3>Vous n'avez pas encore de CV</h3>
+        <p>Pour postuler à cette offre, vous devez d'abord créer votre CV.</p>
+        <button @click="Creercv" class="primary-button create-cv-button">
+          <span class="button-icon">➕</span> Créer votre CV
+        </button>
+      </div>
+
+      <!-- Etat de confirmation -->
+      <div v-else class="confirmation-state">
+        <div class="offre-info" v-if="detailsoffre">
+          <h3 class="offre-title">{{ detailsoffre.titre }}</h3>
+          <p class="offre-company">{{ detailsoffre.description }}</p>
+          <p class="offre-location">{{ detailsoffre.salaire }}</p>
+          <p>{{ detailsoffre.details }}</p>
+        </div>
+
+        <div class="cv-selection" v-if="cvs.length > 1">
+          <h3>Sélectionnez le CV à utiliser</h3>
+          <div class="cv-list">
+            <div
+              v-for="(cv, index) in cvs"
+              :key="index"
+              :class="['cv-item', { selected: selectedCvId === cv.id }]"
+              @click="selectedCvId = cv.id"
+            >
+              <div class="cv-item-content">
+                <span class="cv-name">{{ cv.nom }} {{ cv.prenom }}</span>
+                <span class="cv-date"
+                  >Mis à jour: {{ formatDate(cv.updated_at || cv.created_at) }}</span
+                >
+              </div>
+              <div class="check-indicator" v-if="selectedCvId === cv.id">✓</div>
             </div>
-            <div class="check-indicator" v-if="selectedCvId === cv.id">✓</div>
           </div>
         </div>
-      </div>
 
-      <!-- Message de confirmation -->
-      <div class="confirmation-message">
-        <p>Êtes-vous sûr de vouloir postuler à cette offre ?</p>
+        <!-- Message de confirmation -->
+        <div class="confirmation-message">
+          <p>Êtes-vous sûr de vouloir postuler à cette offre ?</p>
 
-        <div class="motivation-section">
-          <label for="motivation" class="motivation-label"
-            >Ajoutez un message (optionnel)</label
+          <div class="motivation-section">
+            <label for="motivation" class="motivation-label"
+              >Ajoutez un message (optionnel)</label
+            >
+
+            <textarea
+              id="motivation"
+              v-model="motivationText"
+              class="motivation-textarea"
+              placeholder="Expliquez brièvement pourquoi ce poste vous intéresse..."
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button
+            @click="confirmPostuler"
+            class="primary-button confirm-button"
+            :disabled="submitting"
           >
-
-          <textarea
-            id="motivation"
-            v-model="motivationText"
-            class="motivation-textarea"
-            placeholder="Expliquez brièvement pourquoi ce poste vous intéresse..."
-          ></textarea>
+            <span class="button-icon" v-if="!submitting">✓</span>
+            <span class="loader small-loader" v-else></span>
+            {{ submitting ? "Envoi en cours..." : "Confirmer ma candidature" }}
+          </button>
+          <button @click="cancel" class="secondary-button">Annuler</button>
         </div>
       </div>
 
-      <div class="action-buttons">
-        <button
-          @click="confirmPostuler"
-          class="primary-button confirm-button"
-          :disabled="submitting"
-        >
-          <span class="button-icon" v-if="!submitting">✓</span>
-          <span class="loader small-loader" v-else></span>
-          {{ submitting ? "Envoi en cours..." : "Confirmer ma candidature" }}
-        </button>
-        <button @click="cancel" class="secondary-button">Annuler</button>
+      <!-- Message d'erreur -->
+      <div v-if="error" class="error-message">
+        <span class="error-icon">⚠️</span>
+        <p>{{ error }}</p>
+        <button @click="error = null" class="close-error-button">×</button>
       </div>
-    </div>
 
-    <!-- Message d'erreur -->
-    <div v-if="error" class="error-message">
-      <span class="error-icon">⚠️</span>
-      <p>{{ error }}</p>
-      <button @click="error = null" class="close-error-button">×</button>
-    </div>
-
-    <!-- Message de succès -->
-    <div v-if="success" class="success-message">
-      <span class="success-icon">✅</span>
-      <p>{{ success }}</p>
-      <div class="success-actions">
-        <button @click="goToCandidatures" class="primary-button small-button">
-          Voir mes candidatures
-        </button>
-        <button @click="goToOffers" class="secondary-button small-button">
-          Voir d'autres offres
-        </button>
+      <!-- Message de succès -->
+      <div v-if="success" class="success-message">
+        <span class="success-icon">✅</span>
+        <p>{{ success }}</p>
+        <div class="success-actions">
+          <button @click="goToCandidatures" class="primary-button small-button">
+            Voir mes candidatures
+          </button>
+          <button @click="goToOffers" class="secondary-button small-button">
+            Voir d'autres offres
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -106,6 +108,8 @@
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
+import { useToast } from "vue-toastification";
+const toast = useToast();
 
 // Déclaration des variables réactives
 const route = useRoute();
@@ -173,7 +177,8 @@ async function confirmPostuler() {
       message: motivationText.value || null,
       statut: "Enattente", // Statut de la candidature
     });
-    success.value = "Votre candidature a été envoyée avec succès!";
+    toast.success("Candidature Envoyée avec succès !");
+    router.push("/candidature");
     error.value = null;
   } catch (e) {
     error.value = e.response?.data?.message || "Erreur lors de la candidature";
@@ -203,6 +208,12 @@ function goToOffers() {
 }
 </script>
 <style scoped>
+.page-wrapper {
+  background: linear-gradient(135deg, #e0eafc, #cfdef3);
+  padding: 1rem 1rem;
+  border-radius: 2%;
+}
+
 .postuler-container {
   max-width: 800px;
   margin: 6rem auto 2.5rem;

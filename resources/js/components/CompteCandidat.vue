@@ -20,14 +20,14 @@
         >
           Mes candidatures
         </li>
-        <li
+        <!-- <li
           @click="navigateTo('/entretiens')"
           :class="{ active: isActive('/entretiens') }"
           role="button"
           tabindex="0"
         >
           Mes entretiens
-        </li>
+        </li> -->
         <li
           @click="navigateTo('/mesoffres')"
           :class="{ active: isActive('/mesoffres') }"

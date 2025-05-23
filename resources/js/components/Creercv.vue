@@ -1,224 +1,246 @@
 <template>
-  <div class="cv-container">
-    <form @submit.prevent="submitCv" class="cv-form" enctype="multipart/form-data">
-      <h1 class="cv-title">Créer Votre CV&nbsp;!</h1>
+  <div class="page-wrapper">
+    <div class="cv-container">
+      <form @submit.prevent="submitCv" class="cv-form" enctype="multipart/form-data">
+        <h1 class="cv-title">Créer Votre CV&nbsp;!</h1>
 
-      <!-- Colonne gauche -->
-      <div class="cv-left-column">
-        <!-- Photo de profil -->
-        <div class="profile-section">
-          <div class="profile-picture-container">
-            <div
-              class="profile-picture"
-              :style="{ backgroundImage: profilePicture ? `url(${profilePicture})` : '' }"
-              aria-label="Photo de profil"
-            />
-            <label for="image" class="upload-label">Ajouter photo</label>
-            <input
-              id="image"
-              type="file"
-              accept="image/*"
-              class="hidden"
-              @change="handleImage"
-            />
-            <span v-if="errors.image" class="error">{{ errors.image }}</span>
+        <!-- Colonne gauche -->
+        <div class="cv-left-column">
+          <!-- Photo de profil -->
+          <div class="profile-section">
+            <div class="profile-picture-container">
+              <div
+                class="profile-picture"
+                :style="{
+                  backgroundImage: profilePicture ? `url(${profilePicture})` : '',
+                }"
+                aria-label="Photo de profil"
+              />
+              <label for="image" class="upload-label">Ajouter photo</label>
+              <input
+                id="image"
+                type="file"
+                accept="image/*"
+                class="hidden"
+                @change="handleImage"
+              />
+              <span v-if="errors.image" class="error">{{ errors.image }}</span>
+            </div>
+
+            <!-- Nom / Prénom -->
+            <div class="section">
+              <div class="input-group">
+                <label for="nom">Nom</label>
+                <input
+                  id="nom"
+                  v-model="form.nom"
+                  type="text"
+                  placeholder="Nom"
+                  required
+                />
+                <span v-if="errors.nom" class="error">{{ errors.nom }}</span>
+              </div>
+              <div class="input-group">
+                <label for="prenom">Prénom</label>
+                <input
+                  id="prenom"
+                  v-model="form.prenom"
+                  type="text"
+                  placeholder="Prénom"
+                  required
+                />
+                <span v-if="errors.prenom" class="error">{{ errors.prenom }}</span>
+              </div>
+            </div>
           </div>
 
-          <!-- Nom / Prénom -->
+          <!-- Infos personnelles -->
           <div class="section">
             <div class="input-group">
-              <label for="nom">Nom</label>
-              <input id="nom" v-model="form.nom" type="text" placeholder="Nom" required />
-              <span v-if="errors.nom" class="error">{{ errors.nom }}</span>
+              <label for="date_naissance">Date de naissance</label>
+              <input
+                id="date_naissance"
+                v-model="form.date_naissance"
+                type="date"
+                :max="maxDate"
+              />
+              <span v-if="errors.date_naissance" class="error">{{
+                errors.date_naissance
+              }}</span>
             </div>
             <div class="input-group">
-              <label for="prenom">Prénom</label>
-              <input
-                id="prenom"
-                v-model="form.prenom"
-                type="text"
-                placeholder="Prénom"
-                required
-              />
-              <span v-if="errors.prenom" class="error">{{ errors.prenom }}</span>
+              <label for="adresse">Adresse</label>
+              <input id="adresse" v-model="form.adresse" type="text" />
+            </div>
+            <div class="input-group">
+              <label for="email">E-mail</label>
+              <input id="email" v-model="form.email" type="email" required />
+              <span v-if="errors.email" class="error">{{ errors.email }}</span>
             </div>
           </div>
-        </div>
 
-        <!-- Infos personnelles -->
-        <div class="section">
-          <div class="input-group">
-            <label for="date_naissance">Date de naissance</label>
-            <input
-              id="date_naissance"
-              v-model="form.date_naissance"
-              type="date"
-              :max="maxDate"
-            />
-            <span v-if="errors.date_naissance" class="error">{{
-              errors.date_naissance
-            }}</span>
-          </div>
-          <div class="input-group">
-            <label for="adresse">Adresse</label>
-            <input id="adresse" v-model="form.adresse" type="text" />
-          </div>
-          <div class="input-group">
-            <label for="email">E-mail</label>
-            <input id="email" v-model="form.email" type="email" required />
-            <span v-if="errors.email" class="error">{{ errors.email }}</span>
-          </div>
-        </div>
-
-        <!-- Compétences -->
-        <div class="section">
-          <h3 class="section-title">Compétences</h3>
-          <div
-            v-for="(comp, i) in form.competences"
-            :key="`comp-${i}`"
-            class="dynamic-field"
-          >
-            <input
-              v-model="form.competences[i]"
-              type="text"
-              placeholder="Ex : Python, Excel…"
-            />
-            <button
-              v-if="form.competences.length > 1 || i > 0"
-              type="button"
-              @click="removeItem('competences', i)"
-              class="delete-btn"
-              aria-label="Supprimer cette compétence"
+          <!-- Compétences -->
+          <div class="section">
+            <h3 class="section-title">Compétences</h3>
+            <div
+              v-for="(comp, i) in form.competences"
+              :key="`comp-${i}`"
+              class="dynamic-field"
             >
-              ✕
+              <input
+                v-model="form.competences[i]"
+                type="text"
+                placeholder="Ex : Python, Excel…"
+              />
+              <button
+                v-if="form.competences.length > 1 || i > 0"
+                type="button"
+                @click="removeItem('competences', i)"
+                class="delete-btn"
+                aria-label="Supprimer cette compétence"
+              >
+                ✕
+              </button>
+            </div>
+            <button type="button" class="add-btn" @click="addItem('competences')">
+              + Ajouter une compétence
             </button>
           </div>
-          <button type="button" class="add-btn" @click="addItem('competences')">
-            + Ajouter une compétence
-          </button>
-        </div>
 
-        <!-- Langues -->
-        <div class="section">
-          <h3 class="section-title">Langues</h3>
-          <div v-for="(lang, i) in form.langues" :key="`lang-${i}`" class="dynamic-field">
-            <input v-model="form.langues[i]" type="text" placeholder="Français (C2)" />
-            <button
-              v-if="form.langues.length > 1 || i > 0"
-              type="button"
-              @click="removeItem('langues', i)"
-              class="delete-btn"
-              aria-label="Supprimer cette langue"
+          <!-- Langues -->
+          <div class="section">
+            <h3 class="section-title">Langues</h3>
+            <div
+              v-for="(lang, i) in form.langues"
+              :key="`lang-${i}`"
+              class="dynamic-field"
             >
-              ✕
+              <input v-model="form.langues[i]" type="text" placeholder="Français (C2)" />
+              <button
+                v-if="form.langues.length > 1 || i > 0"
+                type="button"
+                @click="removeItem('langues', i)"
+                class="delete-btn"
+                aria-label="Supprimer cette langue"
+              >
+                ✕
+              </button>
+            </div>
+            <button type="button" class="add-btn" @click="addItem('langues')">
+              + Ajouter une langue
             </button>
           </div>
-          <button type="button" class="add-btn" @click="addItem('langues')">
-            + Ajouter une langue
-          </button>
-        </div>
-      </div>
-
-      <!-- Colonne droite -->
-      <div class="cv-right-column">
-        <!-- Présentation -->
-        <div class="section">
-          <h3 class="section-title">Présentation</h3>
-          <textarea
-            id="presentation"
-            v-model="form.presentation"
-            rows="4"
-            placeholder="Quelques lignes pour vous présenter…"
-          />
         </div>
 
-        <!-- Expériences -->
-        <div class="section">
-          <h3 class="section-title">Expériences professionnelles</h3>
-          <div
-            v-for="(exp, i) in form.experiences"
-            :key="`exp-${i}`"
-            class="dynamic-field"
-          >
+        <!-- Colonne droite -->
+        <div class="cv-right-column">
+          <!-- Présentation -->
+          <div class="section">
+            <h3 class="section-title">Présentation</h3>
             <textarea
-              v-model="form.experiences[i]"
-              rows="3"
-              placeholder="2023 | Entreprise ● Poste…"
+              id="presentation"
+              v-model="form.presentation"
+              rows="4"
+              placeholder="Quelques lignes pour vous présenter…"
             />
-            <button
-              v-if="form.experiences.length > 1 || i > 0"
-              type="button"
-              @click="removeItem('experiences', i)"
-              class="delete-btn"
-              aria-label="Supprimer cette expérience"
+          </div>
+
+          <!-- Expériences -->
+          <div class="section">
+            <h3 class="section-title">Expériences professionnelles</h3>
+            <div
+              v-for="(exp, i) in form.experiences"
+              :key="`exp-${i}`"
+              class="dynamic-field"
             >
-              ✕
+              <textarea
+                v-model="form.experiences[i]"
+                rows="3"
+                placeholder="2023 | Entreprise ● Poste…"
+              />
+              <button
+                v-if="form.experiences.length > 1 || i > 0"
+                type="button"
+                @click="removeItem('experiences', i)"
+                class="delete-btn"
+                aria-label="Supprimer cette expérience"
+              >
+                ✕
+              </button>
+            </div>
+            <button type="button" class="add-btn" @click="addItem('experiences')">
+              + Ajouter une expérience
             </button>
           </div>
-          <button type="button" class="add-btn" @click="addItem('experiences')">
-            + Ajouter une expérience
-          </button>
-        </div>
 
-        <!-- Éducation -->
-        <div class="section">
-          <h3 class="section-title">Éducation & Formation</h3>
-          <div
-            v-for="(edu, i) in form.educations_formations"
-            :key="`edu-${i}`"
-            class="dynamic-field"
-          >
-            <textarea
-              v-model="form.educations_formations[i]"
-              rows="3"
-              placeholder="2020-2024 | Université ● Diplôme…"
-            />
-            <button
-              v-if="form.educations_formations.length > 1 || i > 0"
-              type="button"
-              @click="removeItem('educations_formations', i)"
-              class="delete-btn"
-              aria-label="Supprimer cette formation"
+          <!-- Éducation -->
+          <div class="section">
+            <h3 class="section-title">Éducation & Formation</h3>
+            <div
+              v-for="(edu, i) in form.educations_formations"
+              :key="`edu-${i}`"
+              class="dynamic-field"
             >
-              ✕
+              <textarea
+                v-model="form.educations_formations[i]"
+                rows="3"
+                placeholder="2020-2024 | Université ● Diplôme…"
+              />
+              <button
+                v-if="form.educations_formations.length > 1 || i > 0"
+                type="button"
+                @click="removeItem('educations_formations', i)"
+                class="delete-btn"
+                aria-label="Supprimer cette formation"
+              >
+                ✕
+              </button>
+            </div>
+            <button
+              type="button"
+              class="add-btn"
+              @click="addItem('educations_formations')"
+            >
+              + Ajouter une formation
             </button>
           </div>
-          <button type="button" class="add-btn" @click="addItem('educations_formations')">
-            + Ajouter une formation
-          </button>
-        </div>
 
-        <!-- Projets -->
-        <div class="section">
-          <h3 class="section-title">Projets</h3>
-          <div v-for="(proj, i) in form.projets" :key="`proj-${i}`" class="dynamic-field">
-            <textarea
-              v-model="form.projets[i]"
-              rows="2"
-              placeholder="Projet personnel / académique…"
-            />
-            <button
-              v-if="form.projets.length > 1 || i > 0"
-              type="button"
-              @click="removeItem('projets', i)"
-              class="delete-btn"
-              aria-label="Supprimer ce projet"
+          <!-- Projets -->
+          <div class="section">
+            <h3 class="section-title">Projets</h3>
+            <div
+              v-for="(proj, i) in form.projets"
+              :key="`proj-${i}`"
+              class="dynamic-field"
             >
-              ✕
+              <textarea
+                v-model="form.projets[i]"
+                rows="2"
+                placeholder="Projet personnel / académique…"
+              />
+              <button
+                v-if="form.projets.length > 1 || i > 0"
+                type="button"
+                @click="removeItem('projets', i)"
+                class="delete-btn"
+                aria-label="Supprimer ce projet"
+              >
+                ✕
+              </button>
+            </div>
+            <button type="button" class="add-btn" @click="addItem('projets')">
+              + Ajouter un projet
             </button>
           </div>
-          <button type="button" class="add-btn" @click="addItem('projets')">
-            + Ajouter un projet
-          </button>
-        </div>
 
-        <div class="form-actions">
-          <button type="submit" class="submit-btn" :disabled="isSubmitting">
-            {{ isSubmitting ? "Création..." : "Générer mon CV" }}
-          </button>
+          <div class="form-actions">
+            <button type="submit" class="submit-btn" :disabled="isSubmitting">
+              {{ isSubmitting ? "Création..." : "Générer mon CV" }}
+            </button>
+          </div>
         </div>
-      </div>
-    </form>
+      </form>
+    </div>
   </div>
 </template>
 <script setup>
@@ -373,6 +395,12 @@ async function submitCv() {
 </script>
 
 <style scoped>
+.page-wrapper {
+  background: linear-gradient(135deg, #e0eafc, #cfdef3);
+  padding: 1rem 2rem;
+  border-radius: 2%;
+  padding: 2rem;
+}
 .cv-container {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   max-width: 900px;
@@ -389,17 +417,15 @@ async function submitCv() {
 }
 
 .cv-title {
-  position: absolute;
-  top: 0;
-  right: 150px;
+  position: absolute; /* Pas besoin d'absolute sauf si tu veux superposer */
   width: 100%;
   color: #2c3e50;
   text-align: center;
-  padding: 1rem;
-  margin: 0;
+  padding: 1rem 0; /* Padding positif pour espacer */
+  margin: 0 0 2rem 0; /* Marge en bas pour espacer du contenu */
   font-size: 1.8rem;
   font-weight: 500;
-  z-index: 10;
+  z-index: 10; /* Optionnel si pas d'overlay */
 }
 
 .cv-left-column {
