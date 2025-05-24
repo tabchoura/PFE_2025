@@ -1,134 +1,177 @@
 <template>
-  <div class="candidatures-container">
-    <!-- Header with title and filter -->
-    <div class="header-section">
-      <h1><i class="fas fa-file-alt"></i> Candidatures Reçues</h1>
-      <div class="actions-zone">
-        <div class="filter-controls">
-          <select v-model="filtreStatut" class="status-filter">
-            <option value="">Tous les statuts</option>
-            <option value="accepter">Acceptée</option>
-            <option value="entretien">Entretien</option>
-            <option value="embauche">Embauchée</option>
-            <option value="refuser">Refusée</option>
-          </select>
+  <div class="page-wrapper">
+    <div class="candidatures-container">
+      <!-- Header with title and filter -->
+      <div class="header-actions mescandidatures">
+        <h2><i class="fas fa-user-check"></i> Candidatures reçues</h2>
+        <div class="actions-zone">
+          <div class="filter-controls">
+            <select
+              v-model="filtreStatut"
+              class="status-filter"
+              aria-label="Filtrer par statut"
+            >
+              <option value="">Tous les statuts</option>
+              <option value="accepter">Acceptée</option>
+              <option value="entretien">Entretien</option>
+              <option value="embauche">Embauchée</option>
+              <option value="refuser">Refusée</option>
+            </select>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- States: loading, error, empty -->
-    <div v-if="loading" class="loading-state">
-      <div class="spinner"></div>
-      <p>Chargement des candidatures…</p>
-    </div>
-    <div v-else-if="error" class="error-state">
-      <i class="fas fa-exclamation-circle"></i>
-      <p>{{ error }}</p>
-      <button @click="getCandidatures" class="retry-button">
-        <i class="fas fa-redo-alt"></i> Réessayer
-      </button>
-    </div>
-    <div v-else-if="!candidatures.length" class="empty-state">
-      <i class="fas fa-inbox"></i>
-      <h3>Aucune candidature reçue</h3>
-      <p>Les candidatures apparaîtront ici dès que vous en recevrez.</p>
-    </div>
-    <div v-else>
-      <!-- Stats bar -->
-      <div class="stats-bar" v-if="candidaturesFiltrees.length">
-        <p>
-          <span class="stats-count">{{ candidaturesFiltrees.length }}</span>
-          candidature{{ candidaturesFiltrees.length > 1 ? "s" : "" }}
-          {{ filtreStatut ? `avec statut "${labels(filtreStatut)}"` : "au total" }}
-        </p>
+      <div v-if="loading" class="loading-state" role="status" aria-live="polite">
+        <div class="spinner"></div>
+        <p>Chargement des candidatures…</p>
       </div>
 
-      <!-- Candidatures list -->
-      <div class="candidatures-list">
-        <div
-          v-for="c in candidaturesFiltrees"
-          :key="c.id"
-          class="candidature-card"
-          :class="`status-${c.statut}`"
+      <div v-else-if="error" class="error-state" role="alert">
+        <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+        <p>{{ error }}</p>
+        <button
+          @click="getCandidatures"
+          class="retry-button"
+          aria-label="Réessayer le chargement des candidatures"
         >
-          <div class="candidature-main">
-            <!-- Header -->
-            <div class="candidature-header">
-              <h3>{{ c.offre?.titre || "Offre inconnue" }}</h3>
-              <div :class="['status-badge', `status-badge-${c.statut}`]">
-                {{ labels(c.statut) }}
-              </div>
-            </div>
+          <i class="fas fa-redo-alt" aria-hidden="true"></i> Réessayer
+        </button>
+      </div>
 
-            <!-- Candidate info -->
-            <div class="candidat-info">
-              <div class="avatar">{{ getInitials(c.cv?.prenom, c.cv?.nom) }}</div>
-              <div class="identity">
-                <h4>{{ c.cv?.prenom }} {{ c.cv?.nom }}</h4>
-                <p v-if="c.cv?.email"><i class="fas fa-envelope"></i> {{ c.cv.email }}</p>
-                <p v-if="c.cv?.telephone">
-                  <i class="fas fa-phone"></i> {{ c.cv.telephone }}
-                </p>
-              </div>
-            </div>
+      <div
+        v-else-if="!candidatures.length"
+        class="empty-state"
+        role="region"
+        aria-live="polite"
+      >
+        <i class="fas fa-inbox" aria-hidden="true"></i>
+        <h3>Aucune candidature reçue</h3>
+        <p>Les candidatures apparaîtront ici dès que vous en recevrez.</p>
+      </div>
 
-            <!-- Details -->
-            <div class="candidature-details">
-              <div class="detail-item">
-                <i class="fas fa-calendar"></i>
-                <div>
-                  <span class="label">Date de candidature</span>
-                  <span class="value">{{ formatDate(c.created_at) }}</span>
+      <div v-else>
+        <div class="stats-bar" v-if="candidaturesFiltrees.length">
+          <p>
+            <span class="stats-count">{{ candidaturesFiltrees.length }}</span>
+            candidature{{ candidaturesFiltrees.length > 1 ? "s" : "" }}
+            {{ filtreStatut ? `avec statut "${labels(filtreStatut)}"` : "au total" }}
+          </p>
+        </div>
+
+        <div class="candidatures-list">
+          <div
+            v-for="c in candidaturesFiltrees"
+            :key="c.id"
+            class="candidature-card"
+            :class="`status-${c.statut}`"
+          >
+            <div class="candidature-main">
+              <div class="candidature-header">
+                <h3>{{ c.offre?.titre || "Offre inconnue" }}</h3>
+                <div :class="['status-badge', `status-badge-${c.statut}`]">
+                  <span>
+                    {{ labels(c.statut) }}
+                    {{
+                      c.statut === "accepter"
+                        ? "✅"
+                        : c.statut === "refuser"
+                        ? "❌"
+                        : c.statut === "entretien"
+                        ? "🗓️"
+                        : c.statut === "embauche"
+                        ? "🎉"
+                        : ""
+                    }}
+                  </span>
                 </div>
               </div>
-              <div class="detail-item">
-                <i class="fas fa-calendar-alt"></i>
-                <div v-if="c.date_entretien" class="card-info-row">
-                  <i class="fas fa-handshake"></i>
-                  <p>
-                    <strong>Entretien :</strong>
-                    {{ formatDateTime12h(c.date_entretien) }}
+
+              <div class="candidat-info">
+                <div
+                  class="avatar"
+                  :aria-label="`Initiales du candidat ${c.cv?.prenom} ${c.cv?.nom}`"
+                >
+                  {{ getInitials(c.cv?.prenom, c.cv?.nom) }}
+                </div>
+                <div class="identity">
+                  <h4>{{ c.cv?.prenom }} {{ c.cv?.nom }}</h4>
+                  <p v-if="c.cv?.email">
+                    <i class="fas fa-envelope" aria-hidden="true"></i> {{ c.cv.email }}
+                  </p>
+                  <p v-if="c.cv?.telephone">
+                    <i class="fas fa-phone" aria-hidden="true"></i> {{ c.cv.telephone }}
                   </p>
                 </div>
               </div>
-              <div class="detail-item" v-if="c.message">
-                <i class="fas fa-comment"></i>
-                <div>
-                  <span class="label">Message</span>
-                  <span class="value">{{ truncateText(c.message, 100) }}</span>
+
+              <div class="candidature-details">
+                <div class="detail-item">
+                  <i class="fas fa-calendar" aria-hidden="true"></i>
+                  <div>
+                    <span class="label">Date de candidature</span>
+                    <span class="value">{{ formatDate(c.created_at) }}</span>
+                  </div>
+                </div>
+                <div class="detail-item" v-if="c.date_entretien">
+                  <i class="fas fa-calendar-alt" aria-hidden="true"></i>
+                  <div class="card-info-row">
+                    <i class="fas fa-handshake" aria-hidden="true"></i>
+                    <p>
+                      <strong>Entretien :</strong>
+                      {{ formatDateTime12h(c.date_entretien) }}
+                    </p>
+                  </div>
+                </div>
+                <div class="detail-item" v-if="c.message">
+                  <i class="fas fa-comment" aria-hidden="true"></i>
+                  <div>
+                    <span class="label">Message</span>
+                    <span class="value">{{ truncateText(c.message, 100) }}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <!-- Workflow stepper -->
-            <div class="workflow-stepper">
               <div
-                v-for="(step, i) in getSteps(c.statut)"
-                :key="step.key"
-                class="step"
-                :class="{
-                  'step-done': stepOrder(c.statut) > i,
-                  'step-active': stepOrder(c.statut) === i,
-                }"
+                class="workflow-stepper"
+                role="list"
+                aria-label="Étapes du processus de candidature"
               >
-                <span class="circle">{{ i + 1 }}</span>
-                <span class="label">{{ step.label }}</span>
+                <div
+                  v-for="(step, i) in getSteps(c.statut)"
+                  :key="step.key"
+                  class="step"
+                  :class="{
+                    'step-done': stepOrder(c.statut) > i,
+                    'step-active': stepOrder(c.statut) === i,
+                  }"
+                  role="listitem"
+                >
+                  <span class="circle">{{ i + 1 }}</span>
+                  <span class="label">{{ step.label }}</span>
+                </div>
+              </div>
+
+              <div v-if="c.statut === 'accepter'" class="actions">
+                <button
+                  @click="planifierEntretien(c)"
+                  class="primary-btn"
+                  aria-label="Planifier un entretien"
+                >
+                  <i class="fas fa-calendar-alt" aria-hidden="true"></i> Planifier
+                  entretien
+                </button>
               </div>
             </div>
 
-            <!-- Planifier entretien -->
-            <div v-if="c.statut === 'accepter'" class="actions">
-              <button @click="planifierEntretien(c)" class="primary-btn">
-                <i class="fas fa-calendar-alt"></i> Planifier entretien
+            <div class="candidature-actions">
+              <button
+                @click="voirDetails(c)"
+                class="primary-btn"
+                aria-label="Voir les détails de la candidature"
+              >
+                <i class="fas fa-eye" aria-hidden="true"></i> Voir détails
               </button>
             </div>
-          </div>
-
-          <!-- Voir détails button -->
-          <div class="candidature-actions">
-            <button @click="voirDetails(c)" class="primary-btn">
-              <i class="fas fa-eye"></i> Voir détails
-            </button>
           </div>
         </div>
       </div>
@@ -147,7 +190,6 @@ const error = ref(null);
 const filtreStatut = ref("");
 const router = useRouter();
 
-// Date formatting
 const formatDate = (d) =>
   d
     ? new Date(d).toLocaleDateString("fr-FR", {
@@ -156,6 +198,7 @@ const formatDate = (d) =>
         year: "numeric",
       })
     : "—";
+
 const formatDateTime12h = (d) => {
   if (!d) return "—";
   const dt = new Date(d);
@@ -169,13 +212,12 @@ const formatDateTime12h = (d) => {
   }).format(dt);
 };
 
-// Utility functions
 const truncateText = (t, len = 100) =>
   t && t.length > len ? `${t.slice(0, len)}...` : t || "";
+
 const getInitials = (first, last) =>
   `${(first || "").charAt(0)}${(last || "").charAt(0)}`.toUpperCase();
 
-// Status labels
 const labels = (statut) =>
   ({
     enattente: "En attente",
@@ -185,7 +227,6 @@ const labels = (statut) =>
     refuser: "Refusée",
   }[statut] || "—");
 
-// retourne les étapes du workflow selon le statut :
 const getSteps = (statut) => {
   if (statut === "refuser") {
     return [{ key: "refuser", label: "Refusée" }];
@@ -197,7 +238,6 @@ const getSteps = (statut) => {
   ];
 };
 
-//Donne l’index de l’étape courante dans le workflow :
 const stepOrder = (statut) =>
   ({
     accepter: 0,
@@ -206,15 +246,14 @@ const stepOrder = (statut) =>
     refuser: 0,
   }[statut] || 0);
 
-// Navigation functions
 const voirDetails = (c) => {
   router.push({ name: "DetailsCandidature", params: { candidatureId: c.id } });
 };
+
 const planifierEntretien = (c) => {
   router.push({ name: "PlanifierEntretien", params: { candidatureId: c.id } });
 };
 
-// Filter logic
 const candidaturesFiltrees = computed(() => {
   if (!filtreStatut.value) return candidatures.value;
   return candidatures.value.filter((c) => c.statut === filtreStatut.value);
@@ -227,18 +266,15 @@ const getCandidatures = async () => {
     const response = await axios.get("/api/candidatures");
     const data = response.data;
     candidatures.value = Array.isArray(data)
-      ? //pour chaque c on creer un nv object et  change la statut
-        //map creer un nv tableau
-        data.map((c) => {
-          const ia = (c.status_ia || "").trim().toLowerCase();
-          let statut;
-          if (c.date_entretien) statut = "entretien";
-          else if (c.status_ia === "accepted") statut = "accepter";
-          else if (c.status_ia === "rejected") statut = "refuser";
-          else if (c.status_ia.statut === "embauche" || c.statut === "Embauchée")
-            statut = "embauche";
-          else statut = c.statut || "enattente";
-          return { ...c, statut };
+      ? data.map((c) => {
+          if (c.status_ia === "rejected") {
+            c.statut = "refuser";
+          } else if (c.status_ia === "accepted") {
+            c.statut = "accepter";
+          } else {
+            c.statut = "enattente";
+          }
+          return c;
         })
       : [];
   } catch (e) {
@@ -253,33 +289,75 @@ onMounted(getCandidatures);
 </script>
 
 <style scoped>
+.page-wrapper {
+  background: linear-gradient(135deg, #f5f9ff, #ebf3ff);
+  min-height: 100vh;
+  padding: 2rem;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+}
 .candidatures-container {
   max-width: 1200px;
-  margin: 2rem auto;
-  padding: 2rem;
-  background: #f8fafc;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0 auto;
+  padding: 2.5rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Header Section */
-.header-section {
-  margin-bottom: 1.5rem;
-}
-
-h1 {
-  display: flex;
-  align-items: center;
-  margin-bottom: 1.5rem;
-  color: #1a202c;
+.mescandidatures h2 {
+  color: #1e3a8a; /* bleu foncé proche de la capture */
   font-size: 2rem;
   font-weight: 700;
+  margin-bottom: 2rem;
+  position: relative;
+  padding-bottom: 0.5rem;
+  letter-spacing: -0.5px;
 }
 
-h1 i {
-  margin-right: 0.75rem;
-  color: #3498db;
+.candidatures-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.mescandidatures h2::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 3rem; /* largeur de la barre */
+  height: 4px; /* épaisseur */
+  background-color: #1e3a8a; /* même bleu foncé */
+  border-radius: 4px; /* arrondi */
+}
+/* Header Section */
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.header-actions h2 {
+  margin: 0;
+  color: #1a237e;
+  font-size: 1.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  letter-spacing: -0.5px;
+}
+.header-actions h2 i {
+  margin-right: 14px;
+  color: #3f51b5;
+  font-size: 1.6rem;
+  transition: transform 0.3s ease;
+}
+
+.header-actions:hover h2 i {
+  transform: scale(1.1);
 }
 
 .actions-zone {
@@ -667,17 +745,11 @@ h1 i {
   border-top: 1px solid #edf2f7;
 }
 
-.action-buttons {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 .primary-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #3498db;
+  background: linear-gradient(135deg, #5090f6, #2563eb, #1d4ed8);
   color: white;
   border: none;
   padding: 0.75rem 1.25rem;
@@ -698,53 +770,6 @@ h1 i {
 .primary-btn:disabled {
   background: #a0aec0;
   cursor: not-allowed;
-}
-
-.quick-status-update {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.status-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.accept-btn {
-  background-color: #c6f6d5;
-  color: #2f855a;
-}
-
-.accept-btn:hover {
-  background-color: #38a169;
-  color: white;
-}
-
-.interview-btn {
-  background-color: #bee3f8;
-  color: #2b6cb0;
-}
-
-.interview-btn:hover {
-  background-color: #3182ce;
-  color: white;
-}
-
-.reject-btn {
-  background-color: #fed7d7;
-  color: #c53030;
-}
-
-.reject-btn:hover {
-  background-color: #e53e3e;
-  color: white;
 }
 
 /* Responsive */
@@ -774,14 +799,14 @@ h1 i {
     gap: 0.75rem;
   }
 
-  .action-buttons {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
+  .candidature-actions {
+    display: flex;
+    justify-content: flex-start;
+    padding: 1rem 1rem;
   }
 
-  .quick-status-update {
-    justify-content: space-between;
+  .primary-btn {
+    width: 100%;
   }
 
   .workflow-stepper {

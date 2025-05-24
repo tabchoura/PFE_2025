@@ -223,7 +223,7 @@ onMounted(getUserSelectedOffers);
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: #3b82f6;
+  background: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
   color: white;
   padding: 0.75rem 1.75rem;
   border-radius: 8px;

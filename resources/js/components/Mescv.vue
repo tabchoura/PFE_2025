@@ -143,7 +143,9 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
+import { useToast } from "vue-toastification";
 
+const toast = useToast();
 const router = useRouter();
 const loading = ref(true);
 const cvs = ref([]);
@@ -187,33 +189,33 @@ async function confirmerEtSupprimer() {
     cvs.value = cvs.value.filter((c) => c.id !== cvToDelete.value.id);
     showConfirmModal.value = false;
     // Notification de succès
-    showNotification("CV supprimé avec succès");
+    toast.success("CV supprimé avec succès");
   } catch (err) {
     console.error("Erreur suppression CV :", err);
     alert("Impossible de supprimer le CV.");
   }
 }
 
-// Notification temporaire (simule un système de toast)
-function showNotification(message) {
-  const notif = document.createElement("div");
-  notif.className = "notification";
-  notif.textContent = message;
-  document.body.appendChild(notif);
+// // Notification temporaire (simule un système de toast)
+// function showNotification(message) {
+//   const notif = document.createElement("div");
+//   notif.className = "notification";
+//   notif.textContent = message;
+//   document.body.appendChild(notif);
 
-  // Animation d'entrée
-  setTimeout(() => {
-    notif.classList.add("show");
-  }, 10);
+//   // Animation d'entrée
+//   setTimeout(() => {
+//     notif.classList.add("show");
+//   }, 10);
 
-  // Auto-suppression après 3 secondes
-  setTimeout(() => {
-    notif.classList.remove("show");
-    setTimeout(() => {
-      document.body.removeChild(notif);
-    }, 300);
-  }, 3000);
-}
+//   // Auto-suppression après 3 secondes
+//   setTimeout(() => {
+//     notif.classList.remove("show");
+//     setTimeout(() => {
+//       document.body.removeChild(notif);
+//     }, 300);
+//   }, 3000);
+// }
 
 // Chargement
 onMounted(async () => {
@@ -282,7 +284,7 @@ onMounted(async () => {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  background: linear-gradient(90deg, #20c599 0%, #2dd9b5 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -365,15 +367,16 @@ onMounted(async () => {
 }
 
 .action-button.view {
-  background: #3b82f6;
+  background: linear-gradient(90deg, #e2e8f0 0%, #cbd5e1 100%);
+  color: #334155;
 }
 
 .action-button.edit {
-  background: #eab308;
+  background: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
 }
 
 .action-button.delete {
-  background: #ef4444;
+  background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
 }
 
 .action-button:hover {

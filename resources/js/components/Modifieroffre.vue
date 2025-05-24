@@ -43,8 +43,10 @@
             placeholder="Informations complémentaires, avantages…"
           />
         </div>
-
-        <button type="submit" class="submit-btn">Enregistrer les modifications</button>
+        <div class="btn-group">
+          <button type="submit" class="submit-btn">Enregistrer les modifications</button>
+          <button type="button" @click="rollback" class="annuler-btn">Annuler</button>
+        </div>
       </form>
     </div>
   </div>
@@ -92,27 +94,28 @@ async function modifier() {
     console.error("Erreur modification offre :", err);
   }
 }
+function rollback() {
+  router.push("/mescv");
+}
 </script>
-
 <style scoped>
-/* Wrapper global avec fond bleu */
+/* ──────────────── LAYOUT PRINCIPAL ──────────────── */
 .page-wrapper {
-  background: linear-gradient(135deg, #e0eafc, #cfdef3);
-  min-height: 100vh;
-  padding: 2rem;
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(135deg, #e0eafc, #cfdef3);
   border-radius: 3%;
 }
 
-/* Conteneur transparent */
 .form-container {
   width: 100%;
   max-width: 500px;
 }
 
-/* Formulaire en carte blanche */
+/* ──────────────── FORMULAIRE ──────────────── */
 form {
   background-color: #ffffff;
   border-radius: 12px;
@@ -120,25 +123,25 @@ form {
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
 }
 
-/* Titre */
+/* ──────────────── TYPOGRAPHIE ──────────────── */
 h1 {
+  position: relative;
   text-align: center;
+  color: #2c3e50;
   font-size: 1.8rem;
   margin-bottom: 1.5rem;
-  color: #2c3e50;
-  position: relative;
 }
-h1:after {
+h1::after {
   content: "";
   display: block;
   width: 80px;
   height: 3px;
   background-color: #3498db;
-  margin: 10px auto 0;
+  margin: 0.5rem auto 0;
   border-radius: 2px;
 }
 
-/* Champs */
+/* ──────────────── CHAMPS DE SAISIE ──────────────── */
 .form-group {
   margin-bottom: 1.5rem;
 }
@@ -153,46 +156,71 @@ input {
   padding: 0.8rem 1rem;
   border: 1px solid #e1e5ee;
   border-radius: 8px;
-  font-size: 1rem;
   background-color: #f8fafc;
-  transition: all 0.2s ease;
+  font-size: 1rem;
+  transition: border 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+input::placeholder {
+  color: #a0aec0;
 }
 input:focus {
   outline: none;
   border-color: #3498db;
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.15);
-  background-color: #fff;
+  background-color: #ffffff;
 }
-input::placeholder {
-  color: #a0aec0;
+
+/* ──────────────── GROUPE DE BOUTONS ──────────────── */
+.btn-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  /* Pour alignement à droite, décommentez ces lignes :
+  justify-content: flex-end;
+  */
+}
+
+.btn-group .submit-btn,
+.btn-group .annuler-btn {
+  flex: 1;
+  padding: 0.9rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
 }
 
 /* Bouton principal */
 .submit-btn {
-  width: 100%;
-  padding: 0.9rem;
-  background-color: #3498db;
-  color: #fff;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: #ffffff;
+  padding: 20px;
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 .submit-btn:hover {
-  background-color: #2980b9;
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 .submit-btn:active {
   transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Responsive */
+/* Bouton secondaire */
+.annuler-btn {
+  background: linear-gradient(135deg, #7d7d7d 0%, #a3a3a3 100%);
+  color: #ffffff;
+  border: 1px solid #666666;
+}
+.annuler-btn:hover {
+  filter: brightness(1.1);
+}
+.annuler-btn:active {
+  filter: brightness(0.9);
+}
+
+/* ──────────────── RESPONSIVE ──────────────── */
 @media (max-width: 768px) {
   .page-wrapper {
     padding: 1rem;

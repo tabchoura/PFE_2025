@@ -1,69 +1,52 @@
 <template>
   <div class="page-wrapper">
     <div class="cv-container">
-      <form @submit.prevent="submitCv" class="cv-form">
-        <h1 class="cv-title">Modifier votre CV&nbsp;!</h1>
+      <!-- Loader -->
+      <div v-if="isLoading" class="loading-container" role="status" aria-live="polite">
+        <div class="loader"></div>
+        <p class="loading-text">Chargement du CV…</p>
+      </div>
 
-        <!-- Colonne gauche -->
+      <!-- Erreur -->
+      <div v-else-if="error" class="error-message" role="alert">
+        <p>{{ error }}</p>
+        <button @click="loadCv" class="btn btn-retry">Réessayer</button>
+      </div>
+
+      <!-- Formulaire édition -->
+      <form
+        v-else
+        @submit.prevent="updateProfile"
+        class="cv-form edit-form"
+        ref="cvElement"
+      >
         <div class="cv-left-column">
-          <!-- Photo de profil -->
           <div class="profile-section">
             <div class="profile-picture-container">
-              <div
-                class="profile-picture"
-                :style="{
-                  backgroundImage: profilePicture ? `url(${profilePicture})` : '',
-                }"
-              />
-              <label for="image" class="upload-label">Ajouter photo</label>
-              <input
-                id="image"
-                type="file"
-                accept="image/*"
-                class="hidden"
-                @change="handleImage"
-              />
-              <span v-if="errors.image" class="error">{{ errors.image }}</span>
-            </div>
-
-            <!-- Nom / Prénom -->
-            <div class="section">
-              <div class="input-group">
-                <label for="nom">Nom</label>
-                <input id="nom" v-model="form.nom" type="text" placeholder="Nom" />
-              </div>
-              <div class="input-group">
-                <label for="prenom">Prénom</label>
-                <input
-                  id="prenom"
-                  v-model="form.prenom"
-                  type="text"
-                  placeholder="Prénom"
-                />
-              </div>
+              <div class="profile-picture" :style="profileImageStyle"></div>
             </div>
           </div>
-
-          <!-- Infos personnelles -->
           <div class="section">
-            <div class="input-group">
-              <label for="date_naissance">Date de naissance</label>
-              <input id="date_naissance" v-model="form.date_naissance" type="date" />
-            </div>
-            <div class="input-group">
-              <label for="adresse">Adresse</label>
-              <input id="adresse" v-model="form.adresse" type="text" />
-            </div>
-            <div class="input-group">
-              <label for="email">E-mail</label>
-              <input id="email" v-model="form.email" type="email" />
-            </div>
+            <input v-model="form.prenom" placeholder="Prénom" aria-label="Prénom" />
+            <input v-model="form.nom" placeholder="Nom" aria-label="Nom" />
+            <input
+              v-model="form.date_naissance"
+              type="date"
+              placeholder="Date de naissance"
+              aria-label="Date de naissance"
+            />
+            <input
+              v-model="form.email"
+              type="email"
+              placeholder="Email"
+              aria-label="Email"
+            />
+            <input v-model="form.adresse" placeholder="Adresse" aria-label="Adresse" />
           </div>
 
-          <!-- Compétences -->
           <div class="section">
-            <h3 class="section-title">Compétences</h3>
-            <div v-for="(comp, i) in form.competences" :key="i" class="dynamic-field">
+            <h3 class="section-title1">Compétences</h3>
+            <div v-for="(comp, i) in form.competences" :key="`comp-${i}`">
               <input
                 v-model="form.competences[i]"
                 type="text"
@@ -73,172 +56,175 @@
                 v-if="form.competences.length > 1 || i > 0"
                 type="button"
                 @click="removeItem('competences', i)"
-                class="delete-btn"
+                class="btn btn-icon delete-btn"
+                aria-label="Supprimer cette compétence"
               >
                 ✕
               </button>
             </div>
-            <button type="button" class="add-btn" @click="addItem('competences')">
+            <button type="button" class="btn btn-add" @click="addItem('competences')">
               + Ajouter une compétence
             </button>
           </div>
 
-          <!-- Langues -->
           <div class="section">
-            <h3 class="section-title">Langues</h3>
-            <div v-for="(lang, i) in form.langues" :key="i" class="dynamic-field">
+            <h3 class="section-title1">Langues</h3>
+            <div
+              v-for="(lang, i) in form.langues"
+              :key="`lang-${i}`"
+              class="dynamic-field"
+            >
               <input v-model="form.langues[i]" type="text" placeholder="Français (C2)" />
               <button
                 v-if="form.langues.length > 1 || i > 0"
                 type="button"
                 @click="removeItem('langues', i)"
-                class="delete-btn"
+                class="btn btn-icon delete-btn"
+                aria-label="Supprimer cette langue"
               >
                 ✕
               </button>
             </div>
-            <button type="button" class="add-btn" @click="addItem('langues')">
+            <button type="button" class="btn btn-add" @click="addItem('langues')">
               + Ajouter une langue
             </button>
           </div>
         </div>
 
-        <!-- Colonne droite -->
         <div class="cv-right-column">
-          <!-- Présentation -->
-          <div class="section">
+          <section class="section">
             <h3 class="section-title">Présentation</h3>
             <textarea
-              id="presentation"
               v-model="form.presentation"
               rows="4"
+              aria-label="Présentation"
               placeholder="Quelques lignes pour vous présenter…"
-            />
-          </div>
+            ></textarea>
+          </section>
 
-          <!-- Expériences -->
-          <div class="section">
+          <section class="section">
             <h3 class="section-title">Expériences professionnelles</h3>
-            <div v-for="(exp, i) in form.experiences" :key="i" class="dynamic-field">
+            <div
+              v-for="(exp, i) in form.experiences"
+              :key="`exp-${i}`"
+              class="dynamic-field"
+            >
               <textarea
                 v-model="form.experiences[i]"
                 rows="3"
                 placeholder="2023 | Entreprise ● Poste…"
-              />
+              ></textarea>
               <button
                 v-if="form.experiences.length > 1 || i > 0"
                 type="button"
                 @click="removeItem('experiences', i)"
-                class="delete-btn"
+                class="btn btn-icon delete-btn"
+                aria-label="Supprimer cette expérience"
               >
                 ✕
               </button>
             </div>
-            <button type="button" class="add-btn" @click="addItem('experiences')">
+            <button type="button" class="btn btn-add" @click="addItem('experiences')">
               + Ajouter une expérience
             </button>
-          </div>
+          </section>
 
-          <!-- Éducation -->
-          <div class="section">
+          <section class="section">
             <h3 class="section-title">Éducation & Formation</h3>
             <div
               v-for="(edu, i) in form.educations_formations"
-              :key="i"
+              :key="`edu-${i}`"
               class="dynamic-field"
             >
               <textarea
                 v-model="form.educations_formations[i]"
                 rows="3"
                 placeholder="2020-2024 | Université ● Diplôme…"
-              />
+              ></textarea>
               <button
                 v-if="form.educations_formations.length > 1 || i > 0"
                 type="button"
                 @click="removeItem('educations_formations', i)"
-                class="delete-btn"
+                class="btn btn-icon delete-btn"
+                aria-label="Supprimer cette formation"
               >
                 ✕
               </button>
             </div>
             <button
               type="button"
-              class="add-btn"
+              class="btn btn-add"
               @click="addItem('educations_formations')"
             >
               + Ajouter une formation
             </button>
-          </div>
+          </section>
 
-          <!-- Projets -->
-          <div class="section">
+          <section class="section">
             <h3 class="section-title">Projets</h3>
-            <div v-for="(proj, i) in form.projets" :key="i" class="dynamic-field">
+            <div
+              v-for="(proj, i) in form.projets"
+              :key="`proj-${i}`"
+              class="dynamic-field"
+            >
               <textarea
                 v-model="form.projets[i]"
                 rows="2"
                 placeholder="Projet personnel / académique…"
-              />
+              ></textarea>
               <button
                 v-if="form.projets.length > 1 || i > 0"
                 type="button"
                 @click="removeItem('projets', i)"
-                class="delete-btn"
+                class="btn btn-icon delete-btn"
+                aria-label="Supprimer ce projet"
               >
                 ✕
               </button>
             </div>
-            <button type="button" class="add-btn" @click="addItem('projets')">
+            <button type="button" class="btn btn-add" @click="addItem('projets')">
               + Ajouter un projet
             </button>
-          </div>
+          </section>
 
           <div class="form-actions">
-            <div class="form-actions">
-              <button type="submit" class="submit-btn">Générer mon CV</button>
-              <button type="button" class="cancel-btn" @click="cancelEdit">
-                Annuler
-              </button>
-            </div>
+            <button type="submit" class="btn btn-save" @click="enregistrer">
+              💾 Sauvegarder
+            </button>
+            <button type="button" class="btn btn-cancel" @click="cancelEditing">
+              ❌ Annuler
+            </button>
           </div>
         </div>
       </form>
     </div>
+
+    <!-- Boutons d'actions principaux -->
   </div>
 </template>
 
-<script setup lang="ts">
-import { reactive, ref } from "vue";
+<script setup>
+import { ref, onMounted, computed, reactive } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
-import { useToast } from "vue-toastification";
-
 import html2pdf from "html2pdf.js";
+import { useToast } from "vue-toastification";
 
 const route = useRoute();
 const router = useRouter();
-interface CvForm {
-  nom: string;
-  prenom: string;
-  email: string;
-  date_naissance: string;
-  adresse: string;
-  presentation: string;
-  competences: string[];
-  langues: string[];
-  experiences: string[];
-  educations_formations: string[];
-  projets: string[];
-  image: string;
-}
+const toast = useToast(); // Ajout de l'import manquant
 
-const toast = useToast();
-/* --- Données réactives --- */
-const form = reactive<CvForm>({
-  nom: "",
+const cv = ref(null);
+const isLoading = ref(true);
+const error = ref(null);
+const cvElement = ref(null);
+const editMode = ref(false);
+
+const form = reactive({
   prenom: "",
-  email: "",
+  nom: "",
   date_naissance: "",
+  email: "",
   adresse: "",
   presentation: "",
   competences: [""],
@@ -249,60 +235,145 @@ const form = reactive<CvForm>({
   image: "",
 });
 
-const profilePicture = ref<string>("");
-const errors = ref<Record<string, string>>({});
-
-/* --- Helpers dynamiques --- */
-function addItem(field: keyof CvForm) {
-  (form[field] as string[]).push("");
-}
-function removeItem(field: keyof CvForm, index: number) {
-  const list = form[field] as string[];
-  list.splice(index, 1);
-  if (!list.length) list.push("");
-}
-
-/* --- Upload image --- */
-
-async function handleImage(e: Event) {
-  const input = e.target as HTMLInputElement;
-  const file = input.files?.[0];
-  if (!file) return;
-  profilePicture.value = URL.createObjectURL(file);
-
-  const fd = new FormData();
-  fd.append("image", file);
+async function loadCv() {
+  isLoading.value = true;
+  error.value = null;
   try {
-    // Utilisez le bon endpoint de votre API
-    const { data } = await axios.post("/api/ajouterimage", fd);
+    const { data } = await axios.get(`/api/cv/${route.params.id}`);
+    cv.value = {
+      prenom: data.prenom || "",
+      nom: data.nom || "",
+      date_naissance: data.date_naissance || "",
+      email: data.email || "",
+      adresse: data.adresse || "",
+      presentation: data.presentation || "",
+      competences: Array.isArray(data.competences) ? data.competences : [],
+      langues: Array.isArray(data.langues) ? data.langues : [],
+      experiences: Array.isArray(data.experiences) ? data.experiences : [],
+      educations_formations: Array.isArray(data.educations_formations)
+        ? data.educations_formations
+        : [],
+      projets: Array.isArray(data.projets) ? data.projets : [],
+      image: data.image || "",
+    };
 
-    // Stockez l'URL retournée dans votre formulaire
-    form.image = data.image_url;
+    form.prenom = cv.value.prenom;
+    form.nom = cv.value.nom;
+    form.date_naissance = cv.value.date_naissance.substring(0, 10) || "";
+    form.email = cv.value.email;
+    form.adresse = cv.value.adresse;
+    form.presentation = cv.value.presentation;
+    form.competences = cv.value.competences.length ? [...cv.value.competences] : [""];
+    form.langues = cv.value.langues.length ? [...cv.value.langues] : [""];
+    form.experiences = cv.value.experiences.length ? [...cv.value.experiences] : [""];
+    form.educations_formations = cv.value.educations_formations.length
+      ? [...cv.value.educations_formations]
+      : [""];
+    form.projets = cv.value.projets.length ? [...cv.value.projets] : [""];
+    form.image = cv.value.image;
+  } catch (e) {
+    error.value = e.response?.data?.message || "Impossible de charger le CV";
+  } finally {
+    isLoading.value = false;
+  }
+}
+onMounted(loadCv);
 
-    // Mettez à jour l'aperçu avec l'URL du serveur
-    profilePicture.value = data.image_url;
+function toggleEditMode() {
+  editMode.value = !editMode.value;
+}
 
-    toast.success("Image téléchargée avec succès");
-  } catch (err) {
-    errors.value.image = "Échec d'upload de l'image";
-    toast.error("Échec d'upload de l'image");
+async function cancelEditing() {
+  editMode.value = false;
+
+  router.push("/mescv");
+}
+
+function formatDate(d) {
+  if (!d) return "";
+  return new Date(d).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function addItem(field) {
+  form[field].push("");
+}
+
+function removeItem(field, index) {
+  form[field].splice(index, 1);
+  if (form[field].length === 0) form[field].push("");
+}
+
+async function updateProfile() {
+  isLoading.value = true;
+  error.value = null;
+
+  const dataToSend = {
+    prenom: form.prenom.trim(),
+    nom: form.nom.trim(),
+    date_naissance: form.date_naissance,
+    email: form.email.trim(),
+    adresse: form.adresse.trim(),
+    presentation: form.presentation.trim(),
+    competences: form.competences.filter((c) => c.trim() !== ""),
+    langues: form.langues.filter((l) => l.trim() !== ""),
+    experiences: form.experiences.filter((e) => e.trim() !== ""),
+    educations_formations: form.educations_formations.filter((f) => f.trim() !== ""),
+    projets: form.projets.filter((p) => p.trim() !== ""),
+    image: form.image,
+  };
+
+  try {
+    await axios.put(`/api/cv/${route.params.id}`, dataToSend);
+    cv.value = { ...dataToSend };
+    editMode.value = false;
+    toast.success("cv mis a jour avec succès !");
+    router.push("/mescv");
+  } catch (e) {
+    error.value = e.response?.data?.message || "Erreur lors de la mise à jour";
+  } finally {
+    isLoading.value = false;
   }
 }
 
-function cancelEdit() {
-  router.back(); // ⬅️ Cela revient à la page précédente
+const DEFAULT_PROFILE = "/assets/default-profile.png";
+const profileImageStyle = computed(() => ({
+  backgroundImage: `url(${
+    (editMode.value ? form.image : cv.value?.image) || DEFAULT_PROFILE
+  })`,
+}));
+
+function downloadPdf() {
+  if (!cvElement.value) return;
+  cvElement.value.classList.add("printing");
+  html2pdf()
+    .set({
+      margin: 10,
+      filename: `CV_${cv.value.prenom}_${cv.value.nom}.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    })
+    .from(cvElement.value)
+    .save()
+    .then(() => cvElement.value?.classList.remove("printing"));
 }
 
-async function submitCv() {
-  const id = route.params.id as string;
-
+async function deleteCv() {
+  if (
+    !confirm(
+      `Confirmez-vous la suppression du CV de ${cv.value.prenom} ${cv.value.nom} ?`
+    )
+  )
+    return;
   try {
-    const { data } = await axios.put(`/api/cv/${id}`, form);
-    toast.success("CV mis à jour avec succès !");
-    // redirection vers la page "VoirCv"
-    router.push({ name: "VoirCv", params: { id: data.id } });
-  } catch (err: any) {
-    toast.error("Erreur lors de la mise à jour du CV");
+    await axios.delete(`/api/cv/${route.params.id}`);
+    router.push("/mescv");
+  } catch (e) {
+    alert(e.response?.data?.message || "Erreur lors de la suppression");
   }
 }
 </script>
@@ -310,10 +381,182 @@ async function submitCv() {
 <style scoped>
 .page-wrapper {
   background: linear-gradient(135deg, #e0eafc, #cfdef3);
-  min-height: 100vh;
+  padding: 1rem 2rem;
   padding: 2rem;
-  border-radius: 3%;
 }
+/* Base des boutons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  border: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.btn:hover::after {
+  opacity: 1;
+}
+
+.btn-icon {
+  font-size: 1.2em;
+  transition: transform 0.2s ease;
+}
+
+.btn:hover .btn-icon {
+  transform: scale(1.1);
+}
+
+/* Bouton Retour */
+.btn-back {
+  background-color: #64748b;
+  color: white;
+}
+
+.btn-back:hover {
+  background-color: #475569;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(100, 116, 139, 0.3);
+}
+
+/* Bouton Télécharger */
+.btn-download {
+  background-color: #10b981;
+  color: white;
+}
+
+.btn-download:hover {
+  background-color: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+/* Bouton Modifier */
+.btn-edit {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.btn-edit:hover {
+  background-color: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+/* Bouton Annuler (quand en mode édition) */
+.btn-cancel {
+  background-color: #f59e0b;
+}
+
+.btn-cancel:hover {
+  background-color: #d97706;
+}
+
+/* Bouton Supprimer */
+.btn-delete {
+  background-color: #ef4444;
+  color: white;
+}
+
+.btn-delete:hover {
+  background-color: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+}
+
+/* Bouton Sauvegarder */
+.btn-save {
+  background-color: #3b82f6;
+  color: white;
+}
+
+/* Bouton Ajouter */
+.btn-add {
+  background: none;
+  border: 2px dashed #3b82f6;
+  color: #3b82f6;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+/* Bouton Réessayer */
+.btn-retry {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.btn-retry:hover {
+  background-color: #d97706;
+}
+
+/* Groupe de boutons */
+.global-actions,
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+  padding: 0 1rem;
+}
+
+.btn-group-right {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* Boutons dans le formulaire */
+.dynamic-field {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.dynamic-field input,
+.dynamic-field textarea {
+  flex: 1;
+}
+
+.delete-btn {
+  background: none;
+  color: #ef4444;
+  border: none;
+  font-size: 1.2rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  transform: scale(1.1);
+}
+
+/* Styles généraux du CV */
 .cv-container {
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   max-width: 900px;
@@ -321,24 +564,13 @@ async function submitCv() {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   border-radius: 8px;
   overflow: hidden;
+  background: white;
 }
 
 .cv-form {
   display: flex;
   flex-wrap: wrap;
   min-height: 100vh;
-}
-
-.cv-title {
-  position: absolute; /* Pas besoin d'absolute sauf si tu veux superposer */
-  width: 100%;
-  color: #2c3e50;
-  text-align: center;
-  padding: 1rem 0; /* Padding positif pour espacer */
-  margin: 0 0 2rem 0; /* Marge en bas pour espacer du contenu */
-  font-size: 1.8rem;
-  font-weight: 500;
-  z-index: 10; /* Optionnel si pas d'overlay */
 }
 
 .cv-left-column {
@@ -383,18 +615,16 @@ async function submitCv() {
   font-weight: 600;
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid #3498db;
+  border-bottom: 2px solid #3b82f6;
 }
 
-.input-group {
-  margin-bottom: 1.2rem;
-}
-
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  font-size: 0.9rem;
+.section-title1 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #3b82f6;
+  padding-bottom: 0.5rem;
 }
 
 input,
@@ -402,8 +632,9 @@ textarea {
   width: 100%;
   padding: 0.8rem;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 6px;
   font-family: inherit;
+  margin-bottom: 1rem;
   font-size: 0.95rem;
   background-color: rgba(255, 255, 255, 0.9);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
@@ -412,8 +643,8 @@ textarea {
 input:focus,
 textarea:focus {
   outline: none;
-  border-color: #3498db;
-  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
 }
 
 .cv-left-column input,
@@ -430,6 +661,7 @@ textarea:focus {
 
 textarea {
   resize: vertical;
+  min-height: 80px;
 }
 
 .profile-section {
@@ -437,12 +669,6 @@ textarea {
   flex-direction: column;
   align-items: center;
   margin-bottom: 2rem;
-}
-
-.profile-picture-container {
-  position: relative;
-  margin-bottom: 1.5rem;
-  text-align: center;
 }
 
 .profile-picture {
@@ -455,7 +681,7 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 3px solid #3498db;
+  border: 3px solid #3b82f6;
   background-size: cover;
   background-position: center;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
@@ -466,160 +692,48 @@ textarea {
   transform: scale(1.05);
 }
 
-.upload-label {
-  cursor: pointer;
-  padding: 0.5rem 1rem;
-  background-color: #3498db;
-  color: #fff;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  transition: background-color 0.3s ease;
-}
-
-.upload-label:hover {
-  background-color: #2980b9;
-}
-
-.hidden {
-  display: none;
-}
-
-.form-actions {
-  margin-top: 2rem;
+/* Messages d'erreur */
+.error-message {
+  padding: 2rem;
+  background: #fdecea;
+  color: #c0392b;
+  border-radius: 8px;
   text-align: center;
+  margin: 2rem;
+}
+
+/* Loader */
+.loading-container {
   display: flex;
-  gap: 1rem;
-  justify-content: center;
-}
-
-.submit-btn,
-.download-btn,
-.next-btn {
-  padding: 1rem 2rem;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
-}
-.cancel-btn {
-  background-color: transparent; /* fond transparent */
-  color: #3498db; /* bleu */
-  border: 2px solid #3498db; /* bordure bleu */
-  padding: 1rem 2rem;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
-}
-
-.cancel-btn:hover,
-.cancel-btn:focus-visible {
-  background-color: #3498db; /* fond bleu au hover */
-  color: white;
-  transform: translateY(-2px);
-  outline: none;
-}
-
-.submit-btn {
-  background-color: #3498db;
-}
-
-.download-btn {
-  background-color: #27ae60;
-}
-
-.next-btn {
-  background-color: #9b59b6;
-}
-
-.submit-btn:hover,
-.download-btn:hover,
-.next-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.submit-btn:hover {
-  background-color: #2980b9;
-}
-
-.download-btn:hover {
-  background-color: #219653;
-}
-
-.next-btn:hover {
-  background-color: #8e44ad;
-}
-
-.submit-btn:disabled,
-.next-btn:disabled {
-  background-color: #95a5a6;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.dynamic-field {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.dynamic-field input,
-.dynamic-field textarea {
-  flex: 1;
-}
-
-.add-btn {
-  background: none;
-  border: 1px dashed #3498db;
-  color: #3498db;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: block;
-  width: 100%;
-  margin-top: 0.5rem;
-}
-
-.add-btn:hover {
-  background: rgba(52, 152, 219, 0.1);
-  transform: translateY(-1px);
-}
-
-.delete-btn {
-  background: none;
-  border: none;
-  font-size: 1rem;
-  cursor: pointer;
-  color: #e74c3c;
-  transition: transform 0.2s ease;
-  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  padding: 3rem;
+  min-height: 300px;
+}
+
+.loader {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3b82f6;
   border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
 }
 
-.delete-btn:hover {
-  transform: scale(1.2);
-  background-color: rgba(231, 76, 60, 0.1);
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-.error {
-  color: #e74c3c;
-  font-size: 0.8rem;
-  margin-top: 0.3rem;
+.loading-text {
+  color: #555;
+  font-size: 1.1rem;
 }
 
+/* Responsive */
 @media (max-width: 768px) {
   .cv-form {
     flex-direction: column;
@@ -631,14 +745,20 @@ textarea {
     padding-top: 5rem;
   }
 
+  .global-actions,
   .form-actions {
     flex-direction: column;
+    gap: 0.75rem;
   }
 
-  .submit-btn,
-  .download-btn,
-  .next-btn {
+  .btn-group-right {
     width: 100%;
+    justify-content: space-between;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 0.75rem;
   }
 }
 </style>

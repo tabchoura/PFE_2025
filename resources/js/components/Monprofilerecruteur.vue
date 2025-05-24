@@ -614,7 +614,7 @@ onMounted(() => {
   gap: 0.5rem;
   padding: 1rem;
   width: 100%;
-  background: #3b82f6;
+  background: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
   color: white;
   border: none;
   border-radius: 8px;

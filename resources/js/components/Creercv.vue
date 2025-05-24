@@ -237,6 +237,9 @@
             <button type="submit" class="submit-btn" :disabled="isSubmitting">
               {{ isSubmitting ? "Création..." : "Générer mon CV" }}
             </button>
+            <button type="button" class="btn btn-cancel" @click="cancelEditing">
+              ❌ Annuler
+            </button>
           </div>
         </div>
       </form>
@@ -392,9 +395,19 @@ async function submitCv() {
     isSubmitting.value = false;
   }
 }
+function cancelEditing() {
+  router.push("/mescv");
+}
 </script>
 
 <style scoped>
+.btn-cancel {
+  background-color: #f59e0b;
+}
+
+.btn-cancel:hover {
+  background-color: #d97706;
+}
 .page-wrapper {
   background: linear-gradient(135deg, #e0eafc, #cfdef3);
   padding: 1rem 2rem;
@@ -593,7 +606,7 @@ textarea {
 }
 
 .submit-btn {
-  background-color: #3498db;
+  background: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
 }
 
 .download-btn {

@@ -1,80 +1,82 @@
 <template>
-  <div class="offers-section">
-    <!-- Header -->
-    <div class="header-actions">
-      <h2>Liste des offres</h2>
-      <button
-        @click="ajouterOffre"
-        class="btn-ajouter"
-        aria-label="Ajouter une nouvelle offre"
-      >
-        <span class="btn-icon">＋</span> Ajouter une offre
-      </button>
-    </div>
+  <div class="page-wrapper">
+    <div class="offers-section">
+      <!-- Header -->
+      <div class="header-actions">
+        <h2>Liste des offres</h2>
+        <button
+          @click="ajouterOffre"
+          class="btn-ajouter"
+          aria-label="Ajouter une nouvelle offre"
+        >
+          <span class="btn-icon">＋</span> Ajouter une offre
+        </button>
+      </div>
 
-    <!-- Loading / Error / Empty -->
-    <div v-if="loading" class="loading-state">
-      <div class="loading-spinner"></div>
-      <p>Chargement des offres...</p>
-    </div>
-    <div v-else-if="error" class="error-state">
-      <div class="error-icon">⚠️</div>
-      <p>{{ error }}</p>
-      <button @click="getOffres" class="btn-retry">Réessayer</button>
-    </div>
-    <div v-else-if="offres.length === 0" class="empty-state">
-      <div class="empty-icon">📋</div>
-      <p>Aucune offre disponible pour le moment</p>
-    </div>
+      <!-- Loading / Error / Empty -->
+      <div v-if="loading" class="loading-state">
+        <div class="loading-spinner"></div>
+        <p>Chargement des offres...</p>
+      </div>
+      <div v-else-if="error" class="error-state">
+        <div class="error-icon">⚠️</div>
+        <p>{{ error }}</p>
+        <button @click="getOffres" class="btn-retry">Réessayer</button>
+      </div>
+      <div v-else-if="offres.length === 0" class="empty-state">
+        <div class="empty-icon">📋</div>
+        <p>Aucune offre disponible pour le moment</p>
+      </div>
 
-    <!-- Grille des offres -->
-    <div v-else class="offers-grid">
-      <div class="offer-card" v-for="offer in offres" :key="offer.id">
-        <div class="offer-card-header">
-          <h3 class="title-offre">{{ offer.titre }}</h3>
-        </div>
-        <div class="offer-card-body">
-          <p class="description">
-            <strong>Description :</strong> {{ truncateText(offer.description, 100) }}
-          </p>
-          <div class="offer-details">
-            <div class="detail-item">
-              <span class="detail-label">💰 Salaire :</span>
-              <span class="detail-value">{{ formatSalaire(offer.salaire) }}</span>
+      <!-- Grille des offres -->
+      <div v-else class="offers-grid">
+        <div class="offer-card" v-for="offer in offres" :key="offer.id">
+          <div class="offer-card-header">
+            <h3 class="title-offre">{{ offer.titre }}</h3>
+          </div>
+          <div class="offer-card-body">
+            <p class="description">
+              <strong>Description :</strong> {{ truncateText(offer.description, 100) }}
+            </p>
+            <div class="offer-details">
+              <div class="detail-item">
+                <span class="detail-label">💰 Salaire :</span>
+                <span class="detail-value">{{ formatSalaire(offer.salaire) }}</span>
+              </div>
+            </div>
+            <div class="offer-details">
+              <div class="detail-item">
+                <span class="detail-label">📋 Détails :</span>
+                <span class="detail-value">{{ offer.details || "Non précisé" }}</span>
+              </div>
             </div>
           </div>
-          <div class="offer-details">
-            <div class="detail-item">
-              <span class="detail-label">📋 Détails :</span>
-              <span class="detail-value">{{ offer.details || "Non précisé" }}</span>
-            </div>
+          <div class="offer-actions">
+            <button class="btn-modifier" @click="modifierOffre(offer.id)">
+              <span class="btn-icon">✏️</span> Modifier
+            </button>
+            <button class="btn-supprimer" @click="confirmDelete(offer)">
+              <span class="btn-icon">🗑️</span> Supprimer
+            </button>
           </div>
-        </div>
-        <div class="offer-actions">
-          <button class="btn-modifier" @click="modifierOffre(offer.id)">
-            <span class="btn-icon">✏️</span> Modifier
-          </button>
-          <button class="btn-supprimer" @click="confirmDelete(offer)">
-            <span class="btn-icon">🗑️</span> Supprimer
-          </button>
         </div>
       </div>
-    </div>
 
-    <!-- Popup de confirmation -->
-    <div v-if="showModal" class="modal-overlay">
-      <div class="modal-card">
-        <h2>Confirmer la suppression</h2>
-        <p>
-          Êtes-vous sûr de vouloir supprimer l’offre
-          <strong>"{{ offerToDelete.titre }}"</strong> ?
-        </p>
-        <div class="modal-actions">
-          <button class="btn-supprimer" :disabled="deleting" @click="supprimerOffre">
-            <span v-if="deleting">Suppression…</span>
-            <span v-else>Confirmer</span>
-          </button>
-          <button class="btn-annuler" @click="cancelDelete">Annuler</button>
+      <!-- Popup de confirmation -->
+      <div v-if="showModal" class="modal-overlay">
+        <div class="modal-card">
+          <h2>Confirmer la suppression</h2>
+          <p>
+            Êtes-vous sûr de vouloir supprimer l’offre
+            <strong>"{{ offerToDelete.titre }}"</strong> ?
+          </p>
+          <div class="modal-actions">
+            <button class="btn-supprimer" :disabled="deleting" @click="supprimerOffre">
+              <span v-if="deleting">Suppression…</span>
+              <span v-else>Confirmer</span>
+            </button>
+            <button class="btn-annuler" @click="cancelDelete">Annuler</button>
+          </div>
         </div>
       </div>
     </div>
@@ -160,11 +162,46 @@ const formatSalaire = (s) => s || "Non précisé";
 </script>
 
 <style scoped>
-.offers-section {
+.page-wrapper {
+  background: linear-gradient(135deg, #f0f7ff, #e6f0ff);
+  min-height: 100vh;
   padding: 2rem;
-  border-radius: 0.75rem;
-  background: linear-gradient(135deg, #e0eafc, #cfdef3);
+}
+.offers-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.5rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.header-actions h2 {
+  color: #1e3a8a; /* bleu foncé proche de la capture */
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
   position: relative;
+  padding-bottom: 0.5rem;
+  letter-spacing: -0.5px;
+}
+
+.header-actions:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.header-actions h2::after {
+  content: "";
+
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 3rem; /* largeur de la barre */
+  height: 4px; /* épaisseur */
+  background-color: #1e3a8a; /* même bleu foncé */
+  border-radius: 4px; /* arrondi */
 }
 
 /* Header */
@@ -172,29 +209,28 @@ const formatSalaire = (s) => s || "Non précisé";
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
 }
-.header-actions h2 {
-  font-size: 1.75rem;
-  color: #14507e;
-  margin: 0;
-  font-weight: bold;
-}
+
 .btn-ajouter {
   display: inline-flex;
   align-items: center;
-  background-color: #458a80;
+  background: linear-gradient(90deg, #20c599 0%, #2dd9b5 100%);
   color: #fff;
   border: none;
   padding: 0.6rem 1rem;
   border-radius: 0.5rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background 0.3s ease;
 }
+
 .btn-ajouter:hover {
-  background-color: #6e9ffb;
+  background: linear-gradient(90deg, #1ba47d 0%, #1fd0a5 100%);
 }
+
 .btn-icon {
   margin-right: 0.5rem;
   font-size: 1.1rem;
@@ -249,6 +285,8 @@ const formatSalaire = (s) => s || "Non précisé";
 
 /* Carte d’offre */
 .offer-card {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+
   background-color: #ffffff;
   border-radius: 0.75rem;
   box-shadow: 0 2px 8px rgba(31, 41, 55, 0.1);
@@ -309,14 +347,14 @@ const formatSalaire = (s) => s || "Non précisé";
   transition: background-color 0.2s;
 }
 .btn-modifier {
-  background-color: #14507e;
+  background: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
   color: #fff;
 }
 .btn-modifier:hover {
   background-color: #417aa5;
 }
 .btn-supprimer {
-  background-color: #ef4444;
+  background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
   color: #fff;
 }
 .btn-supprimer:hover {

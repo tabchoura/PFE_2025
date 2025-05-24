@@ -43,10 +43,16 @@ const continueAs = () => {
       <!-- ✅ POPUP -->
       <div v-if="showPopup" class="popup-overlay">
         <div class="popup-box" role="dialog" aria-modal="true">
-          <button class="close-btn" @click="closePopup" aria-label="Fermer la fenêtre">×</button>
+          <button class="close-btn" @click="closePopup" aria-label="Fermer la fenêtre">
+            ×
+          </button>
           <p class="popup-title">Vous êtes :</p>
 
-          <div class="radio-group-horizontal" role="radiogroup" aria-label="Choix de type d'utilisateur">
+          <div
+            class="radio-group-horizontal"
+            role="radiogroup"
+            aria-label="Choix de type d'utilisateur"
+          >
             <!-- Option Candidat -->
             <label
               class="radio-option"
@@ -55,7 +61,11 @@ const continueAs = () => {
               role="radio"
               tabindex="0"
             >
-              <img class="role-img" :src="candidat" alt="Icône représentant un candidat" />
+              <img
+                class="role-img"
+                :src="candidat"
+                alt="Icône représentant un candidat"
+              />
               <input type="radio" value="candidat" v-model="isRecruteur" />
               <span>Candidat</span>
             </label>
@@ -68,7 +78,11 @@ const continueAs = () => {
               role="radio"
               tabindex="0"
             >
-              <img class="role-img" :src="recruteur" alt="Icône représentant un recruteur" />
+              <img
+                class="role-img"
+                :src="recruteur"
+                alt="Icône représentant un recruteur"
+              />
               <input type="radio" value="recruteur" v-model="isRecruteur" />
               <span>Recruteur</span>
             </label>
@@ -158,37 +172,35 @@ h1 {
   transform: scale(1.05);
 }
 
-/* ===== POPUP ===== */
 .popup-overlay {
   position: fixed;
   inset: 0;
-
-  background-color: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 9999;
-  animation: fadeIn 0.3s ease;
+  overflow: hidden; /* bloque le scroll de fond */
+  animation: fadeIn 0.3s ease forwards;
 }
 
 .popup-box {
-  background-color: #f8faff;
-  padding: 3rem 2.5rem;
-  border-radius: 20px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  width: 500px;
+  background-color: #f9fbff;
+  padding: 3rem 3rem 2.5rem;
+  border-radius: 24px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.25);
+  width: 480px;
+  max-width: 90vw;
   position: relative;
-  animation: scaleIn 0.3s ease;
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  animation: scaleIn 0.3s ease forwards;
 }
 
 .popup-title {
   font-size: 24px;
   font-weight: 700;
   margin-bottom: 2rem;
-  color: #14326f;
+  color: #3d63ea;
   text-align: center;
 }
 

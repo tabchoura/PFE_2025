@@ -249,7 +249,7 @@ onMounted(getOfferDetails);
 }
 
 .btnapply {
-  background: #09a1cb;
+  background: #3b82f6;
   color: #fff;
 }
 .btnapply:hover {

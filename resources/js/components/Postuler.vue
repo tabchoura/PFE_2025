@@ -175,7 +175,6 @@ async function confirmPostuler() {
     await axios.post(`/api/offres/${offerId}/postuler`, {
       cv_id: cvId,
       message: motivationText.value || null,
-      statut: "Enattente", // Statut de la candidature
     });
     toast.success("Candidature Envoyée avec succès !");
     router.push("/candidature");
@@ -523,7 +522,7 @@ button {
 }
 
 .primary-button {
-  background: linear-gradient(to right, #3498db, #2980b9);
+  background: #3b82f6;
   color: white;
   box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
 }
@@ -581,6 +580,7 @@ button {
 .confirm-button {
   padding: 1rem 2.5rem;
   min-width: 220px;
+  background: #3b82f6;
 }
 
 /* Message d'erreur */

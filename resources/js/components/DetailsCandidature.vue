@@ -1,4 +1,6 @@
 <template>
+    <div class="page-wrapper">
+
   <div class="candidature-details-container">
     <!-- Chargement -->
     <div v-if="loading" class="loading-state">
@@ -14,7 +16,7 @@
 
     <!-- Contenu principal -->
     <div v-else class="candidature-content">
-      <h1>Détails de la candidature</h1>
+      <h2>Détails de la candidature</h2>
 
       <!-- WORKFLOW STEPPER -->
       <div class="workflow-stepper">
@@ -133,6 +135,7 @@
         <button @click="downloadPdf" class="btn-download">⬇️ Télécharger CV</button>
       </div>
     </div>
+  </div>
   </div>
 </template>
 
@@ -291,6 +294,11 @@ onMounted(loadData);
 </script>
 
 <style scoped>
+.page-wrapper {
+  background: linear-gradient(135deg, #e0eafc, #cfdef3);
+  padding: 1rem 2rem;
+  padding: 2rem;
+}
 /* Container global */
 .candidature-details-container {
   max-width: 1000px;
@@ -889,6 +897,24 @@ h1 {
   position: relative;
   padding-bottom: 0.5rem;
 }
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.header-actions h2 {
+  margin: 0;
+  color: #1a237e;
+  font-size: 1.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  letter-spacing: -0.5px;
+}
 
 h1::after {
   content: "";
@@ -1301,8 +1327,7 @@ ul li::before {
 }
 
 .download-btn {
-  background: var(--btn-primary-bg);
-  color: var(--btn-primary-color);
+  background: #20c599;
 }
 .download-btn:hover {
   background: var(--btn-primary-hover);
@@ -1395,11 +1420,12 @@ ul li::before {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+
   font-size: 1.05rem;
 }
 
 .btn-back {
-  background: linear-gradient(135deg, #4a5568, #2d3748);
+  background: linear-gradient(135deg, #7d7d7d 0%, #a3a3a3 100%);
   box-shadow: 0 4px 15px rgba(74, 85, 104, 0.2);
 }
 
@@ -1410,7 +1436,8 @@ ul li::before {
 }
 
 .btn-download {
-  background: linear-gradient(135deg, #3182ce, #2b6cb0);
+background: linear-gradient(135deg, #20c599, #1fae8d, #178467);
+
   box-shadow: 0 4px 15px rgba(49, 130, 206, 0.2);
 }
 
