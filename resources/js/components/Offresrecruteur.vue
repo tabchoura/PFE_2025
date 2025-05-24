@@ -286,6 +286,7 @@ const formatSalaire = (s) => s || "Non précisé";
 /* Carte d’offre */
 .offer-card {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  border-left: 3px solid #3b82f6;
 
   background-color: #ffffff;
   border-radius: 0.75rem;

@@ -95,7 +95,7 @@ async function modifier() {
   }
 }
 function rollback() {
-  router.push("/mescv");
+  router.push("/offresrecruteur");
 }
 </script>
 <style scoped>

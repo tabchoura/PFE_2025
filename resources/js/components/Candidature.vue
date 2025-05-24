@@ -40,7 +40,11 @@
 
       <!-- Candidatures list -->
       <ul v-else class="candidature-grid">
-        <li v-for="c in candidaturesFiltrees" :key="c.id" class="candidature-item">
+        <li
+          v-for="c in candidaturesFiltrees"
+          :key="c.id"
+          :class="['candidature-item', `statut-${c.status_ia}`]"
+        >
           <div class="candidature-header">
             <h3 class="title-offre">{{ c.offre?.titre || "Offre inconnue" }}</h3>
 
@@ -338,6 +342,7 @@ onMounted(() => {
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 2rem;
   padding: 0;
+
   margin: 0;
   list-style: none;
 }
@@ -351,6 +356,9 @@ onMounted(() => {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   border: 1px solid #e0e7ff;
   position: relative;
+}
+.candidature-item.statut-refuser {
+  border-left: 4px solid #e53e3e;
 }
 
 .candidature-item:hover {
@@ -457,7 +465,6 @@ onMounted(() => {
 }
 
 .statut-refuser {
-  background-color: #fee2e2;
   color: #991b1b;
 }
 

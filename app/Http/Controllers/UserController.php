@@ -48,7 +48,8 @@ class UserController extends Controller
             'cin'           => $request->cin,
             'poste'         => $request->poste,
             'nb_offres'     => $request->nb_offres,
-            'nbvalidation'  => $request->nbvalidation,
+            'nbvalidatio
+            n'  => $request->nbvalidation,
             'email'         => $request->email,
             'password'      =>Hash::make($request->password),
             'nomsociete'=> $request->nomsociete,

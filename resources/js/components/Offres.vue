@@ -361,6 +361,7 @@ body {
 }
 .offers-section {
   padding: 2rem;
+
   border-radius: 3%;
   background-color: #e7f1f8;
 }
@@ -420,8 +421,9 @@ body {
 
 /* Carte d'offre */
 .offer-card {
+  border-left: 3px solid #3b82f6;
+
   background: #fff;
-  border: 1px solid #e1e5ea;
   border-radius: 1rem;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
   transition: transform 0.2s, box-shadow 0.2s;

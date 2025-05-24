@@ -35,7 +35,6 @@
               id="nom"
               placeholder="Entrez votre nom"
               :class="{ 'input-error': errors.nom, 'input-valid': validFields.nom }"
-              required
               autocomplete="family-name"
               @input="validateField('nom')"
             />
@@ -55,7 +54,6 @@
               id="prenom"
               placeholder="Entrez votre prénom"
               :class="{ 'input-error': errors.prenom, 'input-valid': validFields.prenom }"
-              required
               autocomplete="given-name"
               @input="validateField('prenom')"
             />
@@ -76,7 +74,6 @@
             id="email"
             placeholder="Entrez votre email"
             :class="{ 'input-error': errors.email, 'input-valid': validFields.email }"
-            required
             autocomplete="email"
             @input="validateField('email')"
           />
@@ -100,7 +97,6 @@
                 'input-error': errors.password,
                 'input-valid': validFields.password,
               }"
-              required
               autocomplete="new-password"
               @input="validateField('password')"
             />
@@ -132,7 +128,6 @@
             maxlength="8"
             inputmode="numeric"
             :class="{ 'input-error': errors.cin, 'input-valid': validFields.cin }"
-            required
             @input="validateField('cin')"
           />
           <span class="error-message" v-if="errors.cin">{{ errors.cin }}</span>
@@ -153,7 +148,6 @@
             maxlength="8"
             inputmode="tel"
             :class="{ 'input-error': errors.phone, 'input-valid': validFields.phone }"
-            required
             @input="validateField('phone')"
           />
           <span class="error-message" v-if="errors.phone">{{ errors.phone }}</span>
@@ -175,7 +169,6 @@
               'input-error': errors.nomsociete,
               'input-valid': validFields.nomsociete,
             }"
-            required
             @input="validateField('nomsociete')"
           />
           <span class="error-message" v-if="errors.nomsociete">{{
@@ -201,7 +194,6 @@
               'input-error': errors.departement,
               'input-valid': validFields.departement,
             }"
-            required
             @input="validateField('departement')"
           />
           <span class="error-message" v-if="errors.departement">{{
@@ -227,7 +219,6 @@
               'input-error': errors.localisation,
               'input-valid': validFields.localisation,
             }"
-            required
             @input="validateField('localisation')"
           />
           <span class="error-message" v-if="errors.localisation">{{
@@ -252,7 +243,6 @@
             id="siteweb"
             placeholder="Écrire votre site web"
             :class="{ 'input-error': errors.siteweb, 'input-valid': validFields.siteweb }"
-            required
             @input="validateField('siteweb')"
           />
           <span class="error-message" v-if="errors.siteweb">{{ errors.siteweb }}</span>
@@ -263,259 +253,129 @@
           <button type="button" class="btn-cancel" @click="toggleEditMode">
             ❌ Annuler
           </button>
-          <button type="submit" class="btn-save" :disabled="!isFormValid">
-            💾 Enregistrer
-          </button>
+          <button type="submit" class="btn-save">💾 Enregistrer</button>
         </div>
       </form>
     </div>
   </div>
 </template>
-
 <script setup>
-import { ref, reactive, computed, onMounted } from "vue";
-import api from "@/axios";
+import axios from "axios";
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 
-// Variables manquantes ajoutées
+const router = useRouter();
+// Profil utilisateur
+const profile = ref({
+  nom: "",
+  prenom: "",
+  email: "",
+  date_naissance: "",
+  lieudenaissance: "",
+  cin: "",
+  phone: "",
+});
+// Formulaire d'édition
+const form = ref({});
 const editMode = ref(false);
-const profile = reactive({
-  id: "",
-  nom: "",
-  prenom: "",
-  email: "",
-  cin: "",
-  phone: "",
-  departement: "",
-  localisation: "",
-  nomsociete: "",
-  siteweb: "",
-});
 
-const showPassword = ref(false);
-const formData = reactive({
-  nom: "",
-  prenom: "",
-  email: "",
-  password: "",
-  cin: "",
-  phone: "",
-  departement: "",
-  localisation: "",
-  nomsociete: "",
-  siteweb: "",
-});
-
-const validFields = reactive({
-  nom: false,
-  prenom: false,
-  email: false,
-  cin: false,
-  phone: false,
-  localisation: false,
-  departement: false,
-  nomsociete: false,
-  siteweb: false,
-  password: false,
-});
-
-const errors = reactive({});
-const hints = reactive({
-  nom: false,
-  prenom: false,
-  email: false,
-  phone: false,
-  cin: false,
-  localisation: false,
-  departement: false,
-  nomsociete: false,
-  siteweb: false,
-  password: false,
-});
-
-const isFormValid = computed(() => {
-  return (
-    Object.values(validFields).every((val) => val) && Object.keys(errors).length === 0
-  );
-});
-
-// Fonctions manquantes ajoutées
+// Toggle mode édition
 function toggleEditMode() {
   if (!editMode.value) {
-    // Si nous entrons en mode édition, copier les données du profil dans le formulaire
-    Object.assign(formData, profile);
-    formData.password = ""; // Réinitialiser le mot de passe par sécurité
+    form.value = { ...profile.value };
   }
   editMode.value = !editMode.value;
 }
 
-function togglePassword() {
-  showPassword.value = !showPassword.value;
-}
-
-function showHint(field) {
-  hints[field] = true;
-}
-
-function hideHint(field) {
-  hints[field] = false;
-}
-
+// Charger profil API
 async function loadProfileData() {
   try {
-    const response = await api.get("/api/me");
-    const user = response.data;
-
-    // Mise à jour du profil
-    Object.assign(profile, user);
-
-    // Initialisation du formulaire avec les données du profil
-    Object.assign(formData, user);
-    formData.password = ""; // Ne pas charger le mot de passe pour des raisons de sécurité
-
-    // Valider tous les champs après chargement
-    validateAllFields();
-  } catch (error) {
-    console.error("Erreur lors du chargement des données du profil:", error);
-  }
-}
-
-const passwordStrengthClass = computed(() => {
-  if (!formData.password) return "";
-  if (formData.password.length < 8) return "faible";
-
-  const hasUpperCase = /[A-Z]/.test(formData.password);
-  const hasLowerCase = /[a-z]/.test(formData.password);
-  const hasNumbers = /[0-9]/.test(formData.password);
-  const hasSpecialChars = /[^A-Za-z0-9\s]/.test(formData.password);
-
-  if (hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChars) {
-    return "fort";
-  } else if ((hasUpperCase || hasLowerCase) && hasNumbers) {
-    return "moyen";
-  }
-  return "faible";
-});
-
-const passwordStrengthText = computed(() => {
-  if (!formData.password) return "";
-  switch (passwordStrengthClass.value) {
-    case "faible":
-      return "Faible";
-    case "moyen":
-      return "Moyen";
-    case "fort":
-      return "Fort";
-    default:
-      return "";
-  }
-});
-
-function validateAllFields() {
-  const fields = [
-    "nom",
-    "prenom",
-    "email",
-    "cin",
-    "phone",
-    "localisation",
-    "departement",
-    "nomsociete",
-    "siteweb",
-  ];
-  fields.forEach((field) => {
-    if (formData[field]) {
-      validateField(field);
+    await axios.get("/sanctum/csrf-cookie");
+    const { data: user } = await axios.get("/api/me");
+    profile.value = {
+      nomsociete: user.nomsociete || "",
+      departement: user.departement || "",
+      email: user.email || "",
+      cin: user.cin || "",
+      phone: user.phone || "",
+      localisation: user.localisation || "",
+      siteweb: user.siteweb || "",
+    };
+    form.value = { ...profile.value };
+  } catch (err) {
+    console.error("Erreur chargement profil:", err);
+    if (err.response?.status === 401) {
+      alert("Session expirée. Connectez-vous à nouveau.");
+      router.push("/login");
+    } else {
+      alert("Erreur lors du chargement du profil.");
     }
-  });
-}
-
-function validateField(field) {
-  // Reset error for the field
-  if (errors[field]) {
-    delete errors[field];
-  }
-
-  const nameRegex = /^[a-zA-ZÀ-Ÿ0-9\s'-]+$/;
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  const siteRegex = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/;
-
-  switch (field) {
-    case "nom":
-    case "prenom":
-    case "nomsociete":
-    case "localisation":
-    case "departement":
-      validFields[field] = nameRegex.test(formData[field]);
-      if (!validFields[field]) {
-        errors[field] = `${field} invalide`;
-      }
-      break;
-    case "email":
-      validFields.email = emailRegex.test(formData.email);
-      if (!validFields.email) {
-        errors.email = "Email invalide";
-      }
-      break;
-    case "password":
-      const hasUpperCase = /[A-Z]/.test(formData.password);
-      const hasLowerCase = /[a-z]/.test(formData.password);
-      const hasNumbers = /[0-9]/.test(formData.password);
-      const hasSpecialChars = /[^A-Za-z0-9\s]/.test(formData.password);
-
-      validFields.password =
-        formData.password.length >= 8 &&
-        hasUpperCase &&
-        hasLowerCase &&
-        hasNumbers &&
-        hasSpecialChars;
-
-      if (!validFields.password && formData.password) {
-        if (formData.password.length < 8) {
-          errors.password = "Mot de passe trop court";
-        } else {
-          errors.password =
-            "Le mot de passe doit contenir majuscules, minuscules, chiffres et caractères spéciaux";
-        }
-      }
-      break;
-    case "cin":
-    case "phone":
-      validFields[field] = /^\d{8}$/.test(formData[field]);
-      if (!validFields[field]) {
-        errors[field] = `${field} invalide (8 chiffres requis)`;
-      }
-      break;
-    case "siteweb":
-      validFields.siteweb = siteRegex.test(formData.siteweb);
-      if (!validFields.siteweb) {
-        errors.siteweb = "Site web invalide";
-      }
-      break;
   }
 }
 
+// Mettre à jour profil
 async function updateProfile() {
+  if (!form.value.nom || !form.value.prenom || !form.value.email) {
+    alert("❌ Nom, prénom et email obligatoires.");
+    return;
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(form.value.email)) {
+    alert("❌ Email invalide.");
+    return;
+  }
   try {
-    const response = await api.put(`/api/update-profil`, formData);
-
-    // Mise à jour du profil local avec les nouvelles données
-    Object.assign(profile, formData);
-
-    // Sortir du mode édition
+    await axios.put("/api/update-profil", form.value);
+    profile.value = { ...form.value };
+    // Mise à jour session
+    const key = sessionStorage.getItem("userSession")
+      ? "userSession"
+      : localStorage.getItem("userSession")
+      ? "userSession"
+      : null;
+    if (key) {
+      const store = key === "userSession" ? sessionStorage : localStorage;
+      const stored = JSON.parse(store.getItem(key) || "{}");
+      store.setItem(key, JSON.stringify({ ...stored, ...form.value }));
+    }
     editMode.value = false;
-
-    alert("Profil mis à jour avec succès");
-  } catch (error) {
-    alert("Erreur de mise à jour");
-    console.error("Erreur lors de la mise à jour du profil:", error);
+    showSuccessMessage("Profil mis à jour avec succès !");
+  } catch (err) {
+    console.error("Erreur mise à jour:", err);
+    alert("❌ Échec de la mise à jour.");
   }
 }
 
-// Chargement des données au montage du composant
-onMounted(() => {
-  loadProfileData();
-});
+// Format date FR
+function formatDate(dateStr) {
+  if (!dateStr) return "Non renseigné";
+  try {
+    return new Intl.DateTimeFormat("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(new Date(dateStr));
+  } catch {
+    return dateStr;
+  }
+}
+
+// Notification succès
+function showSuccessMessage(msg) {
+  const el = document.createElement("div");
+  el.className = "success-notification";
+  el.textContent = "✅ " + msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.classList.add("show"), 100);
+  setTimeout(() => {
+    el.classList.remove("show");
+    setTimeout(() => document.body.removeChild(el), 500);
+  }, 3000);
+}
+
+onMounted(loadProfileData);
 </script>
+
 <style scoped>
 .page-wrapper {
   background: linear-gradient(135deg, #f0f7ff, #e6f0ff);
@@ -523,16 +383,6 @@ onMounted(() => {
   padding: 2rem;
 }
 
-.profil-container {
-  background: white;
-  border-radius: 16px;
-  padding: 2.5rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
 .profil-container:hover {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 20px 40px rgba(0, 0, 0, 0.15);
 }
@@ -556,13 +406,25 @@ onMounted(() => {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
-/* ===== Titre ===== */
 .title {
-  text-align: center;
+  color: #1e3a8a; /* bleu foncé proche de la capture */
   font-size: 2rem;
-  color: #03315c;
-  margin-bottom: 2rem;
   font-weight: 700;
+  margin-bottom: 2rem;
+  position: relative;
+  padding-bottom: 0.5rem;
+  letter-spacing: -0.5px;
+}
+
+.title::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 3rem; /* largeur de la barre */
+  height: 4px; /* épaisseur */
+  background-color: #1e3a8a; /* même bleu foncé */
+  border-radius: 4px; /* arrondi */
 }
 
 /* ===== Détails du profil ===== */
@@ -614,7 +476,7 @@ onMounted(() => {
   gap: 0.5rem;
   padding: 1rem;
   width: 100%;
-  background: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
   border: none;
   border-radius: 8px;
