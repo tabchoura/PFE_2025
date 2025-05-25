@@ -1,22 +1,23 @@
 <template>
-  <div class="entretiens-container">
-    <h1>🗓️ Planifier l'entretien</h1>
-    <p class="instructions">Choisissez la date puis cliquez sur « Envoyer ».</p>
+  <div class="page-wrapper">
+    <div class="entretiens-container">
+      <h1>🗓️ Planifier l'entretien</h1>
+      <p class="instructions">Choisissez la date puis cliquez sur « Envoyer ».</p>
 
-    <!-- Calendrier relié au state selectedDate -->
-    <Calendrier v-model="selectedDate" />
+      <!-- Calendrier relié au state selectedDate -->
+      <Calendrier v-model="selectedDate" />
+      <div class="btn-group">
+        <button @click="retour" class="back-btn" aria-label="Retour">← Retour</button>
+        <button class="send-btn">Envoyer</button>
+      </div>
 
-    <button class="primary-btn" @click="envoyer" :disabled="!selectedDate">
-      <i class="fas fa-paper-plane"></i> Envoyer
-    </button>
-
-    <!-- Message de confirmation -->
-    <div v-if="entretien" class="success-message">
-      <h3>Entretien enregistré ✅</h3>
-      <p>🗓️ {{ formatDate(entretien.date_entretien) }}</p>
+      <!-- Message de confirmation -->
+      <div v-if="entretien" class="success-message">
+        <h3>Entretien enregistré ✅</h3>
+        <p>🗓️ {{ formatDate(entretien.date_entretien) }}</p>
+      </div>
     </div>
   </div>
-  
 </template>
 
 <script setup lang="ts">
@@ -28,10 +29,13 @@ import Calendrier from "./Calendrier.vue";
 // Récupération du paramètre de route
 const route = useRoute();
 const router = useRouter();
-const candidatureId = Number(route.params.candidatureId);  // Convertir en nombre
+const candidatureId = Number(route.params.candidatureId); // Convertir en nombre
 
+function retour() {
+  router.push("/candidaturesrecruteur");
+}
 // Vérifiez que l'ID est bien récupéré
-console.log("candidatureId", candidatureId);  // Affiche dans la console
+console.log("candidatureId", candidatureId); // Affiche dans la console
 // État local
 const selectedDate = ref<string | null>(null);
 const entretien = ref<any | null>(null);
@@ -57,12 +61,12 @@ function formatDate(d?: string) {
 }
 
 function formatDateForApi(date: string | null) {
-  if (!date) return "";  // Retourne une chaîne vide si la date est vide
+  if (!date) return ""; // Retourne une chaîne vide si la date est vide
   const d = new Date(date);
-  const day = ("0" + d.getDate()).slice(-2);  // Ajoute un 0 si le jour est inférieur à 10
-  const month = ("0" + (d.getMonth() + 1)).slice(-2);  // Ajoute un 0 si le mois est inférieur à 10
+  const day = ("0" + d.getDate()).slice(-2); // Ajoute un 0 si le jour est inférieur à 10
+  const month = ("0" + (d.getMonth() + 1)).slice(-2); // Ajoute un 0 si le mois est inférieur à 10
   const year = d.getFullYear();
-  return `${day}/${month}/${year}`;  // Format d/m/Y
+  return `${day}/${month}/${year}`; // Format d/m/Y
 }
 
 // Fonction envoyer l'entretien au backend
@@ -80,7 +84,7 @@ async function envoyer() {
   try {
     // Requête POST vers l'API
     const { data } = await axios.post(`/api/candidatures/${candidatureId}/entretien`, {
-      date_entretien: formattedDate,  // Envoie la date formatée
+      date_entretien: formattedDate, // Envoie la date formatée
     });
 
     // Stockage de la réponse
@@ -100,8 +104,13 @@ async function envoyer() {
 </script>
 
 <style scoped>
+.page-wrapper {
+  background: linear-gradient(135deg, #e0eafc, #cfdef3);
+  padding: 1rem 2rem;
+  padding: 2rem;
+}
 .entretiens-container {
-  max-width: 900px;
+  max-width: 1000px;
   margin: 2rem auto;
   padding: 2rem;
   background: #f8fafc;
@@ -110,12 +119,25 @@ async function envoyer() {
   font-family: "Segoe UI", sans-serif;
 }
 
+h1::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, #3182ce, #63b3ed);
+  border-radius: 2px;
+}
 h1 {
   font-size: 2rem;
-  color: #1a202c;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
+  color: #1a237e;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  position: relative;
+  padding-bottom: 0.5rem;
 }
-
 .instructions {
   color: #4a5568;
   margin-bottom: 2rem;
@@ -149,6 +171,48 @@ h1 {
   background: #a0aec0;
   cursor: not-allowed;
   transform: none;
+}
+.btn-group {
+  display: flex;
+  justify-content: space-between; /* Retour à gauche, Envoyer à droite */
+  align-items: center;
+  margin-top: 2rem;
+  gap: 1rem; /* optionnel, espace minimum */
+  width: 100%; /* prend toute la largeur du container */
+}
+
+.back-btn,
+.send-btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  border: none;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  min-width: 120px; /* largeur minimum pour un bon rendu */
+}
+
+.back-btn {
+  background: #f5f7fa;
+  color: #34495e;
+  border: 2px solid #dfe6e9;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.back-btn:hover {
+  background: #e0e7ee;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.send-btn {
+  background: linear-gradient(135deg, #20c599, #1fae8d, #178467);
+  color: white;
+}
+
+.send-btn:hover {
+  background: linear-gradient(135deg, #20c599, #1fae8d, #178467);
+  transform: translateY(-3px);
 }
 
 /* Message de confirmation */

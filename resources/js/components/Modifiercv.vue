@@ -188,11 +188,11 @@
           </section>
 
           <div class="form-actions">
-            <button type="submit" class="btn btn-save" @click="enregistrer">
-              💾 Sauvegarder
-            </button>
             <button type="button" class="btn btn-cancel" @click="cancelEditing">
               ❌ Annuler
+            </button>
+            <button type="submit" class="btn btn-save" @click="enregistrer">
+              💾 Sauvegarder
             </button>
           </div>
         </div>
@@ -312,17 +312,23 @@ async function updateProfile() {
   error.value = null;
 
   const dataToSend = {
-    prenom: form.prenom.trim(),
-    nom: form.nom.trim(),
+    prenom: (form.prenom ?? "").trim(),
+    nom: (form.nom ?? "").trim(),
     date_naissance: form.date_naissance,
-    email: form.email.trim(),
-    adresse: form.adresse.trim(),
-    presentation: form.presentation.trim(),
-    competences: form.competences.filter((c) => c.trim() !== ""),
-    langues: form.langues.filter((l) => l.trim() !== ""),
-    experiences: form.experiences.filter((e) => e.trim() !== ""),
-    educations_formations: form.educations_formations.filter((f) => f.trim() !== ""),
-    projets: form.projets.filter((p) => p.trim() !== ""),
+    email: (form.email ?? "").trim(),
+    adresse: (form.adresse ?? "").trim(),
+    presentation: (form.presentation ?? "").trim(),
+    competences: form.competences
+      .filter((c) => (c ?? "").trim() !== "")
+      .map((c) => c.trim()),
+    langues: form.langues.filter((l) => (l ?? "").trim() !== "").map((l) => l.trim()),
+    experiences: form.experiences
+      .filter((e) => (e ?? "").trim() !== "")
+      .map((e) => e.trim()),
+    educations_formations: form.educations_formations
+      .filter((f) => (f ?? "").trim() !== "")
+      .map((f) => f.trim()),
+    projets: form.projets.filter((p) => (p ?? "").trim() !== "").map((p) => p.trim()),
     image: form.image,
   };
 
@@ -464,14 +470,21 @@ async function deleteCv() {
 }
 
 /* Bouton Annuler (quand en mode édition) */
+
 .btn-cancel {
-  background-color: #f59e0b;
+  padding: 0.875rem 1.5rem;
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .btn-cancel:hover {
-  background-color: #d97706;
+  background: #e2e8f0;
 }
-
 /* Bouton Supprimer */
 .btn-delete {
   background-color: #ef4444;
@@ -485,9 +498,23 @@ async function deleteCv() {
 }
 
 /* Bouton Sauvegarder */
+
 .btn-save {
-  background-color: #3b82f6;
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #20c599, #1fae8d, #178467);
   color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(16, 185, 129, 0.3);
+}
+
+.btn-save:hover {
+  background: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
 }
 
 /* Bouton Ajouter */
@@ -512,13 +539,14 @@ async function deleteCv() {
 /* Groupe de boutons */
 .global-actions,
 .form-actions {
+  grid-column: 1 / -1;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 2rem;
-  padding: 0 1rem;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
 }
-
 .btn-group-right {
   display: flex;
   gap: 0.75rem;
@@ -614,12 +642,16 @@ async function deleteCv() {
   font-size: 1.3rem;
   font-weight: 600;
   margin-bottom: 1rem;
+  color: #0f3164;
+
   padding-bottom: 0.5rem;
   border-bottom: 2px solid #3b82f6;
 }
 
 .section-title1 {
   font-size: 1.4rem;
+
+  color: #0f3164;
   font-weight: 600;
   color: white;
   margin-bottom: 1rem;

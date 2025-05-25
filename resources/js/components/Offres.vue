@@ -4,10 +4,17 @@
     <div class="header-actions">
       <h2>Liste des offres</h2>
       <div class="search">
-        <select v-model="selectedTitle" class="filter-select">
-          <option value="">Tous les titres</option>
-          <option v-for="t in titles" :key="t" :value="t">{{ t }}</option>
-        </select>
+        <div class="select-wrapper">
+          <i class="fas fa-search search-icon" aria-hidden="true"></i>
+          <select
+            v-model="selectedTitle"
+            class="filter-select"
+            aria-label="Filtrer par titre"
+          >
+            <option value="">Tous les titres</option>
+            <option v-for="t in titles" :key="t" :value="t">{{ t }}</option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -227,7 +234,6 @@
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
-import search from "../../assets/search.png";
 
 const router = useRouter();
 const offres = ref([]);
@@ -253,7 +259,6 @@ const showPassword = ref(false);
 const rememberMe = ref(false);
 const togglePassword = () => (showPassword.value = !showPassword.value);
 
-// Fetch offers and titles
 const getOffres = async () => {
   loading.value = true;
   error.value = null;
@@ -274,22 +279,16 @@ const getOffres = async () => {
 
 onMounted(getOffres);
 
-// Computed filtered list
-// Variante « one-liner »
 const filteredOffers = computed(() => {
   if (!selectedTitle.value) {
-    // pas de filtre → on affiche toutes les offres
     return offres.value;
   }
-  // sinon on ne garde que celles qui ont le titre sélectionné
   return offres.value.filter((o) => o.titre === selectedTitle.value);
 });
 
-// Utility
 const truncateText = (text, maxLength) =>
   text && text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 
-// Authentication flow
 const checkAuthentication = (offerId) => {
   const userSession =
     localStorage.getItem("userSession") || sessionStorage.getItem("userSession");
@@ -351,17 +350,16 @@ const goToSignup = () => {
   );
 };
 </script>
+
 <style scoped>
-/* Conteneur général */
 body {
-  background: linear-gradient(135deg, #e0eafc, #cfdef3); /* Dégradé léger */
+  background: linear-gradient(135deg, #e0eafc, #cfdef3);
   font-family: "Inter", sans-serif;
   margin: 0;
   padding: 0;
 }
 .offers-section {
   padding: 2rem;
-
   border-radius: 3%;
   background-color: #e7f1f8;
 }
@@ -371,46 +369,87 @@ body {
   align-items: center;
   margin-bottom: 1.5rem;
 }
-/* Effet d'ombre lors du survol de la section */
 .offers-section:hover {
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
 }
-
 .header-actions h2 {
-  font-size: 1.75rem;
-  color: #3d63ea;
-
-  margin: 0;
-  font-weight: bold;
+  color: #1e3a8a;
+  font-size: 2rem;
+  font-weight: 700;
+  position: relative;
+  padding-bottom: -4rem;
+  margin-top: -1rem;
+  letter-spacing: -0.5px;
 }
-
+.header-actions h2::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 3rem;
+  height: 4px;
+  background-color: #1e3a8a;
+  border-radius: 4px;
+}
 .search {
   display: flex;
   align-items: center;
 }
-
+.select-wrapper {
+  position: relative;
+  display: inline-block;
+  min-width: 240px;
+}
 .filter-select {
   appearance: none;
-  padding: 0.75rem 1.5rem;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  padding: 0.75rem 2.75rem 0.75rem 2.5rem;
   border: 2px solid #0468bf;
-  border-radius: 2rem;
-  background: #fff url("../../assets/arrow-down.svg") no-repeat calc(100% - 1rem) center;
-  background-size: 1rem;
+  border-radius: 1.5rem;
+  background-color: #fff;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="none" stroke="%230468bf" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.2rem;
   font-size: 1rem;
   color: #2c3e50;
-  min-width: 200px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-  transition: border-color 0.2s, box-shadow 0.2s;
   cursor: pointer;
+  box-shadow: 0 3px 8px rgba(4, 104, 191, 0.12);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
-
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #0468bf;
+  pointer-events: none;
+  font-size: 1rem;
+}
 .filter-select:focus {
   outline: none;
   border-color: #024a8c;
-  box-shadow: 0 4px 16px rgba(2, 74, 140, 0.2);
+  box-shadow: 0 0 8px rgba(2, 74, 140, 0.6);
 }
-
-/* Grille d'offres */
+.filter-select option:first-child {
+  color: #999999;
+}
+@media (pointer: coarse) {
+  .filter-select {
+    background-image: none;
+    padding-right: 1.5rem;
+  }
+}
+.filter-select:focus {
+  border-color: #024a8c;
+  box-shadow: 0 0 8px rgba(2, 74, 140, 0.6);
+  background-image: url('data:image/svg+xml;utf8,<svg fill="none" stroke="%230468bf" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" style="transform: rotate(180deg); transition: transform 0.3s ease;"><path d="M6 9l6 6 6-6"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.2rem;
+}
 .offers-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -418,11 +457,8 @@ body {
   margin-top: 2rem;
   transition: grid-template-columns 0.3s ease;
 }
-
-/* Carte d'offre */
 .offer-card {
   border-left: 3px solid #3b82f6;
-
   background: #fff;
   border-radius: 1rem;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
@@ -433,38 +469,29 @@ body {
   padding: 1.5rem;
   cursor: pointer;
 }
-
-/* Ajout d'un effet sur le survol de la carte d'offre */
 .offer-card:hover {
   transform: translateY(-6px) scale(1.02);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
 }
-
-/* En-tête de la carte */
 .offer-card-header h3 {
   font-size: 1.6rem;
   color: #03315c;
   margin-bottom: 1rem;
   font-weight: 600;
 }
-
-/* Description et détails */
 .description {
   font-size: 0.95rem;
   color: #555;
   line-height: 1.5;
   margin-bottom: 1rem;
 }
-
 .salaire {
   color: #1d4ed8;
   font-weight: 600;
   margin-top: 0.5rem;
 }
-
-/* Bouton Voir plus */
 .btn-see-more {
-  background: linear-gradient(135deg, #0468bf, #0284c7);
+  background: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
   color: #fff;
   border: none;
   border-radius: 999px;
@@ -478,24 +505,24 @@ body {
   display: block;
   width: 100%;
 }
-
 .btn-see-more:hover {
   background: linear-gradient(135deg, #1d4d7a, #046297);
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(2, 74, 140, 0.4);
-}
-
-/* Modal Authentification avec effet visuel amélioré */
+} /* Modal Authentification avec effet visuel amélioré */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
+  background-color: rgba(0, 0, 0, 0.633);
+
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   width: 100%;
   height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.7);
   z-index: 1099;
   opacity: 0;
   transition: opacity 0.3s ease, transform 0.3s ease;
@@ -511,11 +538,11 @@ body {
   border-radius: 12px;
   width: 90%;
   max-width: 900px;
-  max-height: 90vh;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  max-height: 96vh; /* ou 95vh */
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.326); /* ombre plus forte */
   border: 1px solid #ddd;
   text-align: left;
-  overflow-y: auto;
+  overflow-y: hidden;
   position: relative;
   transform: scale(0.95);
   opacity: 0;
@@ -554,41 +581,374 @@ body {
   background-color: rgba(255, 255, 255, 1);
 }
 
-/* Authentification - Transition modale améliorée */
+/* --- Layout général --- */
 .auth-container {
-  min-height: 100vh;
+  min-height: 20vh;
   display: flex;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(
-    135deg,
-    #1f3d7a,
-    #3c64c8
-  ); /* Dégradé pour l'authentification */
+  background: linear-gradient(135deg, #e0eafc, #cfdef3); /* Dégradé léger */
   font-family: "Inter", sans-serif;
 }
 
-/* Responsive: Ajustement pour les petits écrans */
+.login-layout {
+  display: flex;
+  width: 940px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  max-width: 100%;
+  background: #ffffff;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+}
+
+/* --- Visuel gauche --- */
+.image-container {
+  flex: 1;
+  position: relative;
+  background: linear-gradient(135deg, #1f3d7a 0%, #3c64c8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.image-overlay {
+  text-align: center;
+  color: #ffffff;
+}
+
+.platform-name {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.platform-slogan {
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  opacity: 0.9;
+  max-width: 20ch;
+  margin-inline: auto;
+}
+
+/* --- Formulaire --- */
+.form-container {
+  flex: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 2rem;
+}
+
+.auth-box {
+  width: min(100%, 380px);
+}
+
+.logo-container {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1rem auto;
+  border-radius: 50%;
+  /* background: #0468BF; */
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+}
+
+.logo-icon {
+  font-size: 1.75rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  margin-top: -3rem;
+  font-weight: 600;
+  color: #14507e;
+}
+
+/* Bascule rôle */
+.toggle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.toggle-container span {
+  transition: 0.3s;
+  user-select: none;
+}
+
+.toggle-container span.active {
+  color: #14507e;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  background: #d9d9d9;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: 0.4s;
+}
+
+.slider::before {
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background: #ffffff;
+  border-radius: 50%;
+  transition: 0.4s;
+}
+
+input:checked + .slider {
+  background: #1f3d7a;
+}
+
+input:checked + .slider::before {
+  transform: translateX(22px);
+}
+
+/* Champs texte */
+.input-group {
+  margin-bottom: 1.25rem;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.input-with-icon {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+
+.input-with-icon input {
+  width: 100%;
+  padding: 0.65rem 0.75rem 0.65rem 40px;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-with-icon input:focus {
+  border-color: #1f3d7a;
+  box-shadow: 0 0 0 3px rgba(31, 61, 122, 0.15);
+}
+
+.input-with-icon input.error {
+  border-color: #e11d48;
+}
+
+.error-message {
+  margin-top: 0.3rem;
+  color: #e11d48;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  padding: 0 4px;
+}
+
+/* Souvenir & mdp oublié */
+.remember-forgot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  font-size: 0.875rem;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.remember-me input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.checkmark {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #d1d5db;
+  border-radius: 3px;
+  background: #ffffff;
+  display: inline-block;
+}
+
+.remember-me input:checked + .checkmark {
+  background: #1f3d7a;
+  border-color: #1f3d7a;
+}
+
+.remember-me input:checked + .checkmark::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 0;
+  width: 4px;
+  height: 8px;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.forgot-password {
+  color: #1f3d7a;
+  text-decoration: none;
+}
+
+/* Boutons */
+.btn-submit {
+  width: 100%;
+  padding: 0.75rem;
+  background: #0468bf;
+  color: #ffffff;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-submit:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: #0468bf;
+  transform: translateY(-2px);
+}
+
+.loading-spinner {
+  width: 18px;
+  height: 18px;
+  border: 3px solid #fff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Séparateur */
+.or-divider {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+}
+
+.or-divider::before,
+.or-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+}
+
+.or-divider span {
+  margin: 0 0.75rem;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+/* Création compte */
+.signup-prompt {
+  text-align: center;
+}
+
+.signup-prompt h3 {
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.highlight {
+  color: #0468bf;
+  font-weight: 700;
+}
+
+.btn-create {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  border: 2px solid #1f3d7a;
+  background: transparent;
+  color: #0468bf;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-create:hover {
+  background: #0468bf;
+  color: #ffffff;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-  .offers-section {
-    padding: 2rem;
-  }
-
-  .offers-grid {
-    grid-template-columns: repeat(
-      auto-fill,
-      minmax(200px, 1fr)
-    ); /* Grille plus compacte */
-  }
-
-  .offer-card {
-    padding: 1rem;
-  }
-
-  .modal-content {
-    width: 95%;
-  }
-
   .login-layout {
     flex-direction: column;
   }

@@ -122,7 +122,6 @@ onMounted(getOfferDetails);
   background: linear-gradient(135deg, #e0eafc, #cfdef3);
   min-height: 100vh;
   padding: 2rem;
-  border-radius: 3%;
 }
 
 .profil-container {
@@ -139,19 +138,24 @@ onMounted(getOfferDetails);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
 }
 
+/* === TYPOGRAPHY === */
+
 .offer-details h1 {
-  font-size: 2.4rem;
-  text-align: center;
-  color: #2980b9;
-  margin-bottom: 1rem;
+  color: #1e3a8a;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  position: relative;
+  padding-bottom: 0.5rem;
 }
 .offer-details h1::after {
   content: "";
-  display: block;
-  width: 100px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
   height: 4px;
-  background: #09a1cb;
-  margin: 0.5rem auto 0;
+  background: #3b82f6;
   border-radius: 2px;
 }
 
@@ -240,16 +244,16 @@ onMounted(getOfferDetails);
 }
 
 .button-container button:first-child {
-  background: #e74c3c;
+  background: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
   color: #fff;
 }
 .button-container button:first-child:hover {
-  background: #c0392b;
+  background: #3b82f6;
   transform: translateY(-2px);
 }
 
 .btnapply {
-  background: #3b82f6;
+  background: linear-gradient(135deg, #20c599, #1fae8d, #178467);
   color: #fff;
 }
 .btnapply:hover {

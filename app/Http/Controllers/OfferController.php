@@ -35,7 +35,7 @@ class OfferController extends Controller
         'titre'       => 'required|string|max:255',
         'description' => 'required|string|max:10000',
         'salaire'     => 'nullable|string',
-        'details'     => 'nullable|string|max:255',
+        'details'     => 'nullable|string|max:10005',
     ]);
 
     $offre = Offre::create($validated);

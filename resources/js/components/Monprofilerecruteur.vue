@@ -1,8 +1,13 @@
 <template>
   <div class="page-wrapper">
-    <div class="profil-container">
-      <h2 class="title">👤 Bienvenue {{ profile.prenom }} {{ profile.nom }}</h2>
+    <!-- Vérifie si profile existe avant de rendre l'élément -->
+    <div class="profil-container" v-if="profile">
+      <h2 class="title">
+        👤 Bienvenue {{ profile.prenom ? profile.prenom : "Prénom non disponible" }}
+        {{ profile.nom ? profile.nom : "Nom non disponible" }}
+      </h2>
 
+      <!-- Affichage des détails du profil -->
       <ul class="profil-details" v-if="!editMode">
         <li><strong>Nom de la Société :</strong> {{ profile.nomsociete }}</li>
         <li><strong>Département de la Société :</strong> {{ profile.departement }}</li>
@@ -21,8 +26,11 @@
       >
         ✏️ Modifier le profil
       </button>
+
+      <!-- Formulaire d'édition -->
       <form v-if="editMode" @submit.prevent="updateProfile" class="edit-form">
         <div class="form-grid">
+          <!-- Champ Nom -->
           <div
             class="input-group"
             @mouseenter="showHint('nom')"
@@ -42,6 +50,7 @@
             <span class="valid-icon" v-if="formData.nom && validFields.nom">✓</span>
           </div>
 
+          <!-- Champ Prénom -->
           <div
             class="input-group"
             @mouseenter="showHint('prenom')"
@@ -62,6 +71,7 @@
           </div>
         </div>
 
+        <!-- Champ Email -->
         <div
           class="input-group"
           @mouseenter="showHint('email')"
@@ -81,39 +91,7 @@
           <span class="valid-icon" v-if="formData.email && validFields.email">✓</span>
         </div>
 
-        <div
-          class="input-group"
-          @mouseenter="showHint('password')"
-          @mouseleave="hideHint('password')"
-        >
-          <label for="password">Mot de passe</label>
-          <div class="password-input-container">
-            <input
-              :type="showPassword ? 'text' : 'password'"
-              v-model.trim="formData.password"
-              id="password"
-              placeholder="Entrez votre mot de passe"
-              :class="{
-                'input-error': errors.password,
-                'input-valid': validFields.password,
-              }"
-              autocomplete="new-password"
-              @input="validateField('password')"
-            />
-            <button
-              type="button"
-              class="toggle-password"
-              @click="togglePassword"
-              :aria-label="
-                showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
-              "
-            >
-              <span aria-hidden="true">{{ showPassword ? "🔒" : "👁️" }}</span>
-            </button>
-          </div>
-          <span class="error-message" v-if="errors.password">{{ errors.password }}</span>
-        </div>
-
+        <!-- Champ CIN -->
         <div
           class="input-group"
           @mouseenter="showHint('cin')"
@@ -134,6 +112,7 @@
           <span class="valid-icon" v-if="formData.cin && validFields.cin">✓</span>
         </div>
 
+        <!-- Champ Téléphone -->
         <div
           class="input-group"
           @mouseenter="showHint('phone')"
@@ -154,6 +133,7 @@
           <span class="valid-icon" v-if="formData.phone && validFields.phone">✓</span>
         </div>
 
+        <!-- Champ Nom de l'entreprise -->
         <div
           class="input-group"
           @mouseenter="showHint('nomsociete')"
@@ -179,110 +159,49 @@
           >
         </div>
 
-        <div
-          class="input-group"
-          @mouseenter="showHint('departement')"
-          @mouseleave="hideHint('departement')"
-        >
-          <label for="departement">Département de la Société</label>
-          <input
-            type="text"
-            v-model="formData.departement"
-            id="departement"
-            placeholder="Département de la société"
-            :class="{
-              'input-error': errors.departement,
-              'input-valid': validFields.departement,
-            }"
-            @input="validateField('departement')"
-          />
-          <span class="error-message" v-if="errors.departement">{{
-            errors.departement
-          }}</span>
-          <span class="valid-icon" v-if="formData.departement && validFields.departement"
-            >✓</span
-          >
-        </div>
-
-        <div
-          class="input-group"
-          @mouseenter="showHint('localisation')"
-          @mouseleave="hideHint('localisation')"
-        >
-          <label for="localisation">Localisation de la Société</label>
-          <input
-            type="text"
-            v-model="formData.localisation"
-            id="localisation"
-            placeholder="Localisation de la société"
-            :class="{
-              'input-error': errors.localisation,
-              'input-valid': validFields.localisation,
-            }"
-            @input="validateField('localisation')"
-          />
-          <span class="error-message" v-if="errors.localisation">{{
-            errors.localisation
-          }}</span>
-          <span
-            class="valid-icon"
-            v-if="formData.localisation && validFields.localisation"
-            >✓</span
-          >
-        </div>
-
-        <div
-          class="input-group"
-          @mouseenter="showHint('siteweb')"
-          @mouseleave="hideHint('siteweb')"
-        >
-          <label for="siteweb">Site web</label>
-          <input
-            type="text"
-            v-model="formData.siteweb"
-            id="siteweb"
-            placeholder="Écrire votre site web"
-            :class="{ 'input-error': errors.siteweb, 'input-valid': validFields.siteweb }"
-            @input="validateField('siteweb')"
-          />
-          <span class="error-message" v-if="errors.siteweb">{{ errors.siteweb }}</span>
-          <span class="valid-icon" v-if="formData.siteweb && validFields.siteweb">✓</span>
-        </div>
-
         <div class="form-actions">
+          <button type="submit" class="btn-save">💾 Enregistrer</button>
           <button type="button" class="btn-cancel" @click="toggleEditMode">
             ❌ Annuler
           </button>
-          <button type="submit" class="btn-save">💾 Enregistrer</button>
         </div>
       </form>
     </div>
   </div>
 </template>
+
 <script setup>
 import axios from "axios";
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
+
 // Profil utilisateur
 const profile = ref({
-  nom: "",
+  nom: "", // Assurez-vous que 'nom' est bien initialisé
   prenom: "",
   email: "",
   date_naissance: "",
   lieudenaissance: "",
   cin: "",
   phone: "",
+  nomsociete: "",
+  departement: "",
+  localisation: "",
+  siteweb: "",
 });
+
 // Formulaire d'édition
-const form = ref({});
+const formData = ref({});
 const editMode = ref(false);
+const errors = ref({});
+const validFields = ref({});
 
 // Toggle mode édition
 function toggleEditMode() {
   if (!editMode.value) {
-    form.value = { ...profile.value };
+    formData.value = { ...profile.value };
   }
   editMode.value = !editMode.value;
 }
@@ -292,42 +211,47 @@ async function loadProfileData() {
   try {
     await axios.get("/sanctum/csrf-cookie");
     const { data: user } = await axios.get("/api/me");
-    profile.value = {
-      nomsociete: user.nomsociete || "",
-      departement: user.departement || "",
-      email: user.email || "",
-      cin: user.cin || "",
-      phone: user.phone || "",
-      localisation: user.localisation || "",
-      siteweb: user.siteweb || "",
-    };
-    form.value = { ...profile.value };
+
+    if (user) {
+      profile.value = {
+        nom: user.nom || "",
+        prenom: user.prenom || "",
+        nomsociete: user.nomsociete || "",
+        departement: user.departement || "",
+        email: user.email || "",
+        cin: user.cin || "",
+        phone: user.phone || "",
+        localisation: user.localisation || "",
+        siteweb: user.siteweb || "",
+      };
+      formData.value = { ...profile.value };
+    } else {
+      throw new Error("Aucune donnée utilisateur reçue");
+    }
   } catch (err) {
     console.error("Erreur chargement profil:", err);
+    alert("Erreur lors du chargement du profil.");
     if (err.response?.status === 401) {
       alert("Session expirée. Connectez-vous à nouveau.");
       router.push("/login");
-    } else {
-      alert("Erreur lors du chargement du profil.");
     }
   }
 }
 
 // Mettre à jour profil
 async function updateProfile() {
-  if (!form.value.nom || !form.value.prenom || !form.value.email) {
+  if (!formData.value.nom || !formData.value.prenom || !formData.value.email) {
     alert("❌ Nom, prénom et email obligatoires.");
     return;
   }
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(form.value.email)) {
+  if (!emailRegex.test(formData.value.email)) {
     alert("❌ Email invalide.");
     return;
   }
   try {
-    await axios.put("/api/update-profil", form.value);
-    profile.value = { ...form.value };
-    // Mise à jour session
+    await axios.put("/api/update-profil", formData.value);
+    profile.value = { ...formData.value };
     const key = sessionStorage.getItem("userSession")
       ? "userSession"
       : localStorage.getItem("userSession")
@@ -336,27 +260,13 @@ async function updateProfile() {
     if (key) {
       const store = key === "userSession" ? sessionStorage : localStorage;
       const stored = JSON.parse(store.getItem(key) || "{}");
-      store.setItem(key, JSON.stringify({ ...stored, ...form.value }));
+      store.setItem(key, JSON.stringify({ ...stored, ...formData.value }));
     }
     editMode.value = false;
     showSuccessMessage("Profil mis à jour avec succès !");
   } catch (err) {
     console.error("Erreur mise à jour:", err);
     alert("❌ Échec de la mise à jour.");
-  }
-}
-
-// Format date FR
-function formatDate(dateStr) {
-  if (!dateStr) return "Non renseigné";
-  try {
-    return new Intl.DateTimeFormat("fr-FR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    }).format(new Date(dateStr));
-  } catch {
-    return dateStr;
   }
 }
 
@@ -375,6 +285,10 @@ function showSuccessMessage(msg) {
 
 onMounted(loadProfileData);
 </script>
+
+<style scoped>
+/* Ajoutez vos styles ici */
+</style>
 
 <style scoped>
 .page-wrapper {
@@ -482,15 +396,12 @@ onMounted(loadProfileData);
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
   margin-top: 1.5rem;
   box-shadow: 0 2px 5px rgba(59, 130, 246, 0.3);
 }
 
 .btn-edit:hover {
   background: #2563eb;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
 }
 
 /* ===== Formulaire d’édition ===== */
@@ -566,40 +477,45 @@ input:focus {
 
 /* ===== Actions du formulaire ===== */
 .form-actions {
+  grid-column: 1 / -1;
   display: flex;
+  justify-content: flex-end;
   gap: 1rem;
   margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
 }
-.btn-cancel,
-.btn-save {
-  flex: 1;
-  padding: 0.75rem;
-  font-weight: 600;
-  border-radius: 0.75rem;
-  transition: background 0.3s, transform 0.2s;
-}
+
 .btn-cancel {
-  background: #f3f4f6;
-  color: #4b5563;
-  border: 1px solid #d1d5db;
+  padding: 0.875rem 1.5rem;
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
+
 .btn-cancel:hover {
-  background: #e5e7eb;
-  transform: translateY(-2px);
+  background: #e2e8f0;
 }
 .btn-save {
-  background: #16a34a;
-  color: #fff;
+  padding: 0.875rem 1.5rem;
+  background: linear-gradient(135deg, #20c599, #1fae8d, #178467);
+  color: white;
   border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(16, 185, 129, 0.3);
 }
-.btn-save:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-  transform: none;
-}
-.btn-save:not(:disabled):hover {
-  background: #15803d;
+
+.btn-save:hover {
+  background: #059669;
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
 }
 
 /* ===== Notification de succès ===== */

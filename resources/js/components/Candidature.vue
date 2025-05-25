@@ -200,17 +200,15 @@ async function getCandidatures() {
     // On s'assure que data est un tableau, sinon on remet un tableau vide
     candidatures.value = Array.isArray(data)
       ? data.map((c) => {
-          // Traitement des statuts
-          if (c.status_ia === "rejected") {
+          if (c.date_entretien) {
+            c.status_ia = "entretien"; // Priorité au statut entretien si date présente
+          } else if (c.status_ia === "rejected") {
             c.status_ia = "refuser";
           } else if (c.status_ia === "accepted") {
             c.status_ia = "accepter";
           } else {
             c.status_ia = "enattente";
           }
-
-          // Pas de modification du status_ia basé sur la date d'entretien
-          // Nous utiliserons le filtrage pour différencier les affichages
           return c;
         })
       : [];
@@ -271,7 +269,6 @@ onMounted(() => {
 }
 
 .candidatures-container:hover {
-  transform: translateY(-5px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 /* === HEADER STYLES === */
@@ -301,39 +298,43 @@ onMounted(() => {
   transition: transform 0.3s ease;
 }
 
-.header-actions:hover h2 i {
-  transform: scale(1.1);
-}
-
 .statut-filter {
-  padding: 10px 18px;
-  border-radius: 10px;
-  border: 2px solid #e0e7ff;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #374151;
-  background: white;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
   appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, #3f51b5 50%),
-    linear-gradient(135deg, #3f51b5 50%, transparent 50%);
-  background-position: calc(100% - 20px) calc(1em + 2px),
-    calc(100% - 15px) calc(1em + 2px);
-  background-size: 5px 5px, 5px 5px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 240px; /* ou 100% max-width selon besoin */
+  padding: 0.75rem 2.75rem 0.75rem 1.75rem; /* espace pour la flèche à droite */
+  border: 2px solid #0468bf;
+  border-radius: 1.5rem;
+  background-color: #fff;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="none" stroke="%230468bf" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>');
   background-repeat: no-repeat;
-}
-
-.statut-filter:hover {
-  border-color: #a5b4fc;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  background-position: right 1rem center;
+  background-size: 1.2rem;
+  font-size: 1rem;
+  color: #2c3e50;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(4, 104, 191, 0.12);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .statut-filter:focus {
   outline: none;
-  border-color: #3f51b5;
-  box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.15), 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border-color: #024a8c;
+  box-shadow: 0 0 8px rgba(2, 74, 140, 0.6);
+}
+
+/* Option "Tous les statuts" grisé */
+.statut-filter option:first-child {
+  color: #999999;
+}
+
+/* Support mobile (pointer coarse) : désactivation de la flèche personnalisée */
+@media (pointer: coarse) {
+  .statut-filter {
+    background-image: none;
+    padding-right: 1.5rem;
+  }
 }
 
 /* === CANDIDATURE GRID === */
@@ -362,9 +363,7 @@ onMounted(() => {
 }
 
 .candidature-item:hover {
-  transform: translateY(-5px);
   box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
-  border-color: #cbd5e1;
 }
 .candidature-item::before {
   content: "";
@@ -373,15 +372,8 @@ onMounted(() => {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #3f51b5, #7986cb);
   opacity: 0;
   transition: opacity 0.3s ease;
-}
-
-.candidature-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
-  border-color: #c7d2fe;
 }
 
 .candidature-item:hover::before {
@@ -408,9 +400,6 @@ onMounted(() => {
   background: linear-gradient(90deg, rgba(63, 81, 181, 0.03), transparent);
   opacity: 0;
   transition: opacity 0.3s ease;
-}
-.candidature-item:hover .candidature-header {
-  background: #f0f4ff;
 }
 
 .title-offre {
@@ -450,12 +439,10 @@ onMounted(() => {
 }
 
 .statut-accepter {
-  background-color: #d1fae5;
   color: #065f46;
 }
 
 .statut-entretien {
-  background-color: #dbeafe;
   color: #1e40af;
 }
 
@@ -501,7 +488,25 @@ onMounted(() => {
   line-height: 1.6;
   flex: 1;
 }
-
+.candidature-item.statut-refuser .status-badge {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+.candidature-item.statut-entretien .status-badge {
+  background-color: #96a8e4;
+  color: #1e40af;
+}
+.candidature-item.statut-accepter .status-badge {
+  background-color: #bffedc; /* très clair */
+  color: #38a169; /* rouge vif */
+  border-left-color: #38a169; /* rouge vif */
+}
+.candidature-item.statut-accepter {
+  border-left: 4px solid #38a169;
+}
+.candidature-item.statut-entretien {
+  border-left: 4px solid #1e40af;
+}
 .card-info-row strong {
   color: #1f2937;
   font-weight: 600;
@@ -595,8 +600,6 @@ onMounted(() => {
 }
 
 .btn-retry:hover {
-  background: linear-gradient(135deg, #6366f1, #818cf8);
-  transform: translateY(-2px);
   box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.2),
     0 4px 6px -2px rgba(79, 70, 229, 0.05);
 }

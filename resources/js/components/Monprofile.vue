@@ -15,11 +15,12 @@
       </ul>
 
       <button
+        v-if="!editMode"
         class="btn-edit"
         @click="toggleEditMode"
-        :aria-label="editMode ? 'Annuler la modification' : 'Modifier le profil'"
+        aria-label="Modifier le profil"
       >
-        {{ editMode ? "❌ Annuler" : "✏️ Modifier le profil" }}
+        ✏️ Modifier le profil
       </button>
 
       <form v-if="editMode" @submit.prevent="updateProfile" class="edit-form">
@@ -85,7 +86,8 @@
 <script setup>
 import axios from "axios";
 import { ref, onMounted } from "vue";
-
+import { useToast } from "vue-toastification";
+const toast = useToast();
 // Déclarations des variables réactives
 const profile = ref({
   nom: "",
@@ -170,10 +172,10 @@ async function updateProfile() {
     }
 
     editMode.value = false;
-    showSuccessMessage("Profil mis à jour avec succès !");
+    toast.success("Profil mis à jour avec succès !");
   } catch (error) {
     console.error("Erreur lors de la sauvegarde du profil:", error);
-    alert("❌ Une erreur est survenue lors de la sauvegarde du profil.");
+    toast.error("❌ Une erreur est survenue lors de la sauvegarde du profil.");
   }
 }
 
@@ -190,26 +192,6 @@ function formatDate(dateString) {
   } catch (e) {
     return dateString;
   }
-}
-
-// Fonction pour afficher un message de succès
-function showSuccessMessage(message) {
-  const notification = document.createElement("div");
-  notification.className = "success-notification";
-  notification.textContent = "✅ " + message;
-
-  document.body.appendChild(notification);
-
-  setTimeout(() => {
-    notification.classList.add("show");
-  }, 100);
-
-  setTimeout(() => {
-    notification.classList.remove("show");
-    setTimeout(() => {
-      document.body.removeChild(notification);
-    }, 500);
-  }, 3000);
 }
 
 // Chargement des données du profil au montage du composant
@@ -241,25 +223,24 @@ onMounted(() => {
 
 /* === TYPOGRAPHY === */
 .title {
-  text-align: center;
-  font-size: 1.8rem;
+  color: #1e3a8a; /* bleu foncé proche de la capture */
+  font-size: 2rem;
   font-weight: 700;
-  color: #1e3a8a;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
   position: relative;
   padding-bottom: 0.5rem;
+  letter-spacing: -0.5px;
 }
 
 .title::after {
   content: "";
   position: absolute;
-  bottom: -1rem;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 4px;
-  background: #3b82f6;
-  border-radius: 2px;
+  bottom: 0;
+  left: 0;
+  width: 3rem; /* largeur de la barre */
+  height: 4px; /* épaisseur */
+  background-color: #1e3a8a; /* même bleu foncé */
+  border-radius: 4px; /* arrondi */
 }
 
 /* === PROFILE DETAILS === */
@@ -382,7 +363,7 @@ onMounted(() => {
 
 .btn-save {
   padding: 0.875rem 1.5rem;
-  background: #10b981;
+  background: linear-gradient(135deg, #20c599, #1fae8d, #178467);
   color: white;
   border: none;
   border-radius: 8px;

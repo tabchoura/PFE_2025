@@ -563,14 +563,16 @@ function goToModifyCv() {
 
 /* Bouton Retour */
 .btn-back {
-  background: linear-gradient(180deg, #94a3b8 0%, #334155 100%);
-  color: white;
+  background: #f5f7fa;
+  color: #34495e;
+  border: 2px solid #dfe6e9;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .btn-back:hover {
-  background-color: #475569;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(100, 116, 139, 0.3);
+  background: #e0e7ee;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Bouton Télécharger */
@@ -600,11 +602,16 @@ function goToModifyCv() {
 
 /* Bouton Annuler (quand en mode édition) */
 .btn-cancel {
-  background-color: #f59e0b;
+  background: #f5f7fa;
+  color: #34495e;
+  border: 2px solid #dfe6e9;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .btn-cancel:hover {
-  background-color: #d97706;
+  background: #e0e7ee;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Bouton Supprimer */
@@ -777,6 +784,8 @@ function goToModifyCv() {
   font-size: 1.3rem;
   font-weight: 600;
   margin-bottom: 1rem;
+  color: #0f3164;
+
   padding-bottom: 0.5rem;
   border-bottom: 2px solid #3b82f6;
 }
@@ -786,6 +795,8 @@ function goToModifyCv() {
   font-weight: 600;
   color: white;
   margin-bottom: 1rem;
+
+  color: #0f3164;
   border-bottom: 2px solid #3b82f6;
   padding-bottom: 0.5rem;
 }

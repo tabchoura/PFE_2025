@@ -1425,16 +1425,17 @@ ul li::before {
 }
 
 .btn-back {
-  background: linear-gradient(135deg, #7d7d7d 0%, #a3a3a3 100%);
-  box-shadow: 0 4px 15px rgba(74, 85, 104, 0.2);
+  background: #f5f7fa;
+  color: #34495e;
+  border: 2px solid #dfe6e9;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .btn-back:hover {
+  background: #e0e7ee;
   transform: translateY(-3px);
-  background: linear-gradient(135deg, #2d3748, #1a202c);
-  box-shadow: 0 8px 20px rgba(74, 85, 104, 0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
-
 .btn-download {
 background: linear-gradient(135deg, #20c599, #1fae8d, #178467);
 
@@ -1549,6 +1550,26 @@ background: linear-gradient(135deg, #20c599, #1fae8d, #178467);
 
 .candidature-content {
   animation: fadeIn 0.6s ease-out;
+}
+
+.candidature-content h2{
+   color: #1e3a8a; /* bleu foncé proche de la capture */
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  position: relative;
+  padding-bottom: 0.5rem;
+  letter-spacing: -0.5px;
+}
+.candidature-content h2::after{
+   content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 3rem; /* largeur de la barre */
+  height: 4px; /* épaisseur */
+  background-color: #1e3a8a; /* même bleu foncé */
+  border-radius: 4px; /* arrondi */
 }
 
 /* Effet de focus pour les boutons */

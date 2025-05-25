@@ -3,7 +3,6 @@
     <div class="login-layout">
       <!-- VISUEL GAUCHE -->
       <div class="image-container">
-        <!-- L'image est volontairement remplacée par un dégradé pour une première impression plus légère -->
         <div class="image-overlay">
           <h1 class="platform-name">Jobgo</h1>
           <p class="platform-slogan">Connectez talents et opportunités</p>
@@ -13,7 +12,6 @@
       <!-- FORMULAIRE -->
       <div class="form-container">
         <div v-if="page === 'login'" class="auth-box">
-          <!-- Logo -->
           <div class="logo-container">
             <i class="fas fa-briefcase logo-icon"></i>
           </div>
@@ -22,7 +20,8 @@
 
           <!-- Bascule Candidat / Recruteur -->
           <div class="toggle-container">
-            <span :class="{ active: !isRecruteur }">Candidat</span>
+            <!-- Ajout highlight sur les deux et active selon isRecruteur -->
+            <span class="highlight" :class="{ active: !isRecruteur }">Candidat</span>
             <label class="switch">
               <input
                 type="checkbox"
@@ -31,7 +30,7 @@
               />
               <span class="slider"></span>
             </label>
-            <span :class="{ active: isRecruteur }">Recruteur</span>
+            <span class="highlight" :class="{ active: isRecruteur }">Recruteur</span>
           </div>
 
           <!-- Formulaire -->
@@ -130,7 +129,6 @@
               </p>
             </div>
 
-            <!-- Souvenir / lien mdp -->
             <div class="remember-forgot">
               <label class="remember-me">
                 <input type="checkbox" v-model="rememberMe" />
@@ -140,16 +138,14 @@
               <a href="#" class="forgot-password">Mot de passe oublié&nbsp;?</a>
             </div>
 
-            <!-- Bouton connexion -->
             <button :disabled="isLoading" type="submit" class="btn-submit">
               <span v-if="isLoading" class="loading-spinner"></span>
               <span v-else><i class="fas fa-sign-in-alt"></i> Se connecter</span>
             </button>
 
-            <!-- Séparateur -->
             <div class="or-divider"><span>OU</span></div>
 
-            <!-- Création compte -->
+            <!-- Phrase en bas avec un seul mot en highlight actif -->
             <div class="signup-prompt">
               <h3>
                 Vous n'avez pas de compte
@@ -165,7 +161,6 @@
       </div>
     </div>
 
-    <!-- Composants d'inscription -->
     <RegisterCandidat
       v-if="page === 'registerCandidat'"
       @registration-complete="handleRegistrationComplete"
@@ -176,19 +171,18 @@
     />
   </div>
 </template>
+
 <script setup>
+// (Script identique au tien, inchangé)
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import api from "@/axios";
 
-import recrutlogin from "../../assets/authentification.jpg";
 import RegisterCandidat from "../components/RegisterCandidat.vue";
 import RegisterRecruteur from "../components/RegisterRecruteur.vue";
 
-// Initialisation du router
 const router = useRouter();
 
-// Variables
 const email = ref("");
 const password = ref("");
 const isRecruteur = ref(false);
@@ -199,7 +193,6 @@ const passwordError = ref(false);
 const showPassword = ref(false);
 const rememberMe = ref(false);
 
-// Validation du formulaire
 const validateForm = () => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   emailError.value = !emailRegex.test(email.value);
@@ -207,7 +200,6 @@ const validateForm = () => {
   return !emailError.value && !passwordError.value;
 };
 
-// Fonction de connexion
 const login = async () => {
   if (!validateForm()) return;
   isLoading.value = true;
@@ -246,7 +238,6 @@ const login = async () => {
   }
 };
 
-// Rediriger vers la page d'inscription
 const goToSignup = () => {
   page.value = isRecruteur.value ? "registerRecruteur" : "registerCandidat";
   router.push(
@@ -254,19 +245,16 @@ const goToSignup = () => {
   );
 };
 
-// Gestion après enregistrement
 const handleRegistrationComplete = (userData) => {
   const storage = rememberMe.value ? localStorage : sessionStorage;
   storage.setItem("userSession", JSON.stringify(userData));
   router.push(userData.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat");
 };
 
-// Afficher ou cacher le mot de passe
 const togglePassword = () => {
   showPassword.value = !showPassword.value;
 };
 
-// Vérifier si déjà connecté
 onMounted(() => {
   const session =
     localStorage.getItem("userSession") || sessionStorage.getItem("userSession");
@@ -289,7 +277,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  background: linear-gradient(135deg, #e0eafc, #cfdef3); /* Dégradé léger */
+  background: linear-gradient(135deg, #e0eafc, #cfdef3);
   font-family: "Inter", sans-serif;
 }
 
@@ -303,7 +291,6 @@ onMounted(() => {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
 }
 
-/* --- Visuel gauche --- */
 .image-container {
   flex: 1;
   position: relative;
@@ -332,7 +319,6 @@ onMounted(() => {
   margin-inline: auto;
 }
 
-/* --- Formulaire --- */
 .form-container {
   flex: 1;
   display: flex;
@@ -350,7 +336,6 @@ onMounted(() => {
   height: 64px;
   margin: 0 auto 1rem auto;
   border-radius: 50%;
-  /* background: #0468BF; */
   display: grid;
   place-items: center;
   color: #ffffff;
@@ -365,10 +350,9 @@ h2 {
   text-align: center;
   margin-bottom: 1.5rem;
   font-weight: 600;
-  color: #14507e;
+  color: #1e3a8a;
 }
 
-/* Bascule rôle */
 .toggle-container {
   display: flex;
   align-items: center;
@@ -381,10 +365,17 @@ h2 {
 .toggle-container span {
   transition: 0.3s;
   user-select: none;
+  color: #6b7280; /* gris par défaut */
 }
 
 .toggle-container span.active {
-  color: #14507e;
+  color: #3d63ea;
+  font-weight: 700;
+}
+
+.highlight {
+  color: #3d63ea;
+  font-weight: 700;
 }
 
 .switch {
@@ -422,7 +413,7 @@ h2 {
 }
 
 input:checked + .slider {
-  background: #1f3d7a;
+  background: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
 }
 
 input:checked + .slider::before {
@@ -491,7 +482,6 @@ input:checked + .slider::before {
   padding: 0 4px;
 }
 
-/* Souvenir & mdp oublié */
 .remember-forgot {
   display: flex;
   align-items: center;
@@ -546,11 +536,10 @@ input:checked + .slider::before {
   text-decoration: none;
 }
 
-/* Boutons */
 .btn-submit {
   width: 100%;
   padding: 0.75rem;
-  background: #0468bf;
+  background: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
   color: #ffffff;
   border: none;
   border-radius: 0.5rem;
@@ -589,7 +578,6 @@ input:checked + .slider::before {
   }
 }
 
-/* Séparateur */
 .or-divider {
   display: flex;
   align-items: center;
@@ -610,7 +598,6 @@ input:checked + .slider::before {
   font-weight: 600;
 }
 
-/* Création compte */
 .signup-prompt {
   text-align: center;
 }
@@ -640,11 +627,10 @@ input:checked + .slider::before {
 }
 
 .btn-create:hover {
-  background: #0468bf;
+  background: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
   color: #ffffff;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .login-layout {
     flex-direction: column;

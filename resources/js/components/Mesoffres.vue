@@ -23,8 +23,8 @@
       </div>
 
       <!-- Liste animée des offres -->
-      <transition-group name="offer-list" tag="div" class="offers-container">
-        <div v-for="offer in offers" :key="offer.id" class="offer-item">
+      <div v-else class="offers-grid">
+        <div v-for="offer in offers" :key="offer.id" class="offer-card">
           <div class="offer-content">
             <h2>{{ offer.titre }}</h2>
             <p class="offer-description">{{ offer.description }}</p>
@@ -40,7 +40,7 @@
             </button>
           </div>
         </div>
-      </transition-group>
+      </div>
     </div>
   </div>
 </template>
@@ -99,16 +99,21 @@ onMounted(getUserSelectedOffers);
   min-height: 100vh;
   padding: 2rem;
 }
+.offers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
 
 /* === MAIN CONTAINER === */
 .profil-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 2.5rem;
   background: white;
   border-radius: 16px;
-  padding: 2.5rem;
-  max-width: 1200px;
-  margin: 0 auto;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .profil-container:hover {
@@ -247,16 +252,20 @@ onMounted(getUserSelectedOffers);
   margin-top: 2rem;
 }
 
-/* === OFFER CARD === */
-.offer-item {
-  background: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+.offer-card {
+  width: 400px;
   display: flex;
   flex-direction: column;
-  border: 1px solid #e2e8f0;
+  background-color: #fff;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border-left: 3px solid #3b82f6;
+}
+.offer-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .offer-item:hover {
@@ -311,19 +320,18 @@ onMounted(getUserSelectedOffers);
 }
 
 .delete-btn {
-  width: 100%;
-  padding: 0.75rem;
-  background: white;
-  color: #ef4444;
-  border: 1px solid #fecaca;
+  background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
+  border: none;
   border-radius: 8px;
-  font-weight: 600;
+  padding: 10px;
   display: flex;
+  margin-left: auto;
+
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  transition: all 0.2s ease;
   cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
 }
 
 .delete-btn:hover {

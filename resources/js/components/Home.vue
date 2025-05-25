@@ -140,7 +140,7 @@ h1 {
 }
 
 .btn {
-  background: linear-gradient(90deg, #3d63ea, #506df5);
+  background: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
   color: white;
   padding: 16px 40px;
   border: none;
@@ -256,7 +256,7 @@ h1 {
 
 .btn-continue {
   margin-top: 2rem;
-  background: #3d63ea;
+  background: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
   color: #fff;
   border: none;
   width: 100%;

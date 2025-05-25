@@ -61,7 +61,7 @@ class EvaluateCvEmbedding implements ShouldQueue
 
         // Calculer la similarité entre l'embedding du CV et de l'offre d'emploi
         $similarityScore = $this->calculateSimilarity($cvEmbedding, $offerEmbedding);
-$statusIa = $similarityScore >= 0.7 ? 'accepted' : 'rejected';  // Assurez-vous que le nom de la variable est cohérent
+$statusIa = $similarityScore >= 0.6 ? 'accepted' : 'rejected';  // Assurez-vous que le nom de la variable est cohérent
 
         // Mettre à jour le score de similarité dans la base de données une seule fois
         $this->candidature->update([

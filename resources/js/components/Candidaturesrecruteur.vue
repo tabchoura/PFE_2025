@@ -6,6 +6,7 @@
         <h2><i class="fas fa-user-check"></i> Candidatures reçues</h2>
         <div class="actions-zone">
           <div class="filter-controls">
+            <i class="fas fa-search search-icon" aria-hidden="true"></i>
             <select
               v-model="filtreStatut"
               class="status-filter"
@@ -58,7 +59,7 @@
           </p>
         </div>
 
-        <div class="candidatures-list">
+        <div class="candidature-grid">
           <div
             v-for="c in candidaturesFiltrees"
             :key="c.id"
@@ -67,8 +68,8 @@
           >
             <div class="candidature-main">
               <div class="candidature-header">
-                <h3>{{ c.offre?.titre || "Offre inconnue" }}</h3>
-                <div :class="['status-badge', `status-badge-${c.statut}`]">
+                <h3 class="title-offre">{{ c.offre?.titre || "Offre inconnue" }}</h3>
+                <div :class="['status-badge', `statut-${c.status_ia}`]">
                   <span>
                     {{ labels(c.statut) }}
                     {{
@@ -141,8 +142,8 @@
                   :key="step.key"
                   class="step"
                   :class="{
-                    'step-done': stepOrder(c.statut) > i,
-                    'step-active': stepOrder(c.statut) === i,
+                    'step-done': stepOrder(c.statut, c.date_entretien) > i,
+                    'step-active': stepOrder(c.statut, c.date_entretien) === i,
                   }"
                   role="listitem"
                 >
@@ -150,26 +151,20 @@
                   <span class="label">{{ step.label }}</span>
                 </div>
               </div>
-
-              <div v-if="c.statut === 'accepter'" class="actions">
-                <button
-                  @click="planifierEntretien(c)"
-                  class="primary-btn"
-                  aria-label="Planifier un entretien"
-                >
-                  <i class="fas fa-calendar-alt" aria-hidden="true"></i> Planifier
-                  entretien
-                </button>
-              </div>
             </div>
 
             <div class="candidature-actions">
               <button
-                @click="voirDetails(c)"
-                class="primary-btn"
-                aria-label="Voir les détails de la candidature"
+                v-if="c.statut === 'accepter'"
+                @click="planifierEntretien(c)"
+                class="planifierentretien"
+                aria-label="Planifier un entretien"
               >
-                <i class="fas fa-eye" aria-hidden="true"></i> Voir détails
+                <i class="fas fa-calendar-alt" aria-hidden="true"></i> Planifier entretien
+              </button>
+
+              <button type="button" @click="voirDetails(c)" class="primary-btn">
+                <i class="fas fa-eye"></i> Voir détails
               </button>
             </div>
           </div>
@@ -238,16 +233,23 @@ const getSteps = (statut) => {
   ];
 };
 
-const stepOrder = (statut) =>
-  ({
-    accepter: 0,
-    entretien: 1,
-    embauche: 2,
-    refuser: 0,
-  }[statut] || 0);
+// stepOrder modifiée pour prendre en compte la date d'entretien
+const stepOrder = (statut, dateEntretien) => {
+  if (dateEntretien) {
+    return 1; // étape "Entretien"
+  }
+  return (
+    {
+      accepter: 0,
+      entretien: 1,
+      embauche: 2,
+      refuser: 0,
+    }[statut] || 0
+  );
+};
 
 const voirDetails = (c) => {
-  router.push({ name: "DetailsCandidature", params: { candidatureId: c.id } });
+  router.push(`/candidatures/${c.id}`);
 };
 
 const planifierEntretien = (c) => {
@@ -278,7 +280,6 @@ const getCandidatures = async () => {
         })
       : [];
   } catch (e) {
-    console.error(e);
     error.value = e.response?.data?.message || "Erreur lors du chargement";
   } finally {
     loading.value = false;
@@ -305,8 +306,22 @@ onMounted(getCandidatures);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.title-offre {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.4;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
 .mescandidatures h2 {
-  color: #1e3a8a; /* bleu foncé proche de la capture */
+  color: #1e3a8a;
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 2rem;
@@ -325,12 +340,12 @@ onMounted(getCandidatures);
   position: absolute;
   bottom: 0;
   left: 0;
-  width: 3rem; /* largeur de la barre */
-  height: 4px; /* épaisseur */
-  background-color: #1e3a8a; /* même bleu foncé */
-  border-radius: 4px; /* arrondi */
+  width: 3rem;
+  height: 4px;
+  background-color: #1e3a8a;
+  border-radius: 4px;
 }
-/* Header Section */
+
 .header-actions {
   display: flex;
   justify-content: space-between;
@@ -349,6 +364,7 @@ onMounted(getCandidatures);
   align-items: center;
   letter-spacing: -0.5px;
 }
+
 .header-actions h2 i {
   margin-right: 14px;
   color: #3f51b5;
@@ -372,25 +388,44 @@ onMounted(getCandidatures);
   gap: 0.75rem;
   width: 100%;
 }
-
 .status-filter {
-  flex: 1;
-  padding: 0.75rem 1rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  background: white;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 100%;
+  max-width: 240px;
+  padding: 0.75rem 2.75rem 0.75rem 1.75rem;
+  border: 2px solid #0468bf;
+  border-radius: 1.5rem;
+  background-color: #fff;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="none" stroke="%230468bf" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.2rem;
   font-size: 1rem;
   color: #2c3e50;
   cursor: pointer;
-  transition: all 0.2s ease;
+  box-shadow: 0 3px 8px rgba(4, 104, 191, 0.12);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.status-filter:focus-visible {
-  outline: 2px solid #4299e1;
-  outline-offset: 2px;
+.status-filter:focus {
+  outline: none;
+  border-color: #024a8c;
+  box-shadow: 0 0 8px rgba(2, 74, 140, 0.6);
 }
 
-/* Stats bar */
+.status-filter option:first-child {
+  color: #999999;
+}
+
+@media (pointer: coarse) {
+  .status-filter {
+    background-image: none;
+    padding-right: 1.5rem;
+  }
+}
+
 .stats-bar {
   display: flex;
   justify-content: space-between;
@@ -412,7 +447,6 @@ onMounted(getCandidatures);
   color: #2c3e50;
 }
 
-/* Special States */
 .loading-state,
 .error-state,
 .empty-state,
@@ -500,11 +534,13 @@ onMounted(getCandidatures);
   margin-right: 0.5rem;
 }
 
-/* Candidature List */
-.candidatures-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+.candidature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
 }
 
 .candidature-card {
@@ -524,7 +560,6 @@ onMounted(getCandidatures);
   border-left-width: 5px;
 }
 
-/* Status Colors */
 .status-enattente {
   border-left-color: #805ad5;
 }
@@ -545,56 +580,133 @@ onMounted(getCandidatures);
   border-left-color: #e53e3e;
 }
 
+.statut-refuser {
+  color: #991b1b;
+}
+
+.candidature-card.status-refuser {
+  border-left-color: #dc2626;
+}
+
+.candidature-card.status-refuser .status-badge {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.candidature-item.statut-refuser {
+  border-left-color: #dc2626;
+}
+
+.candidature-item.statut-refuser .status-badge {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.candidature-card.status-accepter {
+  border-left-color: #38a169;
+}
+
+.candidature-card.status-accepter .status-badge {
+  background-color: #bffedc;
+  color: #38a169;
+}
+
+.candidature-item.statut-accepter {
+  border-left-color: #38a169;
+}
+
+.candidature-item.statut-accepter .status-badge {
+  background-color: #bffedc;
+  color: #38a169;
+}
+
 .status-badge {
-  padding: 0.4rem 1rem;
-  border-radius: 9999px;
+  padding: 6px 14px;
+  border-radius: 24px;
   font-size: 0.85rem;
   font-weight: 600;
-  text-align: center;
   text-transform: capitalize;
+  margin-left: 12px;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
 }
 
-.status-badge.status-accepted {
-  background-color: #c6f6d5;
-  color: #2f855a;
+.candidature-item:hover .status-badge {
+  transform: scale(1.05);
 }
 
-.status-badge.status-rejected {
-  background-color: #fed7d7;
-  color: #c53030;
+.statut-enattente {
+  background-color: #e0e7ff;
+  color: #3730a3;
 }
 
-.status-badge.status- {
-  background-color: #e9d8fd;
-  color: #6b46c1;
+.statut-accepter {
+  color: #065f46;
 }
 
-/* Main Content */
-.candidature-main {
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #edf2f7;
+.statut-entretien {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.statut-embauche {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.statut-refuser {
+  color: #991b1b;
 }
 
 .candidature-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.25rem;
+  align-items: flex-start;
+  padding: 1rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e0e7ff;
+  transition: background 0.3s ease;
+  position: relative;
+}
+
+.candidature-header::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(63, 81, 181, 0.03), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.candidature-card:hover .candidature-header {
+  background: #f0f4ff;
 }
 
 .candidature-header h3 {
   margin: 0;
-  font-size: 1.2rem;
-  color: #2d3748;
-  font-weight: 600;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.4;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
 }
 
-/* Candidate Info */
 .candidat-info {
   display: flex;
   align-items: center;
   margin-bottom: 1.25rem;
   padding-bottom: 1.25rem;
+  padding-left: 1rem;
   border-bottom: 1px solid #edf2f7;
 }
 
@@ -633,7 +745,6 @@ onMounted(getCandidatures);
   color: #4a5568;
 }
 
-/* Détails */
 .candidature-details {
   display: flex;
   flex-direction: column;
@@ -664,7 +775,6 @@ onMounted(getCandidatures);
   font-size: 0.95rem;
 }
 
-/* Workflow Stepper */
 .workflow-stepper {
   display: flex;
   align-items: center;
@@ -738,33 +848,43 @@ onMounted(getCandidatures);
   font-weight: 600;
 }
 
-/* Footer actions */
 .candidature-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
   padding: 1rem 1.5rem;
-  background-color: #f7fafc;
-  border-top: 1px solid #edf2f7;
+  border-top: 1px solid #e0e7ff;
+  background-color: #f9fafb;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
 }
 
-.primary-btn {
+.primary-btn,
+.planifierentretien {
+  flex-shrink: 0;
+  padding: 0.5rem 1rem;
   display: flex;
-  align-items: center;
-  justify-content: center;
   background: linear-gradient(135deg, #5090f6, #2563eb, #1d4ed8);
   color: white;
   border: none;
-  padding: 0.75rem 1.25rem;
+  position: relative;
+  z-index: 10;
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.3s;
+  font-size: 0.95rem;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.primary-btn:hover,
+.planifierentretien:hover {
+  background: #2980b9;
 }
 
 .primary-btn i {
   margin-right: 0.5rem;
-}
-
-.primary-btn:hover {
-  background: #2980b9;
 }
 
 .primary-btn:disabled {
@@ -772,7 +892,6 @@ onMounted(getCandidatures);
   cursor: not-allowed;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .candidatures-container {
     padding: 1.5rem 1rem;
@@ -800,13 +919,15 @@ onMounted(getCandidatures);
   }
 
   .candidature-actions {
-    display: flex;
-    justify-content: flex-start;
-    padding: 1rem 1rem;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1rem;
   }
 
-  .primary-btn {
+  .primary-btn,
+  .planifierentretien {
     width: 100%;
+    justify-content: center;
   }
 
   .workflow-stepper {

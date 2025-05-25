@@ -45,7 +45,7 @@
         </div>
         <div class="btn-group">
           <button type="submit" class="submit-btn">Enregistrer les modifications</button>
-          <button type="button" @click="rollback" class="annuler-btn">Annuler</button>
+          <button @click="rollback" class="btn-cancel" type="button">❌ Annuler</button>
         </div>
       </form>
     </div>
@@ -192,11 +192,25 @@ input:focus {
 
 /* Bouton principal */
 .submit-btn {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #20c599, #1fae8d, #178467);
   color: #ffffff;
   padding: 20px;
   border: none;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+.btn-cancel {
+  padding: 0.875rem 1.5rem;
+  background: #f1f5f9;
+  color: #475569;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel:hover {
+  background: #e2e8f0;
 }
 .submit-btn:hover {
   transform: translateY(-2px);

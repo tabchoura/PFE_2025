@@ -1,26 +1,47 @@
 <template>
   <div class="page-wrapper">
-    <div class="postuler-container">
+    <div
+      class="postuler-container"
+      tabindex="-1"
+      ref="postulerContainer"
+      aria-live="polite"
+    >
       <h1 class="title">Postuler à l'offre</h1>
 
       <!-- Chargement -->
-      <div v-if="loading" class="loading-container">
-        <div class="loader"></div>
+      <div
+        v-if="loading"
+        class="loading-container"
+        role="status"
+        aria-live="polite"
+        aria-busy="true"
+      >
+        <div class="loader" aria-hidden="true"></div>
         <p class="loading-text">Chargement ...</p>
       </div>
 
       <!-- Si pas de CV -->
-      <div v-else-if="cvs.length === 0" class="empty-state">
-        <div class="empty-icon">📝</div>
+      <div
+        v-else-if="cvs.length === 0"
+        class="empty-state"
+        role="alert"
+        aria-live="polite"
+      >
+        <div class="empty-icon" aria-hidden="true">📝</div>
         <h3>Vous n'avez pas encore de CV</h3>
         <p>Pour postuler à cette offre, vous devez d'abord créer votre CV.</p>
-        <button @click="Creercv" class="primary-button create-cv-button">
-          <span class="button-icon">➕</span> Créer votre CV
+        <button
+          @click="Creercv"
+          class="primary-button create-cv-button"
+          type="button"
+          aria-label="Créer votre CV"
+        >
+          <span class="button-icon" aria-hidden="true">➕</span> Créer votre CV
         </button>
       </div>
 
       <!-- Etat de confirmation -->
-      <div v-else class="confirmation-state">
+      <div v-else class="confirmation-state" role="region" aria-live="polite">
         <div class="offre-info" v-if="detailsoffre">
           <h3 class="offre-title">{{ detailsoffre.titre }}</h3>
           <p class="offre-company">{{ detailsoffre.description }}</p>
@@ -30,12 +51,19 @@
 
         <div class="cv-selection" v-if="cvs.length > 1">
           <h3>Sélectionnez le CV à utiliser</h3>
-          <div class="cv-list">
+          <div class="cv-list" role="list">
             <div
               v-for="(cv, index) in cvs"
-              :key="index"
+              :key="cv.id"
               :class="['cv-item', { selected: selectedCvId === cv.id }]"
               @click="selectedCvId = cv.id"
+              @keyup.enter.space.prevent="selectedCvId = cv.id"
+              role="listitem"
+              tabindex="0"
+              :aria-selected="selectedCvId === cv.id"
+              :aria-label="`Sélectionner CV de ${cv.nom} ${
+                cv.prenom
+              }, mis à jour le ${formatDate(cv.updated_at || cv.created_at)}`"
             >
               <div class="cv-item-content">
                 <span class="cv-name">{{ cv.nom }} {{ cv.prenom }}</span>
@@ -43,7 +71,13 @@
                   >Mis à jour: {{ formatDate(cv.updated_at || cv.created_at) }}</span
                 >
               </div>
-              <div class="check-indicator" v-if="selectedCvId === cv.id">✓</div>
+              <div
+                class="check-indicator"
+                v-if="selectedCvId === cv.id"
+                aria-hidden="true"
+              >
+                ✓
+              </div>
             </div>
           </div>
         </div>
@@ -56,13 +90,17 @@
             <label for="motivation" class="motivation-label"
               >Ajoutez un message (optionnel)</label
             >
-
             <textarea
               id="motivation"
               v-model="motivationText"
               class="motivation-textarea"
               placeholder="Expliquez brièvement pourquoi ce poste vous intéresse..."
+              rows="5"
+              aria-describedby="motivation-desc"
             ></textarea>
+            <small id="motivation-desc" class="sr-only"
+              >Champ optionnel pour ajouter un message de motivation</small
+            >
           </div>
         </div>
 
@@ -71,60 +109,66 @@
             @click="confirmPostuler"
             class="primary-button confirm-button"
             :disabled="submitting"
+            type="button"
+            aria-live="polite"
+            :aria-busy="submitting.toString()"
           >
-            <span class="button-icon" v-if="!submitting">✓</span>
-            <span class="loader small-loader" v-else></span>
+            <span class="button-icon" v-if="!submitting" aria-hidden="true">✓</span>
+            <span class="loader small-loader" v-else aria-hidden="true"></span>
             {{ submitting ? "Envoi en cours..." : "Confirmer ma candidature" }}
           </button>
-          <button @click="cancel" class="secondary-button">Annuler</button>
+          <button @click="cancel" class="secondary-button" type="button">
+            ❌ Annuler
+          </button>
         </div>
       </div>
 
       <!-- Message d'erreur -->
-      <div v-if="error" class="error-message">
-        <span class="error-icon">⚠️</span>
+      <div
+        v-show="error"
+        class="error-message"
+        role="alert"
+        aria-live="assertive"
+        tabindex="0"
+      >
+        <span class="error-icon" aria-hidden="true">⚠️</span>
         <p>{{ error }}</p>
-        <button @click="error = null" class="close-error-button">×</button>
+        <button
+          @click="error = null"
+          class="close-error-button"
+          aria-label="Fermer le message d'erreur"
+          type="button"
+        >
+          ×
+        </button>
       </div>
 
       <!-- Message de succès -->
-      <div v-if="success" class="success-message">
-        <span class="success-icon">✅</span>
-        <p>{{ success }}</p>
-        <div class="success-actions">
-          <button @click="goToCandidatures" class="primary-button small-button">
-            Voir mes candidatures
-          </button>
-          <button @click="goToOffers" class="secondary-button small-button">
-            Voir d'autres offres
-          </button>
-        </div>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, nextTick } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
 import { useToast } from "vue-toastification";
-const toast = useToast();
 
-// Déclaration des variables réactives
+const toast = useToast();
+const postulerContainer = ref(null);
+
 const route = useRoute();
 const router = useRouter();
 
-const cvs = ref([]); // Tableau des CVs
-const loading = ref(true); // Variable de chargement
-const error = ref(null); // Message d'erreur
-const success = ref(null); // Message de succès
-const submitting = ref(false); // Indicateur de soumission
-const selectedCvId = ref(null); // ID du CV sélectionné
-const motivationText = ref(""); // Texte de la lettre de motivation
-const detailsoffre = ref(null); // Détails de l'offre
+const cvs = ref([]);
+const loading = ref(true);
+const error = ref(null);
+const success = ref(null);
+const submitting = ref(false);
+const selectedCvId = ref(null);
+const motivationText = ref("");
+const detailsoffre = ref(null);
 
-// Fonction pour formater les dates
 function formatDate(dateStr) {
   if (!dateStr) return "Date inconnue";
   const date = new Date(dateStr);
@@ -135,37 +179,36 @@ function formatDate(dateStr) {
   });
 }
 
-// Récupération des données au montage du composant
 onMounted(async () => {
   try {
     const offerId = route.params.id;
-    // Charger les données des offres et des CVs en parallèle
     const [offreResponse, cvsResponse] = await Promise.all([
       axios.get(`/api/offres/${offerId}`),
-      axios.get(`/api/cv`), // Récupérer tous les CVs
+      axios.get(`/api/cv`),
     ]);
-    detailsoffre.value = offreResponse.data; // Détails de l'offre
-    cvs.value = cvsResponse.data; // Liste des CVs
-
-    // Sélectionner le premier CV s'il existe
-    if (cvs.value.length > 0) {
-      selectedCvId.value = cvs.value[0].id;
-    }
+    detailsoffre.value = offreResponse.data;
+    cvs.value = cvsResponse.data;
+    if (cvs.value.length > 0) selectedCvId.value = cvs.value[0].id;
   } catch (e) {
     error.value =
       e.response?.data?.message || "Impossible de charger les données nécessaires";
+    await nextTick();
+    postulerContainer.value?.focus();
   } finally {
     loading.value = false;
   }
 });
 
-// Fonction pour confirmer la candidature
 async function confirmPostuler() {
+  error.value = null;
+  success.value = null;
   const offerId = route.params.id;
   const cvId = selectedCvId.value || (cvs.value.length > 0 ? cvs.value[0].id : null);
 
   if (!cvId) {
     error.value = "Aucun CV disponible pour postuler";
+    await nextTick();
+    postulerContainer.value?.focus();
     return;
   }
 
@@ -176,40 +219,38 @@ async function confirmPostuler() {
       cv_id: cvId,
       message: motivationText.value || null,
     });
-    toast.success("Candidature Envoyée avec succès !");
+    toast.success("Candidature envoyée avec succès !");
     router.push("/candidature");
-    error.value = null;
   } catch (e) {
     error.value = e.response?.data?.message || "Erreur lors de la candidature";
+    await nextTick();
+    postulerContainer.value?.focus();
   } finally {
     submitting.value = false;
   }
 }
 
-// Fonction pour créer un CV
 function Creercv() {
   router.push({ name: "CreerCv", query: { from: "postuler", offreId: route.params.id } });
 }
 
-// Fonction pour annuler et revenir à la page précédente
 function cancel() {
   router.back();
 }
 
-// Fonction pour aller aux candidatures
 function goToCandidatures() {
   router.push("/candidature");
 }
 
-// Fonction pour voir d'autres offres
 function goToOffers() {
   router.push({ name: "Offres" });
 }
 </script>
+
 <style scoped>
 .page-wrapper {
   background: linear-gradient(135deg, #e0eafc, #cfdef3);
-  padding: 1rem 1rem;
+  padding: 1rem;
   border-radius: 2%;
 }
 
@@ -221,30 +262,29 @@ function goToOffers() {
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
+  outline: none;
 }
 
 .title {
-  color: #2c3e50;
-  font-size: 2.2rem;
-  margin-bottom: 2.5rem;
-  text-align: center;
-  position: relative;
+  color: #1e3a8a;
+  font-size: 2rem;
   font-weight: 700;
+  margin-bottom: 2rem;
+  position: relative;
+  padding-bottom: 0.5rem;
 }
-
 .title:after {
   content: "";
   position: absolute;
-  bottom: -12px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100px;
+  bottom: 0;
+  left: 0;
+  width: 60px;
   height: 4px;
-  background: linear-gradient(90deg, #3498db, #2980b9);
-  border-radius: 4px;
+  background: #3b82f6;
+  border-radius: 2px;
 }
 
-/* États de chargement */
+/* Loading */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -252,7 +292,6 @@ function goToOffers() {
   justify-content: center;
   padding: 4rem 0;
 }
-
 .loader {
   border: 4px solid rgba(52, 152, 219, 0.1);
   border-top: 4px solid #3498db;
@@ -262,14 +301,12 @@ function goToOffers() {
   animation: spin 1.2s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
   margin-bottom: 1.5rem;
 }
-
 .small-loader {
   width: 22px;
   height: 22px;
   border-width: 2px;
   margin-right: 10px;
 }
-
 @keyframes spin {
   0% {
     transform: rotate(0deg);
@@ -278,45 +315,30 @@ function goToOffers() {
     transform: rotate(360deg);
   }
 }
-
 .loading-text {
   color: #7f8c8d;
   font-size: 1.2rem;
   font-weight: 500;
 }
 
-/* État vide - pas de CV */
+/* Empty state */
 .empty-state {
   text-align: center;
   padding: 4rem 0;
   animation: fadeIn 0.5s ease;
 }
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .empty-icon {
   font-size: 5rem;
   margin-bottom: 1.5rem;
   color: #95a5a6;
   opacity: 0.8;
 }
-
 .empty-state h3 {
   font-size: 1.7rem;
   margin-bottom: 1.2rem;
   color: #2c3e50;
   font-weight: 600;
 }
-
 .empty-state p {
   color: #7f8c8d;
   margin-bottom: 2.5rem;
@@ -326,15 +348,13 @@ function goToOffers() {
   margin-right: auto;
 }
 
-/* État de confirmation */
+/* Confirmation state */
 .confirmation-state {
   display: flex;
   flex-direction: column;
   gap: 2rem;
   animation: fadeIn 0.5s ease;
 }
-
-/* Information sur l'offre */
 .offre-info {
   background: linear-gradient(to right, #f8f9fa, #f1f3f4);
   padding: 1.8rem;
@@ -344,26 +364,22 @@ function goToOffers() {
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
-
 .offre-info:hover {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
   transform: translateY(-2px);
 }
-
 .offre-title {
   margin: 0 0 0.7rem 0;
   font-size: 1.6rem;
   color: #2c3e50;
   font-weight: 700;
 }
-
 .offre-company {
   font-weight: 600;
   margin: 0 0 0.7rem 0;
   color: #34495e;
   font-size: 1.2rem;
 }
-
 .offre-location {
   color: #7f8c8d;
   margin: 0;
@@ -371,30 +387,26 @@ function goToOffers() {
   align-items: center;
   font-size: 1.05rem;
 }
-
 .offre-location:before {
   content: "📍";
   margin-right: 6px;
 }
 
-/* Sélection du CV */
+/* CV selection */
 .cv-selection {
   margin: 1.5rem 0;
 }
-
 .cv-selection h3 {
   margin-bottom: 1.2rem;
   font-size: 1.3rem;
   color: #2c3e50;
   font-weight: 600;
 }
-
 .cv-list {
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
 }
-
 .cv-item {
   display: flex;
   justify-content: space-between;
@@ -406,49 +418,44 @@ function goToOffers() {
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 }
-
-.cv-item:hover {
+.cv-item:hover,
+.cv-item:focus-visible {
   border-color: #3498db;
   background: #f8f9fa;
   transform: translateY(-3px);
   box-shadow: 0 5px 15px rgba(52, 152, 219, 0.1);
+  outline: none;
 }
-
 .cv-item.selected {
   border-color: #3498db;
   background: #ebf7fd;
   box-shadow: 0 5px 15px rgba(52, 152, 219, 0.15);
 }
-
 .cv-item-content {
   display: flex;
   flex-direction: column;
 }
-
 .cv-name {
   font-weight: 600;
   color: #2c3e50;
   font-size: 1.1rem;
 }
-
 .cv-date {
   font-size: 0.95rem;
   color: #7f8c8d;
   margin-top: 0.6rem;
 }
-
 .check-indicator {
   color: #3498db;
   font-size: 1.8rem;
   font-weight: bold;
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-
 .cv-item.selected .check-indicator {
   transform: scale(1.2);
 }
 
-/* Message de confirmation */
+/* Confirmation message */
 .confirmation-message {
   text-align: center;
   margin: 1.5rem 0;
@@ -456,7 +463,6 @@ function goToOffers() {
   background: #f8f9fa;
   border-radius: 12px;
 }
-
 .confirmation-message p {
   font-size: 1.3rem;
   color: #2c3e50;
@@ -464,12 +470,11 @@ function goToOffers() {
   font-weight: 500;
 }
 
-/* Lettre de motivation */
+/* Motivation textarea */
 .motivation-section {
   margin: 2rem 0;
   text-align: left;
 }
-
 .motivation-label {
   display: block;
   margin-bottom: 0.8rem;
@@ -477,7 +482,6 @@ function goToOffers() {
   font-weight: 500;
   font-size: 1.1rem;
 }
-
 .motivation-textarea {
   width: 100%;
   padding: 1rem;
@@ -489,25 +493,22 @@ function goToOffers() {
   transition: all 0.3s ease;
   font-size: 1rem;
 }
-
 .motivation-textarea:focus {
   outline: none;
   border-color: #3498db;
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
 }
-
 .motivation-textarea::placeholder {
   color: #b2bec3;
 }
 
-/* Boutons d'action */
+/* Buttons */
 .action-buttons {
   display: flex;
   justify-content: center;
   gap: 1.5rem;
   margin-top: 2rem;
 }
-
 button {
   padding: 0.9rem 1.8rem;
   border: none;
@@ -520,70 +521,59 @@ button {
   align-items: center;
   justify-content: center;
 }
-
 .primary-button {
   background: #3b82f6;
   color: white;
   box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
 }
-
 .primary-button:hover {
   background: linear-gradient(to right, #2980b9, #2471a3);
   transform: translateY(-3px);
   box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
 }
-
 .primary-button:active {
   transform: translateY(-1px);
 }
-
 .primary-button:disabled {
   background: linear-gradient(to right, #95a5a6, #7f8c8d);
   cursor: not-allowed;
   transform: none;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
-
 .secondary-button {
   background: #f5f7fa;
   color: #34495e;
   border: 2px solid #dfe6e9;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
-
 .secondary-button:hover {
   background: #e0e7ee;
   transform: translateY(-3px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
-
 .secondary-button:active {
   transform: translateY(-1px);
 }
-
 .create-cv-button {
   padding: 1.2rem 2.5rem;
   font-size: 1.15rem;
   border-radius: 12px;
 }
-
 .small-button {
   padding: 0.6rem 1.2rem;
   font-size: 0.95rem;
 }
-
 .button-icon {
   margin-right: 10px;
   font-size: 1.1em;
 }
-
 .confirm-button {
   padding: 1rem 2.5rem;
   min-width: 220px;
-  background: #3b82f6;
+  background: linear-gradient(135deg, #20c599, #1fae8d, #178467);
 }
 
-/* Message d'erreur */
+/* Error message */
 .error-message {
   display: flex;
   align-items: center;
@@ -597,7 +587,6 @@ button {
   animation: slideIn 0.3s ease;
   box-shadow: 0 4px 10px rgba(231, 76, 60, 0.1);
 }
-
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -608,17 +597,14 @@ button {
     transform: translateY(0);
   }
 }
-
 .error-icon {
   margin-right: 12px;
   font-size: 1.4rem;
 }
-
 .error-message p {
   font-size: 1.05rem;
   margin-right: 20px;
 }
-
 .close-error-button {
   position: absolute;
   right: 12px;
@@ -631,31 +617,10 @@ button {
   padding: 0;
   transition: transform 0.2s ease;
 }
-
-.close-error-button:hover {
+.close-error-button:hover,
+.close-error-button:focus-visible {
   transform: scale(1.2);
-}
-
-/* Message de succès */
-.success-message {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: #e8f8f5;
-  border-left: 5px solid #2ecc71;
-  padding: 2rem;
-  margin-top: 2rem;
-  border-radius: 12px;
-  color: #27ae60;
-  text-align: center;
-  animation: fadeIn 0.5s ease;
-  box-shadow: 0 4px 15px rgba(46, 204, 113, 0.15);
-}
-
-.success-icon {
-  font-size: 3rem;
-  margin-bottom: 1.2rem;
-  animation: successPulse 2s infinite;
+  outline: none;
 }
 
 @keyframes successPulse {
@@ -669,18 +634,40 @@ button {
     transform: scale(1);
   }
 }
-
 .success-message p {
   color: #2c3e50;
   font-size: 1.4rem;
   margin-bottom: 1.8rem;
   font-weight: 500;
 }
-
 .success-actions {
   display: flex;
   gap: 1.2rem;
   margin-top: 0.8rem;
+}
+.success-actions button {
+  flex: 1;
+}
+
+/* Animations fadeIn */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Focus visible */
+button:focus-visible,
+.cv-item:focus-visible,
+.motivation-textarea:focus-visible,
+.close-error-button:focus-visible {
+  outline: 3px solid #3498db;
+  outline-offset: 2px;
 }
 
 /* Responsive */
@@ -690,153 +677,54 @@ button {
     margin: 1rem;
     border-radius: 12px;
   }
-
   .title {
     font-size: 1.8rem;
   }
-
   .title:after {
     width: 80px;
   }
-
   .action-buttons {
     flex-direction: column;
     gap: 1rem;
   }
-
   .action-buttons button {
     width: 100%;
   }
-
   .success-actions {
     flex-direction: column;
     width: 100%;
     gap: 0.8rem;
   }
-
   .offre-title {
     font-size: 1.4rem;
   }
-
   .confirmation-message p {
     font-size: 1.2rem;
   }
-
   .empty-state p {
     max-width: 100%;
   }
-
   .empty-icon {
     font-size: 4rem;
   }
-
   .cv-item {
     padding: 1rem;
   }
-
   .motivation-textarea {
     min-height: 120px;
   }
 }
 
-/* Accessibilité et détails supplémentaires */
-@media (prefers-reduced-motion) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001s !important;
-    transition-duration: 0.001s !important;
-  }
-}
-
-/* Style focus pour accessibilité */
-button:focus,
-.motivation-textarea:focus,
-.cv-item:focus {
-  outline: 3px solid rgba(52, 152, 219, 0.4);
-  outline-offset: 2px;
-}
-
-/* Transition plus douce entre les états */
-.postuler-container > div {
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-/* Mode sombre - support basique si le système est en mode sombre */
-@media (prefers-color-scheme: dark) {
-  .postuler-container {
-    background: #1a1e25;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-  }
-
-  .title,
-  .offre-title,
-  .cv-name,
-  .confirmation-message p,
-  .success-message p,
-  .cv-selection h3,
-  .empty-state h3 {
-    color: #ecf0f1;
-  }
-
-  .offre-info {
-    background: linear-gradient(to right, #2c3e50, #34495e);
-    border-left-color: #3498db;
-  }
-
-  .offre-company {
-    color: #bdc3c7;
-  }
-
-  .cv-item {
-    background: #2c3e50;
-    border-color: #34495e;
-  }
-
-  .cv-item:hover {
-    background: #34495e;
-  }
-
-  .cv-item.selected {
-    background: #2980b9;
-  }
-
-  .cv-date {
-    color: #bdc3c7;
-  }
-
-  .confirmation-message {
-    background: #2c3e50;
-  }
-
-  .motivation-textarea {
-    background: #2c3e50;
-    color: #ecf0f1;
-    border-color: #34495e;
-  }
-
-  .motivation-textarea::placeholder {
-    color: #95a5a6;
-  }
-
-  .secondary-button {
-    background: #34495e;
-    color: #ecf0f1;
-    border-color: #4a6073;
-  }
-
-  .secondary-button:hover {
-    background: #4a6073;
-  }
-
-  .error-message {
-    background: #4e1a17;
-    border-left-color: #e74c3c;
-  }
-
-  .success-message {
-    background: #1e5931;
-    border-left-color: #2ecc71;
-  }
+/* Accessibility: hide visually but accessible */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }
 </style>

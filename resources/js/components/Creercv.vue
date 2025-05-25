@@ -402,11 +402,16 @@ function cancelEditing() {
 
 <style scoped>
 .btn-cancel {
-  background-color: #f59e0b;
+  background: #f5f7fa;
+  color: #34495e;
+  border: 2px solid #dfe6e9;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .btn-cancel:hover {
-  background-color: #d97706;
+  background: #e0e7ee;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 .page-wrapper {
   background: linear-gradient(135deg, #e0eafc, #cfdef3);
@@ -481,6 +486,7 @@ function cancelEditing() {
   color: inherit;
   font-size: 1.3rem;
   font-weight: 600;
+  color: #0f3164;
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 2px solid #3498db;
@@ -606,7 +612,7 @@ textarea {
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
+  background: linear-gradient(135deg, #20c599, #1fae8d, #178467);
 }
 
 .download-btn {

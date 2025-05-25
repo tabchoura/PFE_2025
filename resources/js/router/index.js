@@ -64,14 +64,11 @@ const routes = [
     { path: '', name: 'Entretiens', component: Entretiens }
   ]}, 
 // router/index.ts
-{
-  path: '/planifier-entretien/:candidatureId',
-  name: 'PlanifierEntretien',
-  component: EntretiensRecruteurs,  // Le composant qui gère la planification
-  props: true  // Passe candidatureId en prop
-}
 
-,
+
+, { path:  '/planifier-entretien/:candidatureId', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'PlanifierEntretien', component:  EntretiensRecruteurs }
+  ]}, 
   
   { path: '/mesoffres', component: CompteCandidat, meta: { requiresAuth: true }, children: [
     { path: '', name: 'Mesoffres', component: Mesoffres }
@@ -87,18 +84,14 @@ const routes = [
   // { path: '/aftercvpostuler', component: CompteCandidat, meta: { requiresAuth: true }, children: [
   //   { path: '', name: 'Aftercvpostuler', component: Aftercvpostuler }
   // ]},
-  {
-    path: '/candidatures/:candidatureId',
-    component: CompteRecruteur,
-    meta: { requiresAuth: true, role: 'recruteur' },
-    children: [
-      {
-        path: '',
-        name: 'DetailsCandidature',
-        component: DetailsCandidature
-      }
-    ]
-  },
+{
+  path: '/candidatures/:candidatureId',
+  component: CompteRecruteur,
+  children: [
+    { path: '', name: 'DetailsCandidature', component: DetailsCandidature }
+  ]
+}
+,
 
   // Vue recruteur
  
