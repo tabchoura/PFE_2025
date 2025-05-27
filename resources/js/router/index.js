@@ -10,7 +10,6 @@ import Monprofile from '@/components/Monprofile.vue';
 import Candidature from '@/components/Candidature.vue';
 import CompteRecruteur from '@/components/CompteRecruteur.vue';
 import Monprofilerecruteur from '@/components/Monprofilerecruteur.vue';
-import Entretiens from '@/components/Entretiens.vue';
 import EntretiensRecruteurs from '@/components/Entretiensrecruteurs.vue';
 import Voircv from '@/components/Voircv.vue';
 import Candidaturesrecruteur from '../components/Candidaturesrecruteur.vue';
@@ -60,9 +59,7 @@ const routes = [
   { path: '/candidature', component: CompteCandidat, meta: { requiresAuth: true }, children: [
     { path: '', name: 'Candidature', component: Candidature }
   ]},
-  { path: '/entretiens', component: CompteCandidat, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'Entretiens', component: Entretiens }
-  ]}, 
+
 // router/index.ts
 
 

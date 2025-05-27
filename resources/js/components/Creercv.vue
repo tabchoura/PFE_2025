@@ -81,7 +81,7 @@
 
           <!-- Compétences -->
           <div class="section">
-            <h3 class="section-title">Compétences</h3>
+            <h3 class="section-title2">Compétences</h3>
             <div
               v-for="(comp, i) in form.competences"
               :key="`comp-${i}`"
@@ -109,7 +109,7 @@
 
           <!-- Langues -->
           <div class="section">
-            <h3 class="section-title">Langues</h3>
+            <h3 class="section-title2">Langues</h3>
             <div
               v-for="(lang, i) in form.langues"
               :key="`lang-${i}`"
@@ -487,6 +487,24 @@ function cancelEditing() {
   font-size: 1.3rem;
   font-weight: 600;
   color: #0f3164;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #3498db;
+}
+.section-title {
+  color: inherit;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #0f3164;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #3498db;
+}
+.section-title2 {
+  color: inherit;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: white;
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 2px solid #3498db;

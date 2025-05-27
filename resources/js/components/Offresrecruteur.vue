@@ -168,7 +168,6 @@ const formatSalaire = (s) => s || "Non précisé";
 }
 .offers-container {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 10px 15px -3px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .offers-section {
   max-width: 1200px;
@@ -204,10 +203,6 @@ const formatSalaire = (s) => s || "Non précisé";
   height: 4px;
   background-color: #1e3a8a;
   border-radius: 4px;
-}
-.header-actions:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
 .btn-ajouter {
@@ -300,7 +295,6 @@ const formatSalaire = (s) => s || "Non précisé";
   border-left: 3px solid #3b82f6;
 }
 .offer-card:hover {
-  transform: translateY(-4px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 .offer-card-header {

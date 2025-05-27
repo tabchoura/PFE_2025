@@ -48,10 +48,13 @@
           ></textarea>
         </div>
 
-        <button type="submit">
-          <span>Enregistrer</span>
-          <i class="icon">➔</i>
-        </button>
+        <div class="navigation-actions">
+          <button type="button" @click="goBack" class="btn-back">← Retour</button>
+          <button type="submit" class="btn-save">
+            <span>Enregistrer</span>
+            <i class="icon">➔</i>
+          </button>
+        </div>
       </form>
     </div>
   </div>
@@ -93,6 +96,10 @@ async function ajouter() {
     console.error("Erreur lors de l'ajout :", error);
   }
 }
+
+function goBack() {
+  router.back();
+}
 </script>
 
 <style scoped>
@@ -104,7 +111,6 @@ async function ajouter() {
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 3%;
 }
 
 /* Conteneur transparent pour laisser transparaître le bleu */
@@ -177,27 +183,89 @@ textarea {
   min-height: 80px;
 }
 
-/* Bouton principal */
+/* Boutons */
 button {
+  font-family: "Inter", sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border-radius: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
-  justify-content: center;
   align-items: center;
-  width: 100%;
-  padding: 0.9rem;
-  margin-top: 1rem;
-  background-color: #3498db;
-  color: #fff;
+  gap: 0.7rem;
+  justify-content: center;
+  padding: 1rem 2.2rem;
   border: none;
-  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(52, 144, 215, 0.3);
+}
+
+button:active {
+  transform: translateY(1px);
+  box-shadow: 0 3px 8px rgba(52, 144, 215, 0.2);
+}
+
+/* Bouton Retour */
+.btn-back {
+  background: #f5f7fa;
+  color: #334155;
+  border: 2px solid #cbd5e1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  flex: 0 0 auto;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.9rem 1.8rem;
+  border-radius: 12px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+}
+
+.btn-back:hover {
+  background-color: #e0e7ee;
+  color: #1e293b;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+}
+
+/* Bouton Enregistrer */
+.btn-save {
+  padding: 1rem 2rem;
+  color: #fff;
+
+  border: none;
+  border-radius: 5px;
   font-size: 1rem;
   font-weight: 600;
+  background: linear-gradient(135deg, #20c599, #1fae8d, #178467);
+
   cursor: pointer;
-  transition: all 0.2s ease;
 }
-button:hover {
-  background-color: #2980b9;
+
+.btn-save:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Icône dans le bouton */
+.icon {
+  margin-left: 6px;
+  font-weight: 700;
+  font-size: 1.3rem;
+  transition: transform 0.25s ease;
+  user-select: none;
+}
+
+button:hover .icon {
+  transform: translateX(6px);
+}
+
+/* Layout boutons */
+.navigation-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.2rem;
+  margin-top: 3rem;
+  align-items: center;
 }
 button:active {
   transform: translateY(0);

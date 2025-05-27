@@ -796,7 +796,6 @@ function goToModifyCv() {
   color: white;
   margin-bottom: 1rem;
 
-  color: #0f3164;
   border-bottom: 2px solid #3b82f6;
   padding-bottom: 0.5rem;
 }

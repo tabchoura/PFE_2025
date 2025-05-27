@@ -3,7 +3,6 @@
     <div class="register-card">
       <!-- IMAGE SECTION -->
       <div class="image-section">
-        <img :src="hiringImage" alt="Recrutement" class="register-image" />
         <div class="overlay">
           <div class="brand-text">
             <h2>Inscription Candidat</h2>
@@ -14,7 +13,7 @@
 
       <!-- FORM SECTION -->
       <div class="form-section">
-        <h1 class="form-title">Créez votre compte</h1>  &²  
+        <h1 class="form-title">Créez votre compte</h1>
 
         <!-- STEPPER NAVIGATION -->
         <div class="stepper">
@@ -29,8 +28,9 @@
           >
             <div class="step-icon">
               <span class="step-number" v-if="index >= currentStep">{{ index + 1 }}</span>
-              <i class="fas fa-check" v-else></i>
+              <span v-else>{{ index + 1 }}</span>
             </div>
+
             <div class="step-label">{{ step.label }}</div>
           </div>
         </div>
@@ -47,7 +47,7 @@
             <legend>Informations personnelles</legend>
             <div class="grid two-columns">
               <!-- NOM -->
-           <div
+              <div
                 class="form-group"
                 @mouseenter="showHint('nom')"
                 @mouseleave="hideHint('nom')"
@@ -417,7 +417,7 @@
           </div>
 
           <!-- NOTIFICATIONS -->
-          <transition name="fade">
+          <!-- <transition name="fade">
             <div v-if="success" class="notification success">
               <p>
                 Inscription réussie !
@@ -429,7 +429,7 @@
             <div v-if="serverError" class="notification error">
               <p>{{ serverError }}</p>
             </div>
-          </transition>
+          </transition> -->
         </form>
       </div>
     </div>
@@ -518,7 +518,7 @@ const maxDate = computed(() => {
 
 const isStepValid = computed(() => {
   const { value: step } = currentStep;
-  
+
   return (
     (step === 0 &&
       validFields.nom &&
@@ -676,8 +676,6 @@ watch(termsAccepted, (val) => {
 </script>
 
 <style scoped>
-
-
 /* Reset de base */
 *,
 *::before,
@@ -702,7 +700,7 @@ h6 {
   font-weight: 600;
 }
 a {
-  color: #2a9d8f;
+  color: #1f3d7a;
   text-decoration: none;
 }
 a:hover {
@@ -744,7 +742,8 @@ a:hover {
 .overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7));
+
+  background: linear-gradient(135deg, #1f3d7a 0%, #3c64c8 100%);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -770,11 +769,9 @@ a:hover {
 .form-title {
   text-align: center;
   font-size: 1.75rem;
-  color: #3d90d7;
+  color: #1e3a8a;
   margin-bottom: 1.5rem;
 }
-
-/* Stepper */
 .stepper {
   display: flex;
   gap: 1rem;
@@ -791,30 +788,42 @@ a:hover {
   height: 48px;
   border: 2px solid #6b7280;
   border-radius: 50%;
-  background: #ffffff;
+  background: #ffffff; /* Default background */
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
 }
+
+/* Active Step */
 .step.active .step-icon {
-  border-color: #3d90d7;
-  background: #3d90d7;
-  color: white;
+  border-color: #3d90d7; /* Blue border for active step */
+  background: linear-gradient(
+    135deg,
+    #1f3d7a 0%,
+    #3c64c8 100%
+  ); /* Blue gradient for active step */
+  color: white; /* Keep the number visible */
 }
+
+/* Completed Step */
 .step.completed .step-icon {
-  border-color: #4eda92;
-  background: #4eda92;
+  border-color: #11a85a; /* Vert */
+  background: #87c1a3; /* Vert plein */
   color: white;
 }
+
+/* Labels under the steps */
 .step-label {
   font-size: 0.875rem;
   color: #6b7280;
   transition: color 0.3s ease;
 }
+
+/* Active/Completed Labels */
 .step.active .step-label,
 .step.completed .step-label {
-  color: #3d90d7;
+  color: #3d90d7; /* Blue for active or completed */
   font-weight: 600;
 }
 
@@ -839,7 +848,7 @@ a:hover {
 }
 .progress-bar {
   height: 100%;
-  background: #3d90d7;
+  background: linear-gradient(135deg, #1f3d7a 0%, #3c64c8 100%);
   width: 0;
   transition: width 0.4s ease;
 }
@@ -852,6 +861,8 @@ a:hover {
 }
 .form-fieldset legend {
   font-size: 1.25rem;
+  color: #3d90d7;
+
   border-bottom: 2px solid #6b7280;
   padding-bottom: 0.5rem;
   margin-bottom: 1rem;
@@ -938,7 +949,7 @@ a:hover {
   gap: 0.5rem;
 }
 .btn-primary {
-  background: #2a9d8f;
+  background: linear-gradient(135deg, #1f3d7a 0%, #3c64c8 100%);
   color: white;
 }
 .btn-primary:hover:not(:disabled) {
@@ -1026,7 +1037,7 @@ a:hover {
 .summary-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #2a9d8f;
+  color: #1f3d7a;
   text-align: center;
   margin-bottom: 1rem;
 }

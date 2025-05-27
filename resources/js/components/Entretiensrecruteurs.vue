@@ -8,7 +8,7 @@
       <Calendrier v-model="selectedDate" />
       <div class="btn-group">
         <button @click="retour" class="back-btn" aria-label="Retour">← Retour</button>
-        <button class="send-btn">Envoyer</button>
+        <button @click="envoyer" class="send-btn">Envoyer</button>
       </div>
 
       <!-- Message de confirmation -->
@@ -68,29 +68,28 @@ function formatDateForApi(date: string | null) {
   const year = d.getFullYear();
   return `${day}/${month}/${year}`; // Format d/m/Y
 }
-
-// Fonction envoyer l'entretien au backend
 async function envoyer() {
   if (!selectedDate.value) {
     alert("Merci de sélectionner une date.");
     return;
   }
 
+  const confirmSend = confirm("Voulez-vous vraiment envoyer la demande ?");
+  if (!confirmSend) {
+    return; // L'utilisateur a cliqué sur Annuler
+  }
+
   isSubmitting.value = true;
 
-  // Formater la date avant de l'envoyer
   const formattedDate = formatDateForApi(selectedDate.value);
 
   try {
-    // Requête POST vers l'API
     const { data } = await axios.post(`/api/candidatures/${candidatureId}/entretien`, {
-      date_entretien: formattedDate, // Envoie la date formatée
+      date_entretien: formattedDate,
     });
 
-    // Stockage de la réponse
     entretien.value = data;
 
-    // Redirection après affichage du message de succès
     setTimeout(() => router.push({ name: "Candidaturesrecruteur" }), 2000);
   } catch (err: any) {
     console.error("Erreur lors de l'enregistrement:", err);

@@ -369,13 +369,13 @@ const togglePassword = () => (showPassword.value = !showPassword.value);
 
 .login-title {
   font-size: 1.8rem;
-  color: #2c3e50;
+  color: #1e3a8a;
   margin-bottom: 0.5rem;
   font-weight: 700;
 }
 
 .login-subtitle {
-  color: #7f8c8d;
+  color: #3d90d7;
   font-size: 1rem;
   margin: 0;
 }
@@ -555,7 +555,7 @@ const togglePassword = () => (showPassword.value = !showPassword.value);
   padding: 0.85rem;
   border: none;
   border-radius: 8px;
-  background-color: #3d90d7;
+  background: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
   color: #fff;
   font-size: 1rem;
   font-weight: 600;

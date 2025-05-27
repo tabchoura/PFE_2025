@@ -69,7 +69,7 @@
             <div class="candidature-main">
               <div class="candidature-header">
                 <h3 class="title-offre">{{ c.offre?.titre || "Offre inconnue" }}</h3>
-                <div :class="['status-badge', `statut-${c.status_ia}`]">
+                <div :class="['status-badge', `statut-${c.statut}`]">
                   <span>
                     {{ labels(c.statut) }}
                     {{
@@ -269,12 +269,17 @@ const getCandidatures = async () => {
     const data = response.data;
     candidatures.value = Array.isArray(data)
       ? data.map((c) => {
-          if (c.status_ia === "rejected") {
+          // Si date d'entretien renseignée, priorité au statut 'entretien'
+          if (c.date_entretien) {
+            c.statut = "entretien";
+          } else if (c.status_ia === "rejected") {
             c.statut = "refuser";
           } else if (c.status_ia === "accepted") {
             c.statut = "accepter";
+          } else if (c.status_ia === "hired") {
+            c.statut = "embauche";
           } else {
-            c.statut = "enattente";
+            c.statut = "enattente"; // statut par défaut
           }
           return c;
         })
@@ -593,15 +598,6 @@ onMounted(getCandidatures);
   color: #dc2626;
 }
 
-.candidature-item.statut-refuser {
-  border-left-color: #dc2626;
-}
-
-.candidature-item.statut-refuser .status-badge {
-  background-color: #fee2e2;
-  color: #dc2626;
-}
-
 .candidature-card.status-accepter {
   border-left-color: #38a169;
 }
@@ -611,15 +607,10 @@ onMounted(getCandidatures);
   color: #38a169;
 }
 
-.candidature-item.statut-accepter {
-  border-left-color: #38a169;
+.candidature-card.statut-entretien .status-badge {
+  background-color: #96a8e4;
+  color: #1e40af;
 }
-
-.candidature-item.statut-accepter .status-badge {
-  background-color: #bffedc;
-  color: #38a169;
-}
-
 .status-badge {
   padding: 6px 14px;
   border-radius: 24px;
@@ -630,10 +621,6 @@ onMounted(getCandidatures);
   white-space: nowrap;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
-}
-
-.candidature-item:hover .status-badge {
-  transform: scale(1.05);
 }
 
 .statut-enattente {

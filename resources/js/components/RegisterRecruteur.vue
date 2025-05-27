@@ -3,7 +3,6 @@
     <div class="register-card">
       <!-- IMAGE SECTION -->
       <div class="image-section">
-        <img :src="hiringImage" alt="Recrutement" class="register-image" />
         <div class="overlay">
           <div class="brand-text">
             <h2>Inscription Recruteur</h2>
@@ -29,7 +28,7 @@
           >
             <div class="step-icon">
               <span class="step-number" v-if="index >= currentStep">{{ index + 1 }}</span>
-              <i class="fas fa-check" v-else></i>
+              <span v-else>{{ index + 1 }}</span>
             </div>
             <div class="step-label">{{ step.label }}</div>
           </div>
@@ -118,101 +117,101 @@
               />
               <span v-if="errors.email" class="error-message">{{ errors.email }}</span>
               <span v-else-if="hints.email" class="hint-message"
->Format attendu : exemple@domaine.com</span
+                >Format attendu : exemple@domaine.com</span
               >
               <span v-if="formData.email && validFields.email" class="valid-icon">✓</span>
             </div>
 
             <!-- PASSWORDS -->
-           <!-- GROUPE DE MOTS DE PASSE -->
-<div class="password-fields-container">
-  <!-- PASSWORD -->
-  <div
-    class="form-group"
-    @mouseenter="showHint('password')"
-    @mouseleave="hideHint('password')"
-  >
-    <label for="password">Mot de passe</label>
-    <div class="password-wrapper">
-      <input
-        id="password"
-        :type="showPassword ? 'text' : 'password'"
-        v-model.trim="formData.password"
-        placeholder="••••••••"
-        :class="inputClass('password')"
-        @input="validateField('password')"
-        autocomplete="new-password"
-        required
-      />
-      <button
-        type="button"
-        class="toggle-password"
-        @click="togglePassword"
-        :aria-label="
-          showPassword
-            ? 'Masquer le mot de passe'
-            : 'Afficher le mot de passe'
-        "
-      >
-        <span aria-hidden="true">{{ showPassword ? "🔒" : "👁️" }}</span>
-      </button>
-    </div>
-    <span v-if="errors.password" class="error-message">{{
-      errors.password
-    }}</span>
-    <span v-else-if="hints.password" class="hint-message"
-      >Au moins 8 caractères, majuscules, minuscules, chiffres et
-      spéciaux</span
-    >
-    <span v-if="formData.password && validFields.password" class="valid-icon"
-      >✓</span
-    >
-  </div>
+            <!-- GROUPE DE MOTS DE PASSE -->
+            <div class="password-fields-container">
+              <!-- PASSWORD -->
+              <div
+                class="form-group"
+                @mouseenter="showHint('password')"
+                @mouseleave="hideHint('password')"
+              >
+                <label for="password">Mot de passe</label>
+                <div class="password-wrapper">
+                  <input
+                    id="password"
+                    :type="showPassword ? 'text' : 'password'"
+                    v-model.trim="formData.password"
+                    placeholder="••••••••"
+                    :class="inputClass('password')"
+                    @input="validateField('password')"
+                    autocomplete="new-password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    class="toggle-password"
+                    @click="togglePassword"
+                    :aria-label="
+                      showPassword
+                        ? 'Masquer le mot de passe'
+                        : 'Afficher le mot de passe'
+                    "
+                  >
+                    <span aria-hidden="true">{{ showPassword ? "🔒" : "👁️" }}</span>
+                  </button>
+                </div>
+                <span v-if="errors.password" class="error-message">{{
+                  errors.password
+                }}</span>
+                <span v-else-if="hints.password" class="hint-message"
+                  >Au moins 8 caractères, majuscules, minuscules, chiffres et
+                  spéciaux</span
+                >
+                <span v-if="formData.password && validFields.password" class="valid-icon"
+                  >✓</span
+                >
+              </div>
 
-  <!-- CONFIRM PASSWORD -->
-  <div
-    class="form-group"
-    @mouseenter="showHint('confirmpassword')"
-    @mouseleave="hideHint('confirmpassword')"
-  >
-    <label for="confirmpassword">Confirmez le mot de passe</label>
-    <div class="password-wrapper">
-      <input
-        id="confirmpassword"
-        :type="showPassword ? 'text' : 'password'"
-        v-model.trim="formData.confirmpassword"
-        placeholder="••••••••"
-        :class="inputClass('confirmpassword')"
-        @input="validateField('confirmpassword')"
-        autocomplete="new-password"
-        required
-      />
-      <button
-        type="button"
-        class="toggle-password"
-        @click="togglePassword"
-        :aria-label="
-          showPassword
-            ? 'Masquer le mot de passe'
-            : 'Afficher le mot de passe'
-        "
-      >
-        <span aria-hidden="true">{{ showPassword ? "🔒" : "👁️" }}</span>
-      </button>
-    </div>
-    <span v-if="errors.confirmpassword" class="error-message">{{
-      errors.confirmpassword
-    }}</span>
-    <span v-else-if="hints.confirmpassword" class="hint-message"
-      >Les deux mots de passe doivent correspondre</span
-    >
-    <span
-      v-if="formData.confirmpassword && validFields.confirmpassword"
-      class="valid-icon"
-      >✓</span
-    >
-  </div>
-</div>
+              <!-- CONFIRM PASSWORD -->
+              <div
+                class="form-group"
+                @mouseenter="showHint('confirmpassword')"
+                @mouseleave="hideHint('confirmpassword')"
+              >
+                <label for="confirmpassword">Confirmez le mot de passe</label>
+                <div class="password-wrapper">
+                  <input
+                    id="confirmpassword"
+                    :type="showPassword ? 'text' : 'password'"
+                    v-model.trim="formData.confirmpassword"
+                    placeholder="••••••••"
+                    :class="inputClass('confirmpassword')"
+                    @input="validateField('confirmpassword')"
+                    autocomplete="new-password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    class="toggle-password"
+                    @click="togglePassword"
+                    :aria-label="
+                      showPassword
+                        ? 'Masquer le mot de passe'
+                        : 'Afficher le mot de passe'
+                    "
+                  >
+                    <span aria-hidden="true">{{ showPassword ? "🔒" : "👁️" }}</span>
+                  </button>
+                </div>
+                <span v-if="errors.confirmpassword" class="error-message">{{
+                  errors.confirmpassword
+                }}</span>
+                <span v-else-if="hints.confirmpassword" class="hint-message"
+                  >Les deux mots de passe doivent correspondre</span
+                >
+                <span
+                  v-if="formData.confirmpassword && validFields.confirmpassword"
+                  class="valid-icon"
+                  >✓</span
+                >
+              </div>
+            </div>
           </fieldset>
 
           <!-- STEP 2: ADMINISTRATIVE DETAILS -->
@@ -285,6 +284,7 @@
                 <input
                   id="nomsociete"
                   type="text"
+                  placeholder="Ecrire votre nom de la societe"
                   v-model="formData.nomsociete"
                   :max="maxDate"
                   :class="inputClass('nomsociete')"
@@ -320,11 +320,15 @@
                   @input="validateField('siteweb')"
                   required
                 />
-                <span v-if="errors.siteweb" class="error-message">{{ errors.siteweb }}</span>
+                <span v-if="errors.siteweb" class="error-message">{{
+                  errors.siteweb
+                }}</span>
                 <span v-else-if="hints.siteweb" class="hint-message"
                   >Le site web est invalide</span
                 >
-                <span v-if="formData.siteweb && validFields.siteweb" class="valid-icon">✓</span>
+                <span v-if="formData.siteweb && validFields.siteweb" class="valid-icon"
+                  >✓</span
+                >
               </div>
 
               <div
@@ -541,7 +545,6 @@ const showPrivacy = ref(false);
 const termsAccepted = ref(false);
 const currentStep = ref(0);
 
-
 const steps = [
   { label: "Informations personnelles" },
   { label: "Détails administratifs" },
@@ -569,8 +572,6 @@ function showHint(field) {
 function hideHint(field) {
   hints[field] = false;
 }
-
-
 
 // === FORM DATA ===
 const formData = reactive({
@@ -612,8 +613,6 @@ const siteRegex = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/; /
 
 const numberRegex = /^\d{8}$/;
 
-
-
 function validateField(field) {
   delete errors[field];
   let valid = false;
@@ -648,9 +647,9 @@ function validateField(field) {
     case "siteweb":
       valid = siteRegex.test(val);
       if (!valid) errors[field] = "Site invalide";
-      validFields.siteweb = false;      //  ⬅️ retire la coche verte
+      validFields.siteweb = false; //  ⬅️ retire la coche verte
 
-break;
+      break;
     default:
       valid = !!val;
   }
@@ -697,9 +696,6 @@ const progressWidth = computed(
   () => `${(currentStep.value / (steps.length - 1)) * 100}%`
 );
 
-
-
-
 // === NAVIGATION ===
 function nextStep() {
   if (currentStep.value === steps.length - 1) {
@@ -728,10 +724,8 @@ function previousStep() {
 }
 
 function goToStep(index) {
-  if (index <= currentStep.value) 
-  currentStep.value = index;
+  if (index <= currentStep.value) currentStep.value = index;
 }
-
 
 function togglePassword() {
   showPassword.value = !showPassword.value;
@@ -752,8 +746,7 @@ async function register() {
       if (v?.email?.length) {
         errors.email = "Cet email est déjà utilisé";
         currentStep.value = 0;
-        validFields.email = false;      
-
+        validFields.email = false;
       } else {
         serverError.value = e.response.data.message || "Erreur de validation";
       }
@@ -778,18 +771,24 @@ watch(termsAccepted, (val) => {
   margin: 0;
   padding: 0;
 }
+
 html {
   font-size: 16px;
-  font-family: 'Inter', sans-serif;
-  background-color: #F7FAFC;
-  color: #1F2937;
+  font-family: "Inter", sans-serif;
+  background-color: #f7fafc;
+  color: #1f2937;
   line-height: 1.6;
 }
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 600;
 }
 a {
-  color: #2A9D8F;
+  color: #1f3d7a;
   text-decoration: none;
 }
 a:hover {
@@ -803,12 +802,12 @@ a:hover {
   align-items: center;
   min-height: 100vh;
   padding: 2rem;
-  background: #F7FAFC;
+  background: #f7fafc;
 }
 .register-card {
   display: flex;
   margin-top: 50px;
-  background: #FFFFFF;
+  background: #ffffff;
   border-radius: 24px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -821,7 +820,7 @@ a:hover {
   position: relative;
   flex: 0 0 40%;
   min-height: 500px;
-  background: #3D90D7;
+  background: #3d90d7;
 }
 .register-image {
   width: 100%;
@@ -831,7 +830,7 @@ a:hover {
 .overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.7));
+  background: linear-gradient(135deg, #1f3d7a 0%, #3c64c8 100%);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -842,7 +841,7 @@ a:hover {
 }
 .brand-text h2 {
   font-size: 2rem;
-  margin-bottom: .5rem;
+  margin-bottom: 0.5rem;
 }
 .brand-text p {
   font-size: 1rem;
@@ -857,7 +856,7 @@ a:hover {
 .form-title {
   text-align: center;
   font-size: 1.75rem;
-  color: #3D90D7;
+  color: #1e3a8a;
   margin-bottom: 1.5rem;
 }
 
@@ -873,35 +872,35 @@ a:hover {
   cursor: pointer;
 }
 .step-icon {
-  margin: 0 auto .5rem;
+  margin: 0 auto 0.5rem;
   width: 48px;
   height: 48px;
-  border: 2px solid #6B7280;
+  border: 2px solid #6b7280;
   border-radius: 50%;
-  background: #FFFFFF;
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all .3s ease;
+  transition: all 0.3s ease;
 }
 .step.active .step-icon {
-  border-color: #3D90D7;
-  background: #3D90D7;
+  border-color: #3d90d7;
+  background: linear-gradient(135deg, #1f3d7a 0%, #3c64c8 100%);
   color: white;
 }
 .step.completed .step-icon {
-  border-color: #4EDA92;
-  background: #4EDA92;
+  border-color: #11a85a; /* Vert */
+  background: #87c1a3; /* Vert plein */
   color: white;
 }
 .step-label {
-  font-size: .875rem;
-  color: #6B7280;
-  transition: color .3s ease;
+  font-size: 0.875rem;
+  color: #6b7280;
+  transition: color 0.3s ease;
 }
 .step.active .step-label,
 .step.completed .step-label {
-  color: #3D90D7;
+  color: #3d90d7;
   font-weight: 600;
 }
 
@@ -919,29 +918,30 @@ a:hover {
 .progress-container {
   width: 100%;
   height: 6px;
-  background: #6B7280;
+  background: #6b7280;
   border-radius: 3px;
   overflow: hidden;
   margin-bottom: 2rem;
 }
 .progress-bar {
   height: 100%;
-  background: #3D90D7;
+  background: linear-gradient(135deg, #1f3d7a 0%, #3c64c8 100%);
   width: 0;
-  transition: width .4s ease;
+  transition: width 0.4s ease;
 }
 
 /* Fieldsets */
 .form-fieldset {
   border: none;
-  animation: fadeIn .4s ease;
+  animation: fadeIn 0.4s ease;
   margin-bottom: 2rem;
 }
 .form-fieldset legend {
   font-size: 1.25rem;
-  border-bottom: 2px solid #6B7280;
-  padding-bottom: .5rem;
+  border-bottom: 2px solid #6b7280;
+  padding-bottom: 0.5rem;
   margin-bottom: 1rem;
+  color: #3d90d7;
 }
 
 /* Grilles */
@@ -960,38 +960,38 @@ a:hover {
   position: relative;
 }
 .form-group label {
-  margin-bottom: .5rem;
+  margin-bottom: 0.5rem;
   font-weight: 500;
 }
 .input {
   padding: 1rem;
-  border: 2px solid #6B7280;
+  border: 2px solid #6b7280;
   border-radius: 12px;
   font-size: 1rem;
-  transition: border-color .3s ease, box-shadow .3s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 .input:focus {
-  border-color: #3D90D7;
-  box-shadow: 0 0 0 3px rgba(61,144,215,0.2);
+  border-color: #3d90d7;
+  box-shadow: 0 0 0 3px rgba(61, 144, 215, 0.2);
   outline: none;
 }
 .input-error {
-  border-color: #E63946 !important;
+  border-color: #e63946 !important;
 }
 .input-valid {
-  border-color: #4EDA92 !important;
+  border-color: #4eda92 !important;
 }
 
 /* Messages d’aide et d’erreur */
 .hint-message {
-  font-size: .875rem;
-  color: #6B7280;
-  margin-top: .25rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
 }
 .error-message {
-  font-size: .875rem;
-  color: #E63946;
-  margin-top: .25rem;
+  font-size: 0.875rem;
+  color: #e63946;
+  margin-top: 0.25rem;
 }
 
 /* Icônes de validité */
@@ -999,7 +999,7 @@ a:hover {
   position: absolute;
   right: 1rem;
   top: 2.5rem;
-  color: #4EDA92;
+  color: #4eda92;
   font-size: 1.125rem;
 }
 
@@ -1010,36 +1010,37 @@ a:hover {
   gap: 1rem;
   margin-top: 2rem;
 }
-.btn-primary, .btn-secondary {
+.btn-primary,
+.btn-secondary {
   flex: 1;
-  padding: .75rem 1.5rem;
+  padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 12px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform .15s ease, box-shadow .15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: .5rem;
+  gap: 0.5rem;
 }
 .btn-primary {
-  background: #2A9D8F;
+  background: linear-gradient(135deg, #1f3d7a 0%, #3c64c8 100%);
   color: white;
 }
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 }
 .btn-primary:disabled {
-  opacity: .6;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 .btn-primary:focus {
-  outline: 3px solid rgba(42,157,143,0.5);
+  outline: 3px solid rgba(42, 157, 143, 0.5);
 }
 .btn-secondary {
-  background: #3D90D7;
+  background: #3d90d7;
   color: white;
 }
 
@@ -1047,7 +1048,7 @@ a:hover {
 .spinner {
   width: 1.25rem;
   height: 1.25rem;
-  border: 2px solid rgba(255,255,255,0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: white;
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -1058,34 +1059,49 @@ a:hover {
   margin-top: 1.5rem;
   padding: 1rem;
   border-radius: 12px;
-  font-size: .875rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  font-size: 0.875rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 .notification.success {
-  background: rgba(78,218,146,0.15);
-  border-left: 4px solid #4EDA92;
-  color: #4EDA92;
+  background: rgba(78, 218, 146, 0.15);
+  border-left: 4px solid #4eda92;
+  color: #4eda92;
 }
 .notification.error {
-  background: rgba(230,57,70,0.15);
-  border-left: 4px solid #E63946;
-  color: #E63946;
+  background: rgba(230, 57, 70, 0.15);
+  border-left: 4px solid #e63946;
+  color: #e63946;
 }
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .register-card { flex-direction: column; }
-  .image-section { flex: none; height: 200px; }
-  .two-columns { grid-template-columns: 1fr; }
+  .register-card {
+    flex-direction: column;
+  }
+  .image-section {
+    flex: none;
+    height: 200px;
+  }
+  .two-columns {
+    grid-template-columns: 1fr;
+  }
 }
 /* Confirmation summary */
 .summary-container {
@@ -1097,14 +1113,14 @@ a:hover {
 .summary-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #2A9D8F;
+  color: #2a9d8f;
   text-align: center;
   margin-bottom: 1rem;
 }
 
 .summary-section {
   background: #ffffff;
-  border: 1px solid #E2E8F0;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
@@ -1113,7 +1129,7 @@ a:hover {
 .summary-section h4 {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #3D90D7;
+  color: #3d90d7;
   margin-bottom: 1rem;
 }
 
@@ -1130,14 +1146,13 @@ a:hover {
 
 .summary-item label {
   font-size: 0.875rem;
-  color: #6B7280;
+  color: #6b7280;
 }
 
 .summary-item span {
   font-size: 1rem;
   font-weight: 500;
-  color: #1F2937;
+  color: #1f2937;
   margin-top: 0.25rem;
 }
-
 </style>
