@@ -330,7 +330,7 @@
                   >✓</span
                 >
               </div>
-
+              <!-- 
               <div
                 class="form-group"
                 @mouseenter="showHint('departement')"
@@ -338,7 +338,7 @@
               >
                 <label for="departement">Département</label>
                 <input
-                  id="departement"
+                  id="departement"btt
                   type="text"
                   v-model.trim="formData.departement"
                   placeholder="Ecrire votre département"
@@ -358,7 +358,7 @@
                   class="valid-icon"
                   >✓</span
                 >
-              </div>
+              </div> -->
 
               <div
                 class="form-group"
@@ -389,7 +389,7 @@
                 >
               </div>
 
-              <div
+              <!-- <div
                 class="form-group"
                 @mouseenter="showHint('description')"
                 @mouseleave="hideHint('description')"
@@ -416,7 +416,7 @@
                   class="valid-icon"
                   >✓</span
                 >
-              </div>
+              </div> -->
             </div>
           </fieldset>
 
@@ -457,15 +457,15 @@
                   <div class="summary-item">
                     <label>Site web:</label><span>{{ formData.siteweb }}</span>
                   </div>
-                  <div class="summary-item">
+                  <!-- <div class="summary-item">
                     <label>Département:</label><span>{{ formData.departement }}</span>
-                  </div>
+                  </div> -->
                   <div class="summary-item">
                     <label>Localisation:</label><span>{{ formData.localisation }}</span>
                   </div>
-                  <div class="summary-item">
+                  <!-- <div class="summary-item">
                     <label>Description:</label><span>{{ formData.description }}</span>
-                  </div>
+                  </div> -->
                 </div>
               </div>
 
@@ -509,14 +509,14 @@
           </div>
 
           <!-- NOTIFICATIONS -->
-          <transition name="fade">
+          <!-- <transition name="fade">
             <div v-if="success" class="notification success">
               <p>
                 Inscription réussie !
                 <router-link to="/LoginCandidat">Connectez‑vous</router-link>
               </p>
             </div>
-          </transition>
+          </transition> -->
           <transition name="fade">
             <div v-if="serverError" class="notification error">
               <p>{{ serverError }}</p>
@@ -532,6 +532,7 @@
 import { ref, reactive, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import api from "@/axios";
+import { useToast } from "vue-toastification";
 // import hiringImage from '../..assets/rec';
 
 // === STATE ===
@@ -544,7 +545,7 @@ const showTerms = ref(false);
 const showPrivacy = ref(false);
 const termsAccepted = ref(false);
 const currentStep = ref(0);
-
+const toast = useToast();
 const steps = [
   { label: "Informations personnelles" },
   { label: "Détails administratifs" },
@@ -562,8 +563,7 @@ const hints = reactive({
   nomsociete: false,
   siteweb: false,
   departement: false,
-  localisation: "",
-  description: false,
+  localisation: false,
 });
 
 function showHint(field) {
@@ -584,9 +584,7 @@ const formData = reactive({
   phone: "",
   nomsociete: "",
   siteweb: "",
-  departement: "",
   localisation: "",
-  description: "",
 });
 
 const errors = reactive({});
@@ -600,9 +598,7 @@ const validFields = reactive({
   phone: false,
   nomsociete: false,
   siteweb: false,
-  departement: false,
   localisation: false,
-  description: false,
 });
 
 // === VALIDATION CONSTANTS ===
@@ -623,7 +619,6 @@ function validateField(field) {
     case "prenom":
     case "localisation":
     case "nomsociete":
-    case "departement":
       valid = nameRegex.test(val);
       if (!valid) errors[field] = "Format invalide";
       break;
@@ -679,9 +674,7 @@ const isStepValid = computed(() => {
       validFields.phone &&
       validFields.nomsociete &&
       validFields.localisation &&
-      validFields.departement &&
-      validFields.siteweb &&
-      validFields.description) ||
+      validFields.siteweb) ||
     (step === 2 && termsAccepted.value)
   );
 });
@@ -738,20 +731,21 @@ async function register() {
   try {
     await api.get("/sanctum/csrf-cookie");
     await api.post("/api/register", { ...formData, role: "recruteur" });
-    success.value = true;
+    toast.success("inscription réussite");
     setTimeout(() => router.push("/LoginRecruteur"), 2000);
   } catch (e) {
     if (e.response?.status === 422) {
       const v = e.response.data?.errors;
+
       if (v?.email?.length) {
         errors.email = "Cet email est déjà utilisé";
         currentStep.value = 0;
         validFields.email = false;
       } else {
-        serverError.value = e.response.data.message || "Erreur de validation";
+        toast.error("Erreur de validation");
       }
     } else {
-      serverError.value = e.response?.data?.message || "Erreur serveur";
+      toast.error("Erreur de validation");
     }
   } finally {
     loading.value = false;
@@ -1025,12 +1019,12 @@ a:hover {
   gap: 0.5rem;
 }
 .btn-primary {
-  background: linear-gradient(135deg, #1f3d7a 0%, #3c64c8 100%);
+  filter: brightness(0.8);
   color: white;
 }
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+  filter: brightness(0.8);
 }
 .btn-primary:disabled {
   opacity: 0.6;

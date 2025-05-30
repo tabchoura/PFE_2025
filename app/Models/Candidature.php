@@ -20,6 +20,10 @@ class Candidature extends Model
         'cv_embedding', 'match_score',
                 'similarity_score', 
 
+                
+
+        'lien_visio'   ,
+
     ];
     protected $attributes = [
         'statut' => 'enattente',

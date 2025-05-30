@@ -559,7 +559,7 @@ input:checked + .slider::before {
 }
 
 .btn-submit:hover:not(:disabled) {
-  background: #0468bf;
+  filter: brightness(0.8);
   transform: translateY(-2px);
 }
 
@@ -627,8 +627,7 @@ input:checked + .slider::before {
 }
 
 .btn-create:hover {
-  background: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
-  color: #ffffff;
+  filter: brightness(0.8);
 }
 
 @media (max-width: 768px) {

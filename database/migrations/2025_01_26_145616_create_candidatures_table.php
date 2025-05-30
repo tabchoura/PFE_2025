@@ -1,36 +1,37 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
-return new class extends Migration
+class CreateCandidaturesTable extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
         Schema::create('candidatures', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('offre_id')->constrained('offres')->onDelete('cascade'); // Clé étrangère vers offres
-            $table->foreignId('cv_id')->constrained('cvs')->onDelete('cascade');       // Clé étrangère vers cvs
-            $table->text('message')->nullable(); // Facultatif
-            $table->enum('statut', ['enattente','accepter','entretien','embauche','refuser'])
-            ->default('enattente');
-            $table->unsignedBigInteger('user_id'); // Assurez-vous que user_id est non nullable
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade'); // Clé étrangère vers users
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('offre_id');
+            $table->unsignedBigInteger('cv_id');
+            
+            // Nouvelles colonnes sans ->after()
+            $table->json('cv_embedding')->nullable();
+            $table->double('match_score', 8, 2)->nullable();
+            $table->double('similarity_score', 8, 2)->nullable();
+            $table->enum('status_ia', ['accepted', 'rejected'])->nullable();
+            
+            $table->text('message')->nullable();
+            $table->enum('statut', ['enattente', 'accepter', 'entretien', 'embauche', 'refuser'])
+                  ->default('enattente');
+            $table->unsignedBigInteger('user_id');
             $table->timestamp('date_entretien')->nullable();
-
+            $table->string('lien_visio')->nullable();
+            
             $table->timestamps(); // created_at et updated_at
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::dropIfExists('candidatures');
     }
-};
+}

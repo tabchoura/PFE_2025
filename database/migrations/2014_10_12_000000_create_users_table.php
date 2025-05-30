@@ -32,10 +32,9 @@ return new class extends Migration
             $table->integer('nbvalidation')->nullable();
             $table->string('email')->unique()->nullable();
             $table->string('siteweb')->nullable();
-            $table->string('departement')->nullable();
             $table->string('nomsociete')->nullable(); // Rendre le champ nullable
 
-            $table->string('description')->nullable();
+// $table->longText('description'); // Jusqu'à 4 Go de texte (rarement nécessaire)
 
             $table->string('localisation')->nullable();
 
@@ -44,8 +43,7 @@ return new class extends Migration
             $table->rememberToken();
             $table->enum('role', ['candidat', 'recruteur', 'admin'])->default('candidat');
             $table->timestamps();
-            $table->unsignedBigInteger('entreprise_id')->nullable();  // Ajout de la colonne entreprise_id
-            $table->foreign('entreprise_id')->references('id')->on('entreprises')->onDelete('set null');  // Clé étrangère
+        
         });
     }
 

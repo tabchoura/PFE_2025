@@ -24,18 +24,6 @@
           <span>Entretien:</span> {{ formatDateTime12h(offer.date_entretien) }}
         </p>
       </div>
-
-      <!-- Boutons d'action -->
-      <div class="button-container">
-        <button @click="enregistrer">
-          <i class="fas fa-heart"></i>
-          Ajouter à mes offres
-        </button>
-        <button class="btnapply" @click="Postuler">
-          <i class="fas fa-paper-plane"></i>
-          Postuler
-        </button>
-      </div>
     </div>
   </div>
 </template>
@@ -98,22 +86,6 @@ async function getOfferDetails() {
   }
 }
 
-async function enregistrer() {
-  try {
-    const res = await axios.post(`/api/offreenregistrer/${offerId}`);
-    if (res.status === 200) {
-      toast.success("Offre enregistrées!");
-    }
-  } catch (err) {
-    console.error(err);
-    alert("Échec de l'enregistrement.");
-  }
-}
-
-function Postuler() {
-  router.push(`/postuler/${offerId}`);
-}
-
 onMounted(getOfferDetails);
 </script>
 
@@ -134,8 +106,7 @@ onMounted(getOfferDetails);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 .profil-container:hover {
-  transform: translateY(-6 px);
-
+  transform: translateY(-6px);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
 }
 
@@ -245,8 +216,8 @@ onMounted(getOfferDetails);
   color: #fff;
 }
 .button-container button:first-child:hover {
+  background: #3b82f6;
   transform: translateY(-2px);
-  filter: brightness(0.9);
 }
 
 .btnapply {
@@ -254,7 +225,7 @@ onMounted(getOfferDetails);
   color: #fff;
 }
 .btnapply:hover {
-  filter: brightness(0.9);
+  background: #07a0b5;
   transform: translateY(-2px);
 }
 

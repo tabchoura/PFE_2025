@@ -4,17 +4,83 @@
       <h1>🗓️ Planifier l'entretien</h1>
       <p class="instructions">Choisissez la date puis cliquez sur « Envoyer ».</p>
 
-      <!-- Calendrier relié au state selectedDate -->
-      <Calendrier v-model="selectedDate" />
+      <!-- Bouton toggle formulaire -->
+      <button @click="formVisible = !formVisible" class="toggle-btn">
+        {{ formVisible ? "✖️ Annuler l'ajout" : "➕ Ajouter un événement" }}
+      </button>
+
+      <!-- Formulaire d'ajout événement -->
+      <form v-if="formVisible" @submit.prevent="ajouterEvenement" class="form">
+        <input
+          v-model="titre"
+          placeholder="Titre de l'événement"
+          required
+          autocomplete="off"
+        />
+        <input v-model="date" type="date" required />
+        <input v-model="heure" type="time" required />
+        <input
+          v-model="lienVisio"
+          type="url"
+          placeholder="https://meet.jobgo.app/abcd"
+          required
+          autocomplete="off"
+        />
+
+        <div class="form-buttons">
+          <button type="submit">Ajouter</button>
+          <button type="button" class="cancel-btn" @click="annuler">Annuler</button>
+        </div>
+      </form>
+
+      <!-- Calendrier affichant tous les événements -->
+      <pro-calendar :events="events" :config="calendarConfig" />
+
+      <!-- Liste des événements -->
+      <div v-if="events.length" class="event-list">
+        <h3>📅 Événements enregistrés :</h3>
+        <ul>
+          <li v-for="(event, index) in events" :key="event.id" class="event-item">
+            {{ event.name }} – {{ formatDate(event.date) }} –
+            <a :href="event.lienVisio" target="_blank" rel="noopener noreferrer">
+              {{ event.lienVisio }}
+            </a>
+            <button
+              class="btn-supprimer"
+              @click="supprimerEvenement(index)"
+              aria-label="Supprimer l'événement"
+            >
+              Supprimer
+            </button>
+          </li>
+        </ul>
+      </div>
+
       <div class="btn-group">
         <button @click="retour" class="back-btn" aria-label="Retour">← Retour</button>
-        <button @click="envoyer" class="send-btn">Envoyer</button>
+        <button
+          @click="envoyer"
+          class="send-btn"
+          :disabled="!events.length || isSubmitting"
+        >
+          {{ isSubmitting ? "Envoi…" : "Envoyer" }}
+        </button>
       </div>
 
       <!-- Message de confirmation -->
-      <div v-if="entretien" class="success-message">
+      <div v-if="entretien" class="success-message" role="alert">
         <h3>Entretien enregistré ✅</h3>
-        <p>🗓️ {{ formatDate(entretien.date_entretien) }}</p>
+        <p>🗓️ {{ formatDate(entretien.date_entretien) || "Date indisponible" }}</p>
+        <p v-if="entretien.lien_visio">
+          🔗
+          <a
+            :href="nettoyerLien(entretien.lien_visio)"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {{ nettoyerLien(entretien.lien_visio) }}
+          </a>
+        </p>
       </div>
     </div>
   </div>
@@ -24,24 +90,43 @@
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
-import Calendrier from "./Calendrier.vue";
+import "@lbgm/pro-calendar-vue/style";
+import { useToast } from "vue-toastification";
 
-// Récupération du paramètre de route
 const route = useRoute();
 const router = useRouter();
-const candidatureId = Number(route.params.candidatureId); // Convertir en nombre
+const toast = useToast();
 
-function retour() {
-  router.push("/candidaturesrecruteur");
-}
-// Vérifiez que l'ID est bien récupéré
-console.log("candidatureId", candidatureId); // Affiche dans la console
-// État local
-const selectedDate = ref<string | null>(null);
+const candidatureId = Number(route.params.candidatureId);
+
+const events = ref<any[]>([]);
+const formVisible = ref(false);
+const titre = ref("");
+const date = ref("");
+const heure = ref("");
+const lienVisio = ref("");
+
 const entretien = ref<any | null>(null);
 const isSubmitting = ref(false);
 
-// Formatage de la date au format d/m/Y
+const calendarConfig = {
+  actions: {
+    view: { enabled: true, icon: true, text: "Voir" },
+    report: { enabled: false },
+  },
+  searchPlaceHolder: "Rechercher...",
+  eventName: "Nouvel Événement",
+  closeText: "Fermer",
+};
+
+function formatDateDMY(dateStr: string) {
+  if (!dateStr) return "";
+  const parts = dateStr.split("-");
+  if (parts.length !== 3) return dateStr;
+  const [year, month, day] = parts;
+  return `${day}/${month}/${year}`;
+}
+
 function formatDate(d?: string) {
   if (!d) return "";
 
@@ -60,135 +145,242 @@ function formatDate(d?: string) {
   }
 }
 
-function formatDateForApi(date: string | null) {
-  if (!date) return ""; // Retourne une chaîne vide si la date est vide
-  const d = new Date(date);
-  const day = ("0" + d.getDate()).slice(-2); // Ajoute un 0 si le jour est inférieur à 10
-  const month = ("0" + (d.getMonth() + 1)).slice(-2); // Ajoute un 0 si le mois est inférieur à 10
-  const year = d.getFullYear();
-  return `${day}/${month}/${year}`; // Format d/m/Y
+// Fonction pour nettoyer le lien visio s'il est répété deux fois
+function nettoyerLien(lien: string): string {
+  if (!lien) return "";
+  if (lien.length % 2 === 0) {
+    const moitié = lien.length / 2;
+    if (lien.slice(0, moitié) === lien.slice(moitié)) {
+      return lien.slice(0, moitié);
+    }
+  }
+  return lien;
 }
-async function envoyer() {
-  if (!selectedDate.value) {
-    alert("Merci de sélectionner une date.");
+
+function ajouterEvenement() {
+  if (!titre.value.trim()) {
+    toast.warning("Merci de saisir un titre pour l'événement");
+    return;
+  }
+  if (!date.value || !heure.value) {
+    toast.warning("Merci de saisir la date et l'heure");
+    return;
+  }
+  if (!lienVisio.value.trim()) {
+    toast.warning("Merci de saisir un lien visio valide");
+    return;
+  }
+  try {
+    new URL(lienVisio.value.trim());
+  } catch {
+    toast.warning(
+      "Le lien visio doit être une URL valide (ex: https://meet.jobgo.app/abcd)"
+    );
     return;
   }
 
-  const confirmSend = confirm("Voulez-vous vraiment envoyer la demande ?");
-  if (!confirmSend) {
-    return; // L'utilisateur a cliqué sur Annuler
+  const mysql = `${date.value} ${heure.value}:00`;
+
+  events.value.push({
+    id: Date.now().toString(),
+    name: titre.value.trim(),
+    date: mysql,
+    lienVisio: lienVisio.value.trim(),
+  });
+
+  resetForm();
+  formVisible.value = false;
+}
+
+function annuler() {
+  resetForm();
+  formVisible.value = false;
+}
+
+function resetForm() {
+  titre.value = "";
+  date.value = "";
+  heure.value = "";
+  lienVisio.value = "";
+}
+
+function supprimerEvenement(index: number) {
+  events.value.splice(index, 1);
+}
+
+function retour() {
+  router.push("/candidaturesrecruteur");
+}
+
+function formatDateDMY_HM(dateStr: string, timeStr: string) {
+  if (!dateStr) return "";
+  const parts = dateStr.split("-");
+  if (parts.length !== 3) return dateStr;
+  const [year, month, day] = parts;
+  return `${day}/${month}/${year} ${timeStr}`;
+}
+
+async function envoyer() {
+  if (isSubmitting.value) return;
+  if (!events.value.length) {
+    toast.warning("Veuillez ajouter au moins un événement avant d'envoyer.");
+    return;
   }
 
   isSubmitting.value = true;
 
-  const formattedDate = formatDateForApi(selectedDate.value);
+  const premierEvenement = events.value[0];
+  const [datePart, timePartWithSeconds] = premierEvenement.date.split(" ");
+  const timePart = timePartWithSeconds.slice(0, 5);
+
+  const dateHeureFormatee = formatDateDMY_HM(datePart, timePart);
+
+  // Nettoyage simple pour éviter double lien
+  let lienNettoye = premierEvenement.lienVisio;
+  if (lienNettoye.length % 2 === 0) {
+    const moitié = lienNettoye.length / 2;
+    if (lienNettoye.slice(0, moitié) === lienNettoye.slice(moitié)) {
+      lienNettoye = lienNettoye.slice(0, moitié);
+    }
+  }
 
   try {
     const { data } = await axios.post(`/api/candidatures/${candidatureId}/entretien`, {
-      date_entretien: formattedDate,
+      date_entretien: dateHeureFormatee,
+      lien_visio: lienNettoye,
     });
-
-    entretien.value = data;
-
-    setTimeout(() => router.push({ name: "Candidaturesrecruteur" }), 2000);
+    // On récupère juste l'objet candidature pour faciliter l'affichage
+    entretien.value = data.candidature;
+    toast.success("Entretien planifié avec succès !");
+    router.push("/Candidaturesrecruteur");
   } catch (err: any) {
-    console.error("Erreur lors de l'enregistrement:", err);
-    alert(
-      err.response?.data?.message || "Erreur lors de l'enregistrement de l'entretien"
-    );
+    const message =
+      err.response?.data?.message || err.message || "Erreur lors de l'envoi";
+    toast.error(message);
   } finally {
     isSubmitting.value = false;
   }
 }
 </script>
-
 <style scoped>
+/* Vos styles ici (inchangés) */
 .page-wrapper {
   background: linear-gradient(135deg, #e0eafc, #cfdef3);
-  padding: 1rem 2rem;
   padding: 2rem;
+  min-height: 100vh;
 }
 .entretiens-container {
-  max-width: 1000px;
-  margin: 2rem auto;
+  max-width: 700px;
+  margin: auto;
+  background: white;
   padding: 2rem;
-  background: #f8fafc;
   border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  font-family: "Segoe UI", sans-serif;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-h1::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 80px;
-  height: 4px;
-  background: linear-gradient(90deg, #3182ce, #63b3ed);
-  border-radius: 2px;
-}
-h1 {
-  font-size: 2rem;
-  margin-bottom: 2rem;
-  color: #1a237e;
+.toggle-btn {
+  background: linear-gradient(90deg, #20c599 0%, #2dd9b5 100%);
+  color: white;
   font-weight: 700;
-  letter-spacing: -0.5px;
-  position: relative;
-  padding-bottom: 0.5rem;
-}
-.instructions {
-  color: #4a5568;
-  margin-bottom: 2rem;
-  font-size: 1.1rem;
-}
-
-/* Bouton principal */
-.primary-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 2rem;
-  padding: 0.8rem 1.5rem;
-  background: #3498db;
-  color: #fff;
+  padding: 10px 20px;
   border: none;
-  border-radius: 8px;
-  font-weight: 600;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1rem;
 }
 
-.primary-btn:hover {
-  background: #2980b9;
-  transform: translateY(-2px);
-}
-
-.primary-btn:disabled {
-  background: #a0aec0;
-  cursor: not-allowed;
-  transform: none;
-}
-.btn-group {
+.form {
   display: flex;
-  justify-content: space-between; /* Retour à gauche, Envoyer à droite */
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.form input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.form button[type="submit"],
+.cancel-btn {
+  background: linear-gradient(90deg, #20c599 0%, #2dd9b5 100%);
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.cancel-btn {
+  background: #a0aec0;
+  color: #1a202c;
+}
+
+.form button[type="submit"]:hover {
+  background: #1ca085;
+}
+
+.cancel-btn:hover {
+  background: #718096;
+}
+
+.event-list {
+  margin-top: 20px;
+}
+
+.event-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.event-list li {
+  background: #f8fafc;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
+}
+
+.btn-supprimer {
+  background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
+  border: none;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.btn-supprimer:hover {
+  background: #dc2626;
+}
+
+.btn-group {
   margin-top: 2rem;
-  gap: 1rem; /* optionnel, espace minimum */
-  width: 100%; /* prend toute la largeur du container */
+  display: flex;
+  justify-content: space-between;
 }
 
 .back-btn,
 .send-btn {
   padding: 10px 20px;
   border-radius: 6px;
-  cursor: pointer;
-  font-weight: 600;
   border: none;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  min-width: 120px; /* largeur minimum pour un bon rendu */
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 120px;
 }
 
 .back-btn {
@@ -205,16 +397,21 @@ h1 {
 }
 
 .send-btn {
-  background: linear-gradient(135deg, #20c599, #1fae8d, #178467);
+  background: linear-gradient(135deg, #20c599, #1fae8d);
   color: white;
 }
 
-.send-btn:hover {
-  background: linear-gradient(135deg, #20c599, #1fae8d, #178467);
+.send-btn:disabled {
+  background: #a0aec0;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.send-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1ca085, #178467);
   transform: translateY(-3px);
 }
 
-/* Message de confirmation */
 .success-message {
   margin-top: 2rem;
   padding: 1.5rem;
@@ -222,24 +419,5 @@ h1 {
   border-left: 4px solid #38a169;
   border-radius: 8px;
   color: #2f855a;
-  transition: all 0.3s ease;
-}
-
-.success-message h3 {
-  margin-top: 0;
-  font-size: 1.2rem;
-  margin-bottom: 0.5rem;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .entretiens-container {
-    margin: 1rem;
-    padding: 1.5rem;
-  }
-
-  h1 {
-    font-size: 1.5rem;
-  }
 }
 </style>

@@ -409,7 +409,7 @@ function cancelEditing() {
 }
 
 .btn-cancel:hover {
-  background: #e0e7ee;
+  filter: brightness(0.9);
   transform: translateY(-3px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
@@ -601,7 +601,7 @@ textarea {
 }
 
 .upload-label:hover {
-  background-color: #2980b9;
+  filter: brightness(0.9);
 }
 
 .hidden {
@@ -649,15 +649,15 @@ textarea {
 }
 
 .submit-btn:hover {
-  background-color: #2980b9;
+  filter: brightness(0.9);
 }
 
 .download-btn:hover {
-  background-color: #219653;
+  filter: brightness(0.9);
 }
 
 .next-btn:hover {
-  background-color: #8e44ad;
+  filter: brightness(0.9);
 }
 
 .submit-btn:disabled,
@@ -715,8 +715,9 @@ textarea {
 }
 
 .delete-btn:hover {
+  filter: brightness(0.9);
+
   transform: scale(1.2);
-  background-color: rgba(231, 76, 60, 0.1);
 }
 
 .error {

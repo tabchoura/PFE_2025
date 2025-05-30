@@ -440,7 +440,7 @@ async function deleteCv() {
 }
 
 .btn-back:hover {
-  background-color: #475569;
+  filter: brightness(0.9);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(100, 116, 139, 0.3);
 }
@@ -452,7 +452,7 @@ async function deleteCv() {
 }
 
 .btn-download:hover {
-  background-color: #059669;
+  filter: brightness(0.9);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
 }
@@ -464,7 +464,7 @@ async function deleteCv() {
 }
 
 .btn-edit:hover {
-  background-color: #2563eb;
+  filter: brightness(0.9);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
 }
@@ -492,7 +492,7 @@ async function deleteCv() {
 }
 
 .btn-delete:hover {
-  background-color: #dc2626;
+  filter: brightness(0.9);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
 }
@@ -512,7 +512,7 @@ async function deleteCv() {
 }
 
 .btn-save:hover {
-  background: #059669;
+  filter: brightness(0.9);
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
 }
@@ -533,7 +533,7 @@ async function deleteCv() {
 }
 
 .btn-retry:hover {
-  background-color: #d97706;
+  filter: brightness(0.9);
 }
 
 /* Groupe de boutons */

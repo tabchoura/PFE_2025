@@ -295,8 +295,7 @@ onMounted(() => {
 }
 
 .btn-edit:hover {
-  background: #2563eb;
-  transform: translateY(-2px);
+  filter: brightness(0.8);
   box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
 }
 
@@ -374,34 +373,8 @@ onMounted(() => {
 }
 
 .btn-save:hover {
-  background: #059669;
-  transform: translateY(-2px);
+  filter: brightness(0.8);
   box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
-}
-
-/* === NOTIFICATION === */
-.success-notification {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  background: white;
-  color: #065f46;
-  padding: 1rem 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  z-index: 1000;
-  border-left: 4px solid #10b981;
-  transform: translateY(100px);
-  opacity: 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.success-notification.show {
-  transform: translateY(0);
-  opacity: 1;
 }
 
 /* === RESPONSIVE === */

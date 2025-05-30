@@ -229,25 +229,26 @@
     </div>
   </Teleport>
 </template>
-
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 
 const router = useRouter();
+
+// Données offres
 const offres = ref([]);
 const titles = ref([]);
 const loading = ref(true);
 const error = ref(null);
 const selectedTitle = ref("");
 
-// Auth modal state
+// Modal d’authentification
 const authModalVisible = ref(false);
 const modalShowing = ref(false);
 const selectedOfferId = ref(null);
 
-// Auth form data
+// Formulaire d’auth
 const email = ref("");
 const password = ref("");
 const isRecruteur = ref(false);
@@ -259,6 +260,7 @@ const showPassword = ref(false);
 const rememberMe = ref(false);
 const togglePassword = () => (showPassword.value = !showPassword.value);
 
+// Récupération des offres et titres
 const getOffres = async () => {
   loading.value = true;
   error.value = null;
@@ -276,45 +278,57 @@ const getOffres = async () => {
     loading.value = false;
   }
 };
-
 onMounted(getOffres);
 
-const filteredOffers = computed(() => {
-  if (!selectedTitle.value) {
-    return offres.value;
-  }
-  return offres.value.filter((o) => o.titre === selectedTitle.value);
-});
+// Filtrage
+const filteredOffers = computed(() =>
+  selectedTitle.value
+    ? offres.value.filter((o) => o.titre === selectedTitle.value)
+    : offres.value
+);
 
+// Troncature
 const truncateText = (text, maxLength) =>
-  text && text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+  text && text.length > maxLength ? text.slice(0, maxLength) + "…" : text;
 
+// Vérification et redirection
 const checkAuthentication = (offerId) => {
-  const userSession =
+  const raw =
     localStorage.getItem("userSession") || sessionStorage.getItem("userSession");
-  if (!userSession) {
-    openAuthModal(offerId);
-  } else {
-    router.push(`/voirdetails/${offerId}`);
+
+  if (!raw) {
+    // pas connecté → ouvrir modal
+    selectedOfferId.value = offerId;
+    authModalVisible.value = true;
+    setTimeout(() => (modalShowing.value = true), 10);
+    return;
   }
+
+  const session = JSON.parse(raw);
+  const routeName =
+    session.type === "recruteur" ? "RecruteurVoirdetails" : "CandidatVoirdetails";
+
+  router.push({ name: routeName, params: { id: offerId } });
 };
-const openAuthModal = (offerId) => {
-  selectedOfferId.value = offerId;
-  authModalVisible.value = true;
-  setTimeout(() => (modalShowing.value = true), 10);
-};
+
+// Fermeture du modal
 const closeAuthModal = () => {
   modalShowing.value = false;
   setTimeout(() => (authModalVisible.value = false), 300);
 };
+
+// Validation du form
 const validateForm = () => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   emailError.value = !emailRegex.test(email.value);
   passwordError.value = password.value.length < 6;
   return !emailError.value && !passwordError.value;
 };
+
+// Login
 const login = async () => {
   if (!validateForm()) return;
+
   isLoading.value = true;
   try {
     await axios.get("/sanctum/csrf-cookie");
@@ -323,6 +337,8 @@ const login = async () => {
       { email: email.value, password: password.value },
       { withCredentials: true }
     );
+
+    // Vérification du type sélectionné
     if (
       (isRecruteur.value && response.data.type !== "recruteur") ||
       (!isRecruteur.value && response.data.type !== "candidat")
@@ -331,23 +347,35 @@ const login = async () => {
       isLoading.value = false;
       return;
     }
+
+    // Stockage de la session
     const storage = rememberMe.value ? localStorage : sessionStorage;
     storage.setItem("userSession", JSON.stringify(response.data));
+
+    // Redirection vers le détail
     const targetId = selectedOfferId.value;
     closeAuthModal();
-    if (targetId) router.replace(`/voirdetails/${targetId}`);
-    else alert("❌ Offre introuvable.");
+
+    if (targetId) {
+      const routeName =
+        response.data.type === "recruteur"
+          ? "RecruteurVoirdetails"
+          : "CandidatVoirdetails";
+      router.replace({ name: routeName, params: { id: targetId } });
+    } else {
+      alert("❌ Offre introuvable.");
+    }
   } catch (err) {
     alert("❌ Identifiants incorrects ou utilisateur non trouvé");
     console.error(err);
     isLoading.value = false;
   }
 };
+
+// Aller à la création de compte
 const goToSignup = () => {
-  page.value = isRecruteur.value ? "registerRecruteur" : "registerCandidat";
-  router.push(
-    page.value === "registerRecruteur" ? "/registerRecruteur" : "/registerCandidat"
-  );
+  const signupPath = isRecruteur.value ? "/registerRecruteur" : "/registerCandidat";
+  router.push(signupPath);
 };
 </script>
 
@@ -506,7 +534,7 @@ body {
   width: 100%;
 }
 .btn-see-more:hover {
-  background: linear-gradient(135deg, #1d4d7a, #046297);
+  filter: brightness(0.9);
   transform: translateY(-2px);
   box-shadow: 0 8px 16px rgba(2, 74, 140, 0.4);
 } /* Modal Authentification avec effet visuel amélioré */
@@ -873,7 +901,7 @@ input:checked + .slider::before {
 }
 
 .btn-submit:hover:not(:disabled) {
-  background: #0468bf;
+  filter: brightness(0.9);
   transform: translateY(-2px);
 }
 

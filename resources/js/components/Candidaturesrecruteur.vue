@@ -109,18 +109,19 @@
                 <div class="detail-item">
                   <i class="fas fa-calendar" aria-hidden="true"></i>
                   <div>
-                    <span class="label">Date de candidature</span>
+                    <span class="label">Date de candidature : </span>
                     <span class="value">{{ formatDate(c.created_at) }}</span>
                   </div>
                 </div>
-                <div class="detail-item" v-if="c.date_entretien">
+                <div class="detaifl-item" v-if="c.date_entretien">
                   <i class="fas fa-calendar-alt" aria-hidden="true"></i>
                   <div class="card-info-row">
                     <i class="fas fa-handshake" aria-hidden="true"></i>
-                    <p>
-                      <strong>Entretien :</strong>
+
+                    <div>
+                      <span class="label">Entretien : </span>
                       {{ formatDateTime12h(c.date_entretien) }}
-                    </p>
+                    </div>
                   </div>
                 </div>
                 <div class="detail-item" v-if="c.message">
@@ -162,7 +163,14 @@
               >
                 <i class="fas fa-calendar-alt" aria-hidden="true"></i> Planifier entretien
               </button>
-
+              <button
+                v-if="c.statut === 'entretien'"
+                @click="planifierEntretien(c)"
+                class="planifierentretien"
+                aria-label="Planifier un entretien"
+              >
+                <i class="fas fa-calendar-alt" aria-hidden="true"></i> Planifier entretien
+              </button>
               <button type="button" @click="voirDetails(c)" class="primary-btn">
                 <i class="fas fa-eye"></i> Voir détails
               </button>
@@ -336,7 +344,6 @@ onMounted(getCandidatures);
 }
 
 .candidatures-container:hover {
-  transform: translateY(-5px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
@@ -375,10 +382,6 @@ onMounted(getCandidatures);
   color: #3f51b5;
   font-size: 1.6rem;
   transition: transform 0.3s ease;
-}
-
-.header-actions:hover h2 i {
-  transform: scale(1.1);
 }
 
 .actions-zone {
@@ -560,7 +563,6 @@ onMounted(getCandidatures);
 }
 
 .candidature-card:hover {
-  transform: translateY(-4px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
   border-left-width: 5px;
 }
@@ -852,6 +854,8 @@ onMounted(getCandidatures);
   padding: 0.5rem 1rem;
   display: flex;
   background: linear-gradient(135deg, #5090f6, #2563eb, #1d4ed8);
+  transition: filter 0.2s ease;
+
   color: white;
   border: none;
   position: relative;
@@ -867,7 +871,7 @@ onMounted(getCandidatures);
 
 .primary-btn:hover,
 .planifierentretien:hover {
-  background: #2980b9;
+  filter: brightness(0.8);
 }
 
 .primary-btn i {

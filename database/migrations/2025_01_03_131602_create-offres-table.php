@@ -14,9 +14,10 @@ return new class extends Migration
         Schema::create('offres', function (Blueprint $table) {
             $table->id();
             $table->string('type')->nullable();
-            $table->string('description')->nullable();
             $table->string('salaire')->nullable();
             $table->string('titre')->nullable();
+            $table->longText('description'); // Jusqu'à 4 Go de texte (rarement nécessaire)
+
             $table->string('details')->nullable();
 
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');

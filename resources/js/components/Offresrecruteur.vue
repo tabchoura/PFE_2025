@@ -346,20 +346,25 @@ const formatSalaire = (s) => s || "Non précisé";
   border-radius: 0.5rem;
   font-weight: 500;
   cursor: pointer;
+
   transition: background-color 0.2s;
 }
 .btn-modifier {
   background: linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8);
+
   color: #fff;
 }
 .btn-modifier:hover {
   background-color: #417aa5;
+  filter: brightness(0.8);
 }
 .btn-supprimer {
   background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
   color: #fff;
 }
 .btn-supprimer:hover {
+  filter: brightness(0.8);
+
   background-color: #dc2626;
 }
 

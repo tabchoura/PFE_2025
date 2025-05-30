@@ -12,6 +12,8 @@ use App\Jobs\EvaluateCvEmbedding;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\EntretienPlanifie;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
+
 
 
 class CandidatureController extends Controller
@@ -107,52 +109,55 @@ public function postuler(Request $request, $id)
     ---------------------------------------------
      * 3. Envoyer un entretien à un candidat
      * ------------------------------------------------------------------ */
-
-public function envoyerEntretien(Request $request, $id)
-{
-    // Validation de la date d'entretien au format d/m/Y
-    $validated = $request->validate([
-        'date_entretien' => ['required', 'date_format:d/m/Y'],  // Validation stricte au format jj/mm/aaaa
-    ]);
-
-    // Si la date est valide, elle sera déjà dans le bon format, vous pouvez la convertir si nécessaire
-    //  Carbon pour être sûr que le format est correct
-    $validated['date_entretien'] = Carbon::createFromFormat('d/m/Y', $validated['date_entretien'])->format('Y-m-d');
-
-    // 1. On récupère la candidature et on la met à jour
-    $candidature = Candidature::with('cv')->findOrFail($id);
-    $candidature->update([
-        'date_entretien' => $validated['date_entretien'],
-        'statut'         => 'entretien',
-    ]);
-
-    // 2. On récupère l'email dans le CV lié
-    $recipientEmail = $candidature->cv->email;
-    if (!filter_var($recipientEmail, FILTER_VALIDATE_EMAIL)) {
-        return response()->json([
-            'message' => 'L’adresse e-mail du candidat est invalide.',
-        ], 422);
-    }
-
-    // 3. On envoie l’email à cet e-mail
-    Mail::to($recipientEmail)
-        ->send(new EntretienPlanifie($candidature));
-
-    return response()->json([
-        'message'        => 'Date d’entretien enregistrée et email envoyé à '.$recipientEmail,
-        'date_entretien' => $candidature->date_entretien,
-        'candidature'    => $candidature,
-    ], 200);
-}
-
-
-
     public function index()
     {
         return response()->json(
             Candidature::with(['offre', 'cv'])->get()
         );
     }
+
+public function envoyerEntretien(Request $request, $id)
+{
+    // 0️⃣ Logging du payload brut
+    Log::info('envoyerEntretien payload', $request->all());
+
+  
+        // 1️⃣ Validation des champs
+        $validated = $request->validate([
+            'date_entretien' => ['required', 'date_format:d/m/Y H:i'],
+            'lien_visio'     => ['required', 'url'],
+        ]);
+        
+        Log::info('Validation OK', $validated);
+        // 2️⃣ Combinaison date + heure en Carbon
+        $dt = Carbon::createFromFormat('d/m/Y H:i', $validated['date_entretien']);
+        Log::info('Carbon parsed', ['datetime' => $dt->toDateTimeString()]);
+
+        // 3️⃣ Mise à jour de la candidature
+        $candidature = Candidature::findOrFail($id);
+        $candidature->update([
+            'date_entretien' => $dt->format('Y-m-d H:i:s'),
+            'lien_visio'     => $validated['lien_visio'],
+            'statut'         => 'entretien',
+        ]);
+
+        // 4️⃣ Envoi de l’email uniquement si le CV et son email existent
+        if ($candidature->cv && $candidature->cv->email) {
+            Mail::to($candidature->cv->email)
+                ->send(new EntretienPlanifie($candidature));
+        } else {
+            Log::warning("La candidature $id n'a pas de CV ou d'email valide pour l'envoi du mail.");
+        }
+
+        // 5️⃣ Réponse JSON
+        return response()->json([
+            'message'     => 'Entretien planifié et email envoyé.',
+            'candidature' => $candidature,
+        ], 200);
+
+        
+  
+}
 
     /* ------------------------------------------------------------------
      * 6. Supprimer une candidature

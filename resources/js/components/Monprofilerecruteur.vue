@@ -10,7 +10,6 @@
       <!-- Affichage des détails du profil -->
       <ul class="profil-details" v-if="!editMode">
         <li><strong>Nom de la Société :</strong> {{ profile.nomsociete }}</li>
-        <li><strong>Département de la Société :</strong> {{ profile.departement }}</li>
         <li><strong>Email :</strong> {{ profile.email }}</li>
         <li><strong>CIN :</strong> {{ profile.cin }}</li>
         <li><strong>Numéro de téléphone :</strong> {{ profile.phone }}</li>
@@ -158,6 +157,32 @@
             >✓</span
           >
         </div>
+        <div
+          class="input-group"
+          @mouseenter="showHint('Localisation')"
+          @mouseleave="hideHint('Localisation')"
+        >
+          <label for="localisation">Localisation</label>
+          <input
+            type="text"
+            v-model="formData.localisation"
+            id="localisation"
+            placeholder="Écrire votre localisation"
+            :class="{
+              'input-error': errors.localisation,
+              'input-valid': validFields.localisation,
+            }"
+            @input="validateField('localisation')"
+          />
+          <span class="error-message" v-if="errors.localisation">{{
+            errors.localisation
+          }}</span>
+          <span
+            class="valid-icon"
+            v-if="formData.localisation && validFields.localisation"
+            >✓</span
+          >
+        </div>
 
         <div class="form-actions">
           <button type="submit" class="btn-save">💾 Enregistrer</button>
@@ -187,7 +212,6 @@ const profile = ref({
   cin: "",
   phone: "",
   nomsociete: "",
-  departement: "",
   localisation: "",
   siteweb: "",
 });
@@ -217,7 +241,6 @@ async function loadProfileData() {
         nom: user.nom || "",
         prenom: user.prenom || "",
         nomsociete: user.nomsociete || "",
-        departement: user.departement || "",
         email: user.email || "",
         cin: user.cin || "",
         phone: user.phone || "",
@@ -285,10 +308,6 @@ function showSuccessMessage(msg) {
 
 onMounted(loadProfileData);
 </script>
-
-<style scoped>
-/* Ajoutez vos styles ici */
-</style>
 
 <style scoped>
 .page-wrapper {
@@ -391,6 +410,7 @@ onMounted(loadProfileData);
   padding: 1rem;
   width: 100%;
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  transition: filter 0.2s ease;
   color: white;
   border: none;
   border-radius: 8px;
@@ -401,7 +421,7 @@ onMounted(loadProfileData);
 }
 
 .btn-edit:hover {
-  background: #2563eb;
+  filter: brightness(0.8f);
 }
 
 /* ===== Formulaire d’édition ===== */
@@ -513,8 +533,7 @@ input:focus {
 }
 
 .btn-save:hover {
-  background: #059669;
-  transform: translateY(-2px);
+  filter: brightness(0.8);
   box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
 }
 

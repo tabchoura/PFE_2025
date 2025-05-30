@@ -35,12 +35,16 @@ return new class extends Migration
 
         
     }
+public function down()
+{
+    Schema::table('cvs', function (Blueprint $table) {
+        $table->dropForeign(['user_id']); // supprime la contrainte FK
+    });
+    Schema::dropIfExists('cvs');
+}
 
     /**
      * Reverse the migrations.
      */
-    public function down(): void
-    {
-        //
-    }
+  
 };

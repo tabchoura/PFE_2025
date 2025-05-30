@@ -54,7 +54,7 @@ class UserController extends Controller
             'password'      =>Hash::make($request->password),
             'nomsociete'=> $request->nomsociete,
             'localisation'=> $request->localisation,
-            'departement'=> $request->departement,
+
 
 
     
@@ -76,7 +76,6 @@ public function update(User $user,Request $request ){
        // 'dateentretien' => 'date',
         'cin'           => 'nullable|string|max:20',
         'email'         => 'nullable|string|max:20',
-'departement'=>'nullable|string|max:20',
         'poste'         => 'nullable|string|max:255',
         //'nb_offres'     => 'integer|min:0',
        // 'nbvalidation'  => 'integer|min:0',
@@ -108,7 +107,6 @@ public function update(User $user,Request $request ){
         'siteweb'=>$request->siteweb,
         'nomsociete'=>$request->nomsociete,
         'localisation'=>$request->localisation,
-        'departement'=>$request->departement,
 
 
 

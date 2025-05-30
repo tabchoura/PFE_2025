@@ -21,17 +21,14 @@ class AuthController extends Controller
             'date_naissance' => 'date',
             'nomsociete' => 'nullable|string',
             'lieudenaissance' => 'string',
+            'localisation'=>'string',
             'siteweb' => 'string',
             'cin' => 'required|string',
             'phone' => 'string',
-            'departement' => 'string',
-            'description' => 'string',
         ]);
     
         $user = User::create([
             'siteweb' => $request->siteweb,
-            'departement' => $request->departement,
-            'description' => $request->description,
             'nom' => $request->nom,
             'prenom' => $request->prenom,
             'nomsociete' => $request->nomsociete,
@@ -43,6 +40,8 @@ class AuthController extends Controller
             'datedepot' => now(), // Assuming this is a timestamp field
             'date_naissance' => $request->date_naissance,
             'lieudenaissance' => $request->lieudenaissance,
+            'localisation'=>$request->localisation,
+        
         ]);
     
         return response()->json([

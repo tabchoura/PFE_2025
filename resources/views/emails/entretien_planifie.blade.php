@@ -7,11 +7,13 @@
 <body>
   <p>Bonjour {{ $prenom }},</p>
 
-  <p>Votre entretien pour le poste <strong>{{ $titreOffre }}</strong> est fixé au <strong>{{ $date }}</strong>.</p>
+  <p>
+    Votre entretien pour le poste <strong>{{ $titreOffre }}</strong> est fixé le <strong>{{ $date }}</strong>.
+  </p>
 
-  @if($lienVisio)
-    <p>Connectez-vous via ce lien : <a href="{{ $lienVisio }}">{{ $lienVisio }}</a></p>
-  @endif
+  <p>
+    Connectez-vous via ce lien : <a href="{{ $lienVisio }}">{{ $lienVisio }}</a>
+  </p>
 
   <p>À bientôt,<br>L’équipe Jobgo</p>
 </body>

@@ -1,10 +1,10 @@
 <?php
-
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Carbon\Carbon;
 use App\Models\Candidature;
 
 class EntretienPlanifie extends Mailable
@@ -18,16 +18,21 @@ class EntretienPlanifie extends Mailable
         $this->candidature = $candidature;
     }
 
-    public function build()
-    {
-        return $this
-            ->subject('Votre entretien Jobgo est planifié')
-            ->view('emails.entretien_planifie')
-            ->with([
-                'prenom'     => $this->candidature->cv->prenom,
-                'titreOffre' => $this->candidature->offre->titre,
-                'date'       => $this->candidature->date_entretien->format('d/m/Y H:i'),
-                'lienVisio'  => $this->candidature->lien_visio ?? null,
-            ]);
-    }
+public function build()
+{
+    // On transforme l'objet Carbon en chaîne formatée
+    $dt = Carbon::parse($this->candidature->date_entretien)
+                ->locale('fr')
+                ->setTimezone('Europe/Paris');
+
+    return $this
+        ->subject('Votre entretien Jobgo est planifié')
+        ->view('emails.entretien_planifie')
+        ->with([
+            'prenom'     => $this->candidature->cv->prenom,
+            'titreOffre' => $this->candidature->offre->titre,
+            'date'       => $dt->translatedFormat('d F Y'),
+            'lienVisio'  => $this->candidature->lien_visio ?? null,
+        ]);
+}
 }

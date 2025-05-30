@@ -29,7 +29,7 @@ import Mesoffres from '../components/Mesoffres.vue';
 import Creercv from '../components/Creercv.vue';
 // import Aftercvpostuler from '../components/Aftercvpostuler.vue'
 import DetailsCandidature from '../components/DetailsCandidature.vue';
-
+import detailsoffre_recruteur from '../components/detailsoffre_recruteur.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -141,6 +141,21 @@ const routes = [
   { path: '/supprimeroffre/:id', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
     { path: '', name: 'Supprimeroffre', component: Supprimeroffre ,  props: true, }
   ]},
+
+
+
+  {  path: '/recruteur/offres/:id',
+ component: CompteRecruteur, meta: { requiresAuth: true }, children: [
+    { path: '',   name: 'RecruteurVoirdetails',  component: detailsoffre_recruteur,
+  props: true, }
+  ]},
+
+   { path:'/candidat/offres/:id', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '',  name: 'CandidatVoirdetails',
+  component: Voirdetails,
+  props: true, }
+  ]},
+
 
   // Détails de l'offre
 

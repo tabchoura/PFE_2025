@@ -1,6 +1,5 @@
 <template>
   <div class="page-wrapper">
-    <!-- Grande carte blanche contenant tout le contenu -->
     <div class="profil-container mes-offres">
       <h1>Mes offres enregistrées</h1>
 
@@ -22,22 +21,38 @@
         </router-link>
       </div>
 
-      <!-- Liste animée des offres -->
+      <!-- Liste des offres -->
       <div v-else class="offers-grid">
-        <div v-for="offer in offers" :key="offer.id" class="offer-card">
+        <div v-for="off in offers" :key="off.id" class="offer-card">
           <div class="offer-content">
-            <h2>{{ offer.titre }}</h2>
-            <p class="offer-description">{{ offer.description }}</p>
+            <h2>{{ off.titre }}</h2>
+            <p class="offer-description">{{ off.description }}</p>
             <div class="offer-details">
-              <p class="salary"><span>Salaire:</span> {{ offer.salaire }}</p>
-              <p class="details"><span>Détails:</span> {{ offer.details }}</p>
+              <p class="salary"><span>Salaire:</span> {{ off.salaire }}</p>
+              <p class="details"><span>Détails:</span> {{ off.details }}</p>
             </div>
           </div>
           <div class="offer-actions">
-            <button @click="supprimerEnregistrement(offer.id)" class="delete-btn">
+            <button @click="confirmDeletion(off)" class="delete-btn">
               <span class="delete-icon">🗑️</span>
               <span>Supprimer</span>
             </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal de confirmation -->
+      <div v-if="showConfirmModal" class="modal-overlay" @click="cancelDeletion">
+        <div class="modal-content" @click.stop>
+          <h3>Confirmation de suppression</h3>
+          <p>
+            Êtes-vous sûr de vouloir supprimer l'offre
+            <strong>{{ selectedOffer.titre }}</strong> ?
+          </p>
+          <p class="modal-warning">Cette action est irréversible.</p>
+          <div class="modal-actions">
+            <button @click="cancelDeletion" class="btn-cancel">Annuler</button>
+            <button @click="confirmAndDelete" class="btn-confirm">Supprimer</button>
           </div>
         </div>
       </div>
@@ -49,11 +64,14 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
+import { useToast } from "vue-toastification";
 
 const offers = ref([]);
 const error = ref(null);
 const loading = ref(true);
-const router = useRouter();
+const showConfirmModal = ref(false);
+const selectedOffer = ref(null);
+const toast = useToast();
 
 async function getUserSelectedOffers() {
   loading.value = true;
@@ -69,29 +87,35 @@ async function getUserSelectedOffers() {
   }
 }
 
-async function supprimerEnregistrement(offerId) {
+function confirmDeletion(offer) {
+  selectedOffer.value = offer;
+  showConfirmModal.value = true;
+}
+
+function cancelDeletion() {
+  showConfirmModal.value = false;
+  selectedOffer.value = null;
+}
+
+async function confirmAndDelete() {
   try {
-    const response = await axios.delete(`/api/offreenregistrer/${offerId}`);
+    const id = selectedOffer.value.id;
+    const response = await axios.delete(`/api/offreenregistrer/${id}`);
     if (response.status === 200) {
-      offers.value = offers.value.filter((o) => o.id !== offerId);
-      // notification manuelle
-      const notif = document.createElement("div");
-      notif.className = "success-notification";
-      notif.textContent = "Offre supprimée avec succès !";
-      document.body.appendChild(notif);
-      setTimeout(() => {
-        notif.classList.add("fade-out");
-        setTimeout(() => document.body.removeChild(notif), 500);
-      }, 3000);
+      offers.value = offers.value.filter((o) => o.id !== id);
+      toast.success("Offre supprimée avec succès");
     }
   } catch (err) {
-    console.error("Erreur lors de la suppression de l'offre:", err);
-    error.value = "Une erreur est survenue lors de la suppression de l'offre.";
+    console.error("Erreur lors de la suppression:", err);
+    toast.error("Erreur lors de la suppression");
+  } finally {
+    cancelDeletion();
   }
 }
 
 onMounted(getUserSelectedOffers);
 </script>
+
 <style scoped>
 /* === BASE STYLES === */
 .page-wrapper {
@@ -102,10 +126,8 @@ onMounted(getUserSelectedOffers);
 .offers-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1.5rem;
+  gap: 7.5rem;
 }
-
-/* === MAIN CONTAINER === */
 .profil-container {
   max-width: 1600px;
   margin: 0 auto;
@@ -115,7 +137,6 @@ onMounted(getUserSelectedOffers);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 10px 15px -3px rgba(0, 0, 0, 0.08);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 .profil-container:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 20px 40px rgba(0, 0, 0, 0.15);
@@ -130,7 +151,6 @@ onMounted(getUserSelectedOffers);
   position: relative;
   padding-bottom: 0.5rem;
 }
-
 .mes-offres h1::after {
   content: "";
   position: absolute;
@@ -150,7 +170,6 @@ onMounted(getUserSelectedOffers);
   justify-content: center;
   padding: 3rem 0;
 }
-
 .loading-spinner {
   width: 50px;
   height: 50px;
@@ -160,7 +179,6 @@ onMounted(getUserSelectedOffers);
   animation: spin 1s linear infinite;
   margin-bottom: 1.5rem;
 }
-
 .loading p {
   color: #3b82f6;
   font-size: 1.1rem;
@@ -176,13 +194,10 @@ onMounted(getUserSelectedOffers);
   text-align: center;
   margin-bottom: 2rem;
 }
-
 .error-icon {
   font-size: 2.5rem;
   margin-bottom: 1rem;
-  display: inline-block;
 }
-
 .retry-button {
   background: #ef4444;
   color: white;
@@ -192,11 +207,7 @@ onMounted(getUserSelectedOffers);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
 }
-
 .retry-button:hover {
   background: #dc2626;
   transform: translateY(-1px);
@@ -210,20 +221,17 @@ onMounted(getUserSelectedOffers);
   border-radius: 12px;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
 }
-
 .empty-state-icon {
   font-size: 3.5rem;
   color: #9ca3af;
   margin-bottom: 1.5rem;
   opacity: 0.7;
 }
-
 .no-offers p {
   color: #64748b;
   font-size: 1.1rem;
   margin-bottom: 1.5rem;
 }
-
 .browse-offers-btn {
   display: inline-flex;
   align-items: center;
@@ -234,24 +242,13 @@ onMounted(getUserSelectedOffers);
   border-radius: 8px;
   text-decoration: none;
   font-weight: 600;
-  transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 }
-
 .browse-offers-btn:hover {
-  background: #2563eb;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+  filter: brightness(0.8);
 }
 
-/* === OFFERS GRID === */
-.offers-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-top: 2rem;
-}
-
+/* === OFFER CARD === */
 .offer-card {
   width: 400px;
   display: flex;
@@ -267,129 +264,109 @@ onMounted(getUserSelectedOffers);
   transform: translateY(-4px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
-
-.offer-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
-  border-color: #cbd5e1;
-}
-
 .offer-content {
   padding: 1.5rem;
   flex: 1;
 }
-
 .offer-content h2 {
   color: #1e3a8a;
   font-size: 1.25rem;
   font-weight: 700;
   margin-bottom: 0.75rem;
-  line-height: 1.4;
 }
-
 .offer-description {
   color: #475569;
   font-size: 0.95rem;
-  line-height: 1.6;
   margin-bottom: 1.25rem;
 }
-
 .offer-details p {
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
   color: #64748b;
   display: flex;
 }
-
 .offer-details span {
   font-weight: 600;
   color: #334155;
   min-width: 70px;
   display: inline-block;
 }
-
 .salary span {
   color: #065f46 !important;
 }
-
-/* === OFFER ACTIONS === */
 .offer-actions {
   padding: 1rem 1.5rem;
   background: #f8fafc;
   border-top: 1px solid #e2e8f0;
 }
-
 .delete-btn {
   background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
   border: none;
   border-radius: 8px;
   padding: 10px;
   display: flex;
-  margin-left: auto;
-
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
   color: white;
 }
-
 .delete-btn:hover {
-  background: #fef2f2;
-  color: #dc2626;
-  border-color: #fca5a5;
+  filter: brightness(0.8);
   transform: translateY(-1px);
 }
 
-/* === TRANSITIONS === */
-.offer-list-enter-active,
-.offer-list-leave-active {
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.offer-list-enter-from,
-.offer-list-leave-to {
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-/* === NOTIFICATION === */
-.success-notification {
+.modal-overlay {
   position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  background: white;
-  color: #065f46;
-  padding: 1rem 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.1);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: center;
   z-index: 1000;
-  border-left: 4px solid #10b981;
-  animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-out;
 }
 
-.fade-out {
-  animation: fadeOut 0.5s ease-out forwards;
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }
-
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
+.modal-warning {
+  color: #b91c1c;
+  font-weight: 600;
+  margin-top: 0.5rem;
 }
-
-@keyframes fadeOut {
-  to {
-    opacity: 0;
-  }
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+.btn-cancel {
+  background: transparent;
+  border: 1px solid #64748b;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.btn-confirm {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.btn-confirm:hover {
+  filter: brightness(0.9);
 }
 
 @keyframes spin {
@@ -403,34 +380,23 @@ onMounted(getUserSelectedOffers);
   .page-wrapper {
     padding: 1rem;
   }
-
   .profil-container {
     padding: 1.75rem;
   }
-
   .mes-offres h1 {
     font-size: 1.75rem;
   }
-
-  .offers-container {
+  .offers-grid {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
 }
-
 @media (max-width: 480px) {
   .profil-container {
     padding: 1.5rem;
   }
-
   .no-offers {
     padding: 2rem 1.5rem;
-  }
-
-  .success-notification {
-    bottom: 1rem;
-    right: 1rem;
-    left: 1rem;
-    width: calc(100% - 2rem);
   }
 }
 </style>

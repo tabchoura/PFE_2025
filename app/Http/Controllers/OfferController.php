@@ -31,12 +31,13 @@ class OfferController extends Controller
  public function store(Request $request)
 {
     // Validation
-    $validated = $request->validate([
-        'titre'       => 'required|string|max:255',
-        'description' => 'required|string|max:10000',
-        'salaire'     => 'nullable|string',
-        'details'     => 'nullable|string|max:10005',
-    ]);
+  $validated = $request->validate([
+    'titre'       => 'required|string|max:255',
+    'description' => 'required|string|max:65535', // Valeur réaliste pour un champ TEXT (65kB max environ)
+    'salaire'     => 'nullable|string|max:255',   // Facultatif, mais éviter les champs illimités par défaut
+    'details'     => 'nullable|string|max:10000', // 10005 est un peu arbitraire, mieux vaut arrondir
+]);
+
 
     $offre = Offre::create($validated);
 

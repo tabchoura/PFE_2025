@@ -295,8 +295,7 @@ onMounted(async () => {
 }
 
 .ajouter-button:hover {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  transform: translateY(-2px);
+  filter: brightness(0.8);
   box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
 }
 
@@ -385,15 +384,15 @@ onMounted(async () => {
 }
 
 .action-button.view:hover {
-  background: #2563eb;
+  filter: brightness(0.8);
 }
 
 .action-button.edit:hover {
-  background: #ca8a04;
+  filter: brightness(0.8);
 }
 
 .action-button.delete:hover {
-  background: #dc2626;
+  filter: brightness(0.8);
 }
 
 /* === EMPTY STATE === */
