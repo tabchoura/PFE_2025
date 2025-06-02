@@ -13,23 +13,16 @@ return new class extends Migration
     {
         Schema::create('offres', function (Blueprint $table) {
             $table->id();
-            $table->string('type')->nullable();
+            // $table->string('type')->nullable();
             $table->string('salaire')->nullable();
             $table->string('titre')->nullable();
-            $table->longText('description'); // Jusqu'à 4 Go de texte (rarement nécessaire)
+            $table->longText('description');
 
             $table->string('details')->nullable();
 
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
 
-          //  $table->string('salaire')->nullable();  
-            //      $table->unsignedBigInteger('user_id')->nullable()->change(); // Rendre la colonne nullable
-
-            
-            //$table->foreign('user_id')  // Définition de la clé étrangère
-              //    ->references('id')
-                //  ->on('users')
-                  //->onDelete('cascade');
+        
                   
             $table->timestamps();
         });
@@ -40,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('offres'); // Supprime la table lors du rollback
+        Schema::dropIfExists('offres'); 
     }
 };

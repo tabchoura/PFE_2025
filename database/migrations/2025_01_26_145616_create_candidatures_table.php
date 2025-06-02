@@ -26,7 +26,7 @@ class CreateCandidaturesTable extends Migration
             $table->timestamp('date_entretien')->nullable();
             $table->string('lien_visio')->nullable();
             
-            $table->timestamps(); // created_at et updated_at
+            $table->timestamps();
         });
     }
 

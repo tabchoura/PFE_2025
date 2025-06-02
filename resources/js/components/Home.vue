@@ -1,32 +1,3 @@
-<script setup>
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import home from "../../assets/recrutementapp.png";
-import candidat from "../../assets/candidat.jpg";
-import recruteur from "../../assets/recruteur.jpg";
-
-const showPopup = ref(false);
-const isRecruteur = ref("");
-const router = useRouter();
-
-function togglePopup() {
-  showPopup.value = true;
-}
-
-const closePopup = () => {
-  showPopup.value = false;
-  isRecruteur.value = "";
-};
-
-const continueAs = () => {
-  if (isRecruteur.value === "candidat") {
-    router.push("/RegisterCandidat");
-  } else if (isRecruteur.value === "recruteur") {
-    router.push("/RegisterRecruteur");
-  }
-};
-</script>
-
 <template>
   <div class="hero-section">
     <div class="text-content">
@@ -40,7 +11,6 @@ const continueAs = () => {
       </p>
       <button @click="togglePopup" class="btn">Commencer par ici</button>
 
-      <!-- ✅ POPUP -->
       <div v-if="showPopup" class="popup-overlay">
         <div class="popup-box" role="dialog" aria-modal="true">
           <button class="close-btn" @click="closePopup" aria-label="Fermer la fenêtre">
@@ -53,7 +23,6 @@ const continueAs = () => {
             role="radiogroup"
             aria-label="Choix de type d'utilisateur"
           >
-            <!-- Option Candidat -->
             <label
               class="radio-option"
               :class="{ active: isRecruteur === 'candidat' }"
@@ -70,7 +39,6 @@ const continueAs = () => {
               <span>Candidat</span>
             </label>
 
-            <!-- Option Recruteur -->
             <label
               class="radio-option"
               :class="{ active: isRecruteur === 'recruteur' }"
@@ -100,6 +68,34 @@ const continueAs = () => {
     </div>
   </div>
 </template>
+<script setup>
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import home from "../../assets/recrutementapp.png";
+import candidat from "../../assets/candidat.jpg";
+import recruteur from "../../assets/recruteur.jpg";
+
+const showPopup = ref(false);
+const isRecruteur = ref("");
+const router = useRouter();
+
+function togglePopup() {
+  showPopup.value = true;
+}
+
+const closePopup = () => {
+  showPopup.value = false;
+  isRecruteur.value = "";
+};
+
+const continueAs = () => {
+  if (isRecruteur.value === "candidat") {
+    router.push("/RegisterCandidat");
+  } else if (isRecruteur.value === "recruteur") {
+    router.push("/RegisterRecruteur");
+  }
+};
+</script>
 
 <style scoped>
 /* ===== Hero Section ===== */

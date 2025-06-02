@@ -8,7 +8,6 @@
     >
       <h1 class="title">Postuler à l'offre</h1>
 
-      <!-- Chargement -->
       <div
         v-if="loading"
         class="loading-container"
@@ -20,7 +19,6 @@
         <p class="loading-text">Chargement ...</p>
       </div>
 
-      <!-- Si pas de CV -->
       <div
         v-else-if="cvs.length === 0"
         class="empty-state"
@@ -40,7 +38,6 @@
         </button>
       </div>
 
-      <!-- Etat de confirmation -->
       <div v-else class="confirmation-state" role="region" aria-live="polite">
         <div class="offre-info" v-if="detailsoffre">
           <h3 class="offre-title">{{ detailsoffre.titre }}</h3>
@@ -82,7 +79,6 @@
           </div>
         </div>
 
-        <!-- Message de confirmation -->
         <div class="confirmation-message">
           <p>Êtes-vous sûr de vouloir postuler à cette offre ?</p>
 
@@ -123,7 +119,6 @@
         </div>
       </div>
 
-      <!-- Message d'erreur -->
       <div
         v-show="error"
         class="error-message"
@@ -142,8 +137,6 @@
           ×
         </button>
       </div>
-
-      <!-- Message de succès -->
     </div>
   </div>
 </template>
@@ -200,8 +193,6 @@ onMounted(async () => {
 });
 
 async function confirmPostuler() {
-  error.value = null;
-  success.value = null;
   const offerId = route.params.id;
   const cvId = selectedCvId.value || (cvs.value.length > 0 ? cvs.value[0].id : null);
 
@@ -222,7 +213,7 @@ async function confirmPostuler() {
     toast.success("Candidature envoyée avec succès !");
     router.push("/candidature");
   } catch (e) {
-    error.value = e.response?.data?.message || "Erreur lors de la candidature";
+    toast.error("Erreur lors de la candidature");
     await nextTick();
     postulerContainer.value?.focus();
   } finally {
@@ -236,14 +227,6 @@ function Creercv() {
 
 function cancel() {
   router.back();
-}
-
-function goToCandidatures() {
-  router.push("/candidature");
-}
-
-function goToOffers() {
-  router.push({ name: "Offres" });
 }
 </script>
 

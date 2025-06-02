@@ -9,7 +9,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('offres', function (Blueprint $table) {
-            // Embedding sémantique de la description
             $table->json('embedding')->nullable()->after('description');
         });
     }

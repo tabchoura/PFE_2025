@@ -1,7 +1,6 @@
 <template>
   <div class="login-container">
     <div class="login-card">
-      <!-- IMAGE SECTION -->
       <div class="image-section">
         <img :src="logincandidat" alt="Recrutement" class="login-image" />
         <div class="overlay">
@@ -12,7 +11,6 @@
         </div>
       </div>
 
-      <!-- FORM SECTION -->
       <div class="form-section">
         <form @submit.prevent="login" class="login-form" novalidate>
           <div class="form-header">
@@ -20,12 +18,10 @@
             <p class="login-subtitle">Accédez à votre espace personnel</p>
           </div>
 
-          <!-- Email Field -->
           <div class="form-group">
             <label for="email">Email</label>
             <div class="input-wrapper">
               <span class="input-icon">
-                <!-- Email Icon SVG -->
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -54,12 +50,10 @@
             <p v-if="errors.email" class="error-message">{{ errors.email }}</p>
           </div>
 
-          <!-- Password Field -->
           <div class="form-group">
             <label for="password">Mot de passe</label>
             <div class="input-wrapper password-input-container">
               <span class="input-icon">
-                <!-- Lock Icon SVG -->
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -93,7 +87,6 @@
                 "
               >
                 <span v-if="showPassword">
-                  <!-- Eye Off Icon SVG -->
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -111,7 +104,6 @@
                   </svg>
                 </span>
                 <span v-else>
-                  <!-- Eye Icon SVG -->
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -153,23 +145,11 @@
             >
           </div>
 
-          <!-- Submit Button -->
           <button type="submit" :disabled="isLoading" class="login-button">
             <span v-if="isLoading" class="loading-spinner"></span>
             <span v-else>Se connecter</span>
           </button>
         </form>
-
-        <!-- Notifications -->
-        <div v-if="errorMessage" class="error-notification">
-          <span class="error-icon">...</span>
-          {{ errorMessage }}
-          <button @click="errorMessage = ''" class="close-error">×</button>
-        </div>
-        <div v-if="successMessage" class="success-notification">
-          <span class="success-icon">...</span>
-          {{ successMessage }}
-        </div>
       </div>
     </div>
   </div>
@@ -180,8 +160,9 @@ import { ref } from "vue";
 import axios from "axios";
 import logincandidat from "../../assets/logincandidat.jpg";
 import { useRouter, useRoute } from "vue-router";
-
+import { useToast } from "vue-toastification";
 const router = useRouter();
+const toast = useToast();
 const route = useRoute();
 const email = ref("");
 const password = ref("");
@@ -193,20 +174,20 @@ const isLoading = ref(false);
 const showPassword = ref(false);
 
 const validateForm = () => {
-  errors.value.email = "";
-  errors.value.password = "";
+  // errors.value.email = "";
+  // errors.value.password = "";
   let valid = true;
 
   if (!email.value) {
     errors.value.email = "L'email est requis";
     valid = false;
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-    errors.value.email = "Format d'email invalide";
+    toast.error("Format d'email invalide");
     valid = false;
   }
 
   if (!password.value) {
-    errors.value.password = "Le mot de passe est requis";
+    toast.error("Le mot de passe est requis");
     valid = false;
   }
 
@@ -217,7 +198,6 @@ const login = async () => {
   if (!validateForm()) return;
 
   isLoading.value = true;
-  errorMessage.value = "";
 
   try {
     await axios.get("/sanctum/csrf-cookie");
@@ -242,9 +222,9 @@ const login = async () => {
     }, 1500);
   } catch (err) {
     if (err.response && err.response.status === 401) {
-      errorMessage.value = "Identifiants incorrects ou utilisateur non trouvé";
+      toast.error("Identifiants incorrects ou utilisateur non trouvé");
     } else {
-      errorMessage.value = "Une erreur est survenue. Veuillez réessayer.";
+      toast.error = "Une erreur est survenue. Veuillez réessayer.";
     }
   } finally {
     isLoading.value = false;

@@ -2,7 +2,6 @@
   <div class="page-wrapper">
     <div class="offers-container">
       <div class="offers-section">
-        <!-- Header -->
         <div class="header-actions">
           <h2>Liste des offres</h2>
           <button
@@ -14,7 +13,6 @@
           </button>
         </div>
 
-        <!-- Loading / Error / Empty -->
         <div v-if="loading" class="loading-state">
           <div class="loading-spinner"></div>
           <p>Chargement des offres...</p>
@@ -29,7 +27,6 @@
           <p>Aucune offre disponible pour le moment</p>
         </div>
 
-        <!-- Grille des offres -->
         <div v-else class="offers-grid">
           <div class="offer-card" v-for="offer in offres" :key="offer.id">
             <div class="offer-card-header">
@@ -63,7 +60,6 @@
           </div>
         </div>
 
-        <!-- Popup de confirmation -->
         <div v-if="showModal" class="modal-overlay">
           <div class="modal-card">
             <h2>Confirmer la suppression</h2>
@@ -99,12 +95,10 @@ const error = ref(null);
 const router = useRouter();
 const toast = useToast();
 
-// Popup state
 const showModal = ref(false);
 const offerToDelete = ref(null);
 const deleting = ref(false);
 
-// Récupérer les offres
 const getOffres = async () => {
   loading.value = true;
   error.value = null;
@@ -122,23 +116,19 @@ const getOffres = async () => {
 
 onMounted(getOffres);
 
-// Navigation
 const ajouterOffre = () => router.push("/ajouteroffre");
 const modifierOffre = (id) => router.push(`/modifieroffre/${id}`);
 
-// Ouvrir popup
 const confirmDelete = (offer) => {
   offerToDelete.value = offer;
   showModal.value = true;
 };
 
-// Annuler suppression
 const cancelDelete = () => {
   showModal.value = false;
   offerToDelete.value = null;
 };
 
-// Supprimer l'offre
 const supprimerOffre = async () => {
   deleting.value = true;
   try {
@@ -154,7 +144,6 @@ const supprimerOffre = async () => {
   }
 };
 
-// Utilitaires
 const truncateText = (text, max) =>
   text && text.length > max ? text.slice(0, max) + "…" : text || "";
 const formatSalaire = (s) => s || "Non précisé";

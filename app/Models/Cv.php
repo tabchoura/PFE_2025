@@ -10,10 +10,8 @@ class Cv extends Model
     use HasFactory;
 
     // Définir le nom de la table si ce n'est pas conventionnel
-    protected $table = 'cvs';  // Assurez-vous que la table est bien nommée 'cvs' dans votre base de données
-
-    // Assurez-vous que les champs protégés sont corrects
-    protected $guarded = [];  // Vous pouvez aussi utiliser $fillable pour les champs autorisés à être massivement assignés
+    protected $table = 'cvs';  
+    protected $guarded = [];
 
     protected $casts = [
         'experiences' => 'array',

@@ -7,10 +7,9 @@ use GuzzleHttp\Client;
 class LocalEmbeddingService
 {
     protected Client $http;
-
+//bib GuzzleHttp bech namlou instanciation http ml classe client tkhalina nesnou des requets http bech najmou nbathou requete ll srvice ia 
     public function __construct()
     {
-        // On instancie correctement le client Guzzle ici
         $this->http = new Client([
             'base_uri' => env('AI_SERVICE_URL', 'http://127.0.0.1:8001'),
             'timeout'  => 10,
@@ -23,13 +22,16 @@ class LocalEmbeddingService
      * @param string $text
      * @return array
      */
+
+
+     //fonction hethi hia li tkhali service local yahki maa micor service ai bl endpoint yani yemchi ybath http fiha text l endpoint ytajjalou vecteur
     public function embedText(string $text): array
     {
         $resp = $this->http->post('/embed', [
             'json' => ['text' => $text],
         ]);
 
-        $data = json_decode($resp->getBody(), true);
+        $data = json_decode($resp->getBody(), associative: true);
 
         return $data['embedding'];
     }

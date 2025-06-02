@@ -93,7 +93,7 @@ async function ajouter() {
 
     router.push("/offresrecruteur");
   } catch (error) {
-    console.error("Erreur lors de l'ajout :", error);
+    toast.error("Erreur lors de l'ajout :", error);
   }
 }
 

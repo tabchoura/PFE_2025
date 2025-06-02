@@ -16,11 +16,11 @@ return new class extends Migration
             $table->string('nom');
             $table->string('prenom');
             
-            $table->date('date_naissance')->nullable(); // au lieu de 'age'
+            $table->date('date_naissance')->nullable(); 
             $table->string('phone')->nullable();
             $table->string('cv')->nullable();
             $table->string('password');
-            $table->string('lieudenaissance')->nullable(); // Correction ici, suppression de "column:"
+            $table->string('lieudenaissance')->nullable(); 
 
             $table->string('cover_letter')->nullable();
             $table->date('datedepot')->nullable();
@@ -29,12 +29,11 @@ return new class extends Migration
             $table->string('cin')->nullable();
             $table->string('poste')->nullable();
             $table->integer('nb_offres')->nullable();
-            $table->integer('nbvalidation')->nullable();
+            // $table->integer('nbvalidation')->nullable();
             $table->string('email')->unique()->nullable();
             $table->string('siteweb')->nullable();
-            $table->string('nomsociete')->nullable(); // Rendre le champ nullable
+            $table->string('nomsociete')->nullable(); 
 
-// $table->longText('description'); // Jusqu'à 4 Go de texte (rarement nécessaire)
 
             $table->string('localisation')->nullable();
 
@@ -43,7 +42,7 @@ return new class extends Migration
             $table->rememberToken();
             $table->enum('role', ['candidat', 'recruteur', 'admin'])->default('candidat');
             $table->timestamps();
-        
+        // ajouter automatiquement deux colonnes à ta table :created_at ,updated_at 
         });
     }
 

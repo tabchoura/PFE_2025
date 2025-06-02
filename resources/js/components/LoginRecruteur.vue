@@ -48,13 +48,11 @@
                 v-model="email"
                 required
                 placeholder="votre@email.com"
-                :class="[{ 'input-error': errors.email }]"
               />
             </div>
-            <p v-if="errors.email" class="error-message">{{ errors.email }}</p>
+            <p v-if="errors.email" class="error-message"></p>
           </div>
 
-          <!-- Password Field -->
           <div class="form-group">
             <label for="password">Mot de passe</label>
             <div class="input-wrapper password-input-container">
@@ -214,7 +212,8 @@ import { ref } from "vue";
 import axios from "axios";
 import logincandidat from "../../assets/logincandidat.jpg";
 import { useRouter } from "vue-router";
-
+import { useToast } from "vue-toastification";
+const toast = useToast();
 const router = useRouter();
 const email = ref("");
 const password = ref("");
@@ -250,7 +249,6 @@ const login = async () => {
   if (!validateForm()) return;
 
   isLoading.value = true;
-  errorMessage.value = "";
 
   try {
     await axios.get("/sanctum/csrf-cookie");
@@ -264,13 +262,13 @@ const login = async () => {
     const storage = rememberMe.value ? localStorage : sessionStorage;
     storage.setItem("userSession", JSON.stringify(userData));
 
-    successMessage.value = "Connexion réussie ! Redirection en cours...";
+    toast.success("Connexion réussie ! Redirection en cours...");
     setTimeout(() => router.push("/monprofilerecruteur"), 1500);
   } catch (err) {
     if (err.response && err.response.status === 401) {
-      errorMessage.value = "Identifiants incorrects ou utilisateur non trouvé";
+      toast.error("Identifiants incorrects ou utilisateur non trouvé");
     } else {
-      errorMessage.value = "Une erreur est survenue. Veuillez réessayer.";
+      toast.error("Une erreur est survenue. Veuillez réessayer.");
     }
   } finally {
     isLoading.value = false;

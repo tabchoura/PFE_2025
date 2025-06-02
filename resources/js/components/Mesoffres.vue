@@ -11,7 +11,7 @@
       <div v-else-if="error" class="error-message">
         <span class="error-icon">⚠️</span>
         <p>{{ error }}</p>
-        <button @click="getUserSelectedOffers" class="retry-button">Réessayer</button>
+        <button @click="Mesoffres" class="retry-button">Réessayer</button>
       </div>
       <div v-else-if="!loading && !error && offers.length === 0" class="no-offers">
         <div class="empty-state-icon">📋</div>
@@ -73,7 +73,7 @@ const showConfirmModal = ref(false);
 const selectedOffer = ref(null);
 const toast = useToast();
 
-async function getUserSelectedOffers() {
+async function Mesoffres() {
   loading.value = true;
   error.value = null;
   try {
@@ -113,7 +113,7 @@ async function confirmAndDelete() {
   }
 }
 
-onMounted(getUserSelectedOffers);
+onMounted(Mesoffres);
 </script>
 
 <style scoped>

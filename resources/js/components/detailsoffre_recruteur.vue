@@ -3,7 +3,6 @@
     <div class="profil-container offer-details">
       <h1>{{ offer.titre }}</h1>
 
-      <!-- Loading / Error -->
       <div v-if="loading" class="loading">
         <div class="loading-spinner"></div>
         <p>Chargement des détails…</p>
@@ -14,7 +13,6 @@
         <button @click="getOfferDetails" class="retry-button">Réessayer</button>
       </div>
 
-      <!-- Contenu de l'offre -->
       <div v-else class="offer-content-grid">
         <p><span>Description:</span> {{ offer.description }}</p>
         <p><span>Salaire:</span> {{ offer.salaire }}</p>
@@ -33,7 +31,6 @@ import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
 import { useToast } from "vue-toastification";
-const toast = useToast();
 
 const offer = ref({});
 const loading = ref(true);

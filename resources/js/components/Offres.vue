@@ -1,6 +1,5 @@
 <template>
   <div class="offers-section">
-    <!-- Titre de la section des offres -->
     <div class="header-actions">
       <h2>Liste des offres</h2>
       <div class="search">
@@ -18,23 +17,19 @@
       </div>
     </div>
 
-    <!-- Gestion des états de chargement -->
     <div v-if="loading" class="loading-state">
       <p>Chargement des offres...</p>
     </div>
 
-    <!-- Gestion des erreurs -->
     <div v-else-if="error" class="error-state">
       <p>{{ error }}</p>
       <button @click="getOffres" class="btn-retry">Réessayer</button>
     </div>
 
-    <!-- Affichage quand il n'y a pas d'offres -->
     <div v-else-if="filteredOffers.length === 0" class="empty-state">
       <p>Aucune offre disponible pour le moment</p>
     </div>
 
-    <!-- Affichage des offres -->
     <div v-else class="offers-grid">
       <div class="offer-card" v-for="offer in filteredOffers" :key="offer.id">
         <div class="offer-card-header">
@@ -57,7 +52,6 @@
     </div>
   </div>
 
-  <!-- Modal pour l'authentification -->
   <Teleport to="body">
     <div
       v-if="authModalVisible"
@@ -70,7 +64,6 @@
 
         <div class="auth-container">
           <div class="login-layout">
-            <!-- VISUEL GAUCHE -->
             <div class="image-container">
               <div class="image-overlay">
                 <h1 class="platform-name">Jobgo</h1>
@@ -141,7 +134,6 @@
                         "
                       >
                         <span v-if="showPassword">
-                          <!-- Eye Off Icon SVG -->
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
@@ -159,7 +151,6 @@
                           </svg>
                         </span>
                         <span v-else>
-                          <!-- Eye Icon SVG -->
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 24 24"
@@ -188,7 +179,7 @@
                     </div>
                     <p v-if="passwordError" class="error-message">
                       <i class="fas fa-exclamation-circle"></i> Mot de passe requis (min.
-                      6 caractères)
+                      8 caractères)
                     </p>
                   </div>
 
@@ -236,19 +227,16 @@ import axios from "axios";
 
 const router = useRouter();
 
-// Données offres
 const offres = ref([]);
 const titles = ref([]);
 const loading = ref(true);
 const error = ref(null);
 const selectedTitle = ref("");
 
-// Modal d’authentification
 const authModalVisible = ref(false);
 const modalShowing = ref(false);
 const selectedOfferId = ref(null);
 
-// Formulaire d’auth
 const email = ref("");
 const password = ref("");
 const isRecruteur = ref(false);
@@ -258,9 +246,11 @@ const emailError = ref(false);
 const passwordError = ref(false);
 const showPassword = ref(false);
 const rememberMe = ref(false);
-const togglePassword = () => (showPassword.value = !showPassword.value);
 
-// Récupération des offres et titres
+const togglePassword = () => {
+  showPassword.value = !showPassword.value;
+};
+
 const getOffres = async () => {
   loading.value = true;
   error.value = null;
@@ -278,54 +268,48 @@ const getOffres = async () => {
     loading.value = false;
   }
 };
+
 onMounted(getOffres);
 
-// Filtrage
-const filteredOffers = computed(() =>
-  selectedTitle.value
+const filteredOffers = computed(() => {
+  return selectedTitle.value
     ? offres.value.filter((o) => o.titre === selectedTitle.value)
-    : offres.value
-);
+    : offres.value;
+});
 
-// Troncature
-const truncateText = (text, maxLength) =>
-  text && text.length > maxLength ? text.slice(0, maxLength) + "…" : text;
+const truncateText = (text, maxLength) => {
+  return text && text.length > maxLength ? text.slice(0, maxLength) + "…" : text;
+};
 
-// Vérification et redirection
 const checkAuthentication = (offerId) => {
   const raw =
     localStorage.getItem("userSession") || sessionStorage.getItem("userSession");
 
-  if (!raw) {
-    // pas connecté → ouvrir modal
+  if (raw) {
+    const session = JSON.parse(raw);
+    const routeName =
+      session.type === "recruteur" ? "RecruteurVoirdetails" : "CandidatVoirdetails";
+
+    router.push({ name: routeName, params: { id: offerId } });
+  } else {
     selectedOfferId.value = offerId;
     authModalVisible.value = true;
     setTimeout(() => (modalShowing.value = true), 10);
-    return;
   }
-
-  const session = JSON.parse(raw);
-  const routeName =
-    session.type === "recruteur" ? "RecruteurVoirdetails" : "CandidatVoirdetails";
-
-  router.push({ name: routeName, params: { id: offerId } });
 };
 
-// Fermeture du modal
 const closeAuthModal = () => {
   modalShowing.value = false;
   setTimeout(() => (authModalVisible.value = false), 300);
 };
 
-// Validation du form
 const validateForm = () => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   emailError.value = !emailRegex.test(email.value);
-  passwordError.value = password.value.length < 6;
+  passwordError.value = password.value.length < 8;
   return !emailError.value && !passwordError.value;
 };
 
-// Login
 const login = async () => {
   if (!validateForm()) return;
 
@@ -338,7 +322,6 @@ const login = async () => {
       { withCredentials: true }
     );
 
-    // Vérification du type sélectionné
     if (
       (isRecruteur.value && response.data.type !== "recruteur") ||
       (!isRecruteur.value && response.data.type !== "candidat")
@@ -348,11 +331,9 @@ const login = async () => {
       return;
     }
 
-    // Stockage de la session
     const storage = rememberMe.value ? localStorage : sessionStorage;
     storage.setItem("userSession", JSON.stringify(response.data));
 
-    // Redirection vers le détail
     const targetId = selectedOfferId.value;
     closeAuthModal();
 
@@ -372,7 +353,6 @@ const login = async () => {
   }
 };
 
-// Aller à la création de compte
 const goToSignup = () => {
   const signupPath = isRecruteur.value ? "/registerRecruteur" : "/registerCandidat";
   router.push(signupPath);

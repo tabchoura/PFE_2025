@@ -1,7 +1,6 @@
 <template>
   <div class="auth-container">
     <div class="login-layout">
-      <!-- VISUEL GAUCHE -->
       <div class="image-container">
         <div class="image-overlay">
           <h1 class="platform-name">Jobgo</h1>
@@ -9,7 +8,6 @@
         </div>
       </div>
 
-      <!-- FORMULAIRE -->
       <div class="form-container">
         <div v-if="page === 'login'" class="auth-box">
           <div class="logo-container">
@@ -18,7 +16,6 @@
 
           <h2>Connexion à votre espace</h2>
 
-          <!-- Bascule Candidat / Recruteur -->
           <div class="toggle-container">
             <!-- Ajout highlight sur les deux et active selon isRecruteur -->
             <span class="highlight" :class="{ active: !isRecruteur }">Candidat</span>
@@ -33,9 +30,7 @@
             <span class="highlight" :class="{ active: isRecruteur }">Recruteur</span>
           </div>
 
-          <!-- Formulaire -->
           <form @submit.prevent="login" novalidate>
-            <!-- Email -->
             <div class="input-group">
               <label for="email">Email</label>
               <div class="input-with-icon">
@@ -55,7 +50,6 @@
               </p>
             </div>
 
-            <!-- Mot de passe -->
             <div class="input-group">
               <label for="password">Mot de passe</label>
               <div class="input-with-icon">
@@ -124,7 +118,7 @@
                 </button>
               </div>
               <p v-if="passwordError" class="error-message">
-                <i class="fas fa-exclamation-circle"></i> Mot de passe requis (min. 6
+                <i class="fas fa-exclamation-circle"></i> Mot de passe requis (min. 8
                 caractères)
               </p>
             </div>
@@ -160,15 +154,6 @@
         </div>
       </div>
     </div>
-
-    <RegisterCandidat
-      v-if="page === 'registerCandidat'"
-      @registration-complete="handleRegistrationComplete"
-    />
-    <RegisterRecruteur
-      v-if="page === 'registerRecruteur'"
-      @registration-complete="handleRegistrationComplete"
-    />
   </div>
 </template>
 
@@ -176,13 +161,10 @@
 // (Script identique au tien, inchangé)
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import api from "@/axios";
-
-import RegisterCandidat from "../components/RegisterCandidat.vue";
-import RegisterRecruteur from "../components/RegisterRecruteur.vue";
-
+import axios from "@/axios";
+import { useToast } from "vue-toastification";
 const router = useRouter();
-
+const toast = useToast();
 const email = ref("");
 const password = ref("");
 const isRecruteur = ref(false);
@@ -196,7 +178,7 @@ const rememberMe = ref(false);
 const validateForm = () => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   emailError.value = !emailRegex.test(email.value);
-  passwordError.value = password.value.length < 6;
+  passwordError.value = password.value.length < 8;
   return !emailError.value && !passwordError.value;
 };
 
@@ -205,9 +187,9 @@ const login = async () => {
   isLoading.value = true;
 
   try {
-    await api.get("/sanctum/csrf-cookie");
+    await axios.get("/sanctum/csrf-cookie");
 
-    const response = await api.post(
+    const response = await axios.post(
       "/api/login",
       {
         email: email.value,
@@ -220,7 +202,7 @@ const login = async () => {
       (isRecruteur.value && response.data.type !== "recruteur") ||
       (!isRecruteur.value && response.data.type !== "candidat")
     ) {
-      alert("❌ Vous avez sélectionné le mauvais type de compte.");
+      toast.error("❌ Vous avez sélectionné le mauvais type de compte.");
       isLoading.value = false;
       return;
     }
@@ -231,7 +213,7 @@ const login = async () => {
 
     router.push(userData.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat");
   } catch (error) {
-    alert("❌ Identifiants incorrects ou utilisateur non trouvé");
+    toast.error("❌ Identifiants incorrects ou utilisateur non trouvé");
     console.error("Erreur lors de la connexion:", error);
   } finally {
     isLoading.value = false;
@@ -243,12 +225,6 @@ const goToSignup = () => {
   router.push(
     page.value === "registerRecruteur" ? "/registerRecruteur" : "/registerCandidat"
   );
-};
-
-const handleRegistrationComplete = (userData) => {
-  const storage = rememberMe.value ? localStorage : sessionStorage;
-  storage.setItem("userSession", JSON.stringify(userData));
-  router.push(userData.type === "recruteur" ? "/CompteRecruteur" : "/CompteCandidat");
 };
 
 const togglePassword = () => {

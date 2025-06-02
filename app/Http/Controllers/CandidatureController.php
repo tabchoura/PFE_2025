@@ -20,54 +20,47 @@ class CandidatureController extends Controller
 {
     /* ------------------------------------------------------------------
      * 1. Changer le statut (accepter / refuser)
-     * ------------------------------------------------------------------ */
-    public function accept($id)
-    {
-        $candidature = Candidature::findOrFail($id);
-        $candidature->update(['statut' => 'accepter']);
+    //  * ------------------------------------------------------------------ */
+    // public function accept($id)
+    // {
+    //     $candidature = Candidature::findOrFail($id);
+    //     $candidature->update(['statut' => 'accepter']);
 
-        return response()->json([
-            'message' => 'Candidature acceptée.',
-        ]);
-    }
+    //     return response()->json([
+    //         'message' => 'Candidature acceptée.',
+    //     ]);
+    // }
 
-    public function refuse($id)
-    {
-        $candidature = Candidature::findOrFail($id);
-        $candidature->update(['statut' => 'refuser']);
+    // public function refuse($id)
+    // {
+    //     $candidature = Candidature::findOrFail($id);
+    //     $candidature->update(['statut' => 'refuser']);
 
-        return response()->json([
-            'message' => 'Candidature refusée.',
-        ]);
-    }
+    //     return response()->json([
+    //         'message' => 'Candidature refusée.',
+    //     ]);
+    // }
 
-    /* ------------------------------------------------------------------
-     * 2. Postuler à une offre  (route : POST /offres/{id}/postuler)
-     * ------------------------------------------------------------------ */
 public function postuler(Request $request, $id)
 {
-    // Validation des données envoyées par le formulaire
     $request->validate([
         'cv_id'   => ['required', 'exists:cvs,id'],
         'message' => ['nullable', 'string', 'max:1000'],
     ]);
 
-    // Récupérer le CV et l'offre
     $cv = Cv::find($request->cv_id);
     $offre = Offre::findOrFail($id);
 
-    // Si le CV ou l'offre n'existe pas, retourner une erreur
     if (!$cv || !$offre) {
         return response()->json(['message' => 'CV ou Offre non trouvé.'], 404);
     }
 
-    // Créer la candidature
     $candidature = Candidature::create([
         'offre_id' => $id,
         'user_id'  => auth()->id(),
         'cv_id'    => $request->cv_id,
         'message'  => $request->input('message', ''),
-        'statut'   => $request->input('statut', 'enattente'),
+        // 'statut'   => $request->input('statut', 'enattente'),
     ]);
 
     //dispatch manehaa Lance le job EvaluateCvEmbedding avec la candidature donnée lancement automatique khater def queue sync l methode handle automatiquement ynedilha baed kadkad 

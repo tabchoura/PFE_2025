@@ -1,7 +1,6 @@
 <template>
   <div class="register-container">
     <div class="register-card">
-      <!-- IMAGE SECTION -->
       <div class="image-section">
         <div class="overlay">
           <div class="brand-text">
@@ -11,11 +10,9 @@
         </div>
       </div>
 
-      <!-- FORM SECTION -->
       <div class="form-section">
         <h1 class="form-title">Créez votre compte</h1>
 
-        <!-- STEPPER NAVIGATION -->
         <div class="stepper">
           <div
             v-for="(step, index) in steps"
@@ -34,18 +31,14 @@
           </div>
         </div>
 
-        <!-- PROGRESS BAR -->
         <div class="progress-container">
           <div class="progress-bar" :style="{ width: progressWidth }"></div>
         </div>
 
-        <!-- === FORM === -->
         <form @submit.prevent="nextStep" class="form" novalidate>
-          <!-- STEP 1: PERSONAL INFORMATION -->
           <fieldset class="form-fieldset" v-if="currentStep === 0">
             <legend>Informations personnelles</legend>
             <div class="grid two-columns">
-              <!-- NOM -->
               <div
                 class="form-group"
                 @mouseenter="showHint('nom')"
@@ -69,7 +62,6 @@
                 <span v-if="formData.nom && validFields.nom" class="valid-icon">✓</span>
               </div>
 
-              <!-- PRENOM -->
               <div
                 class="form-group"
                 @mouseenter="showHint('prenom')"
@@ -98,7 +90,6 @@
               </div>
             </div>
 
-            <!-- EMAIL -->
             <div
               class="form-group"
               @mouseenter="showHint('email')"
@@ -122,10 +113,7 @@
               <span v-if="formData.email && validFields.email" class="valid-icon">✓</span>
             </div>
 
-            <!-- PASSWORDS -->
-            <!-- GROUPE DE MOTS DE PASSE -->
             <div class="password-fields-container">
-              <!-- PASSWORD -->
               <div
                 class="form-group"
                 @mouseenter="showHint('password')"
@@ -168,7 +156,6 @@
                 >
               </div>
 
-              <!-- CONFIRM PASSWORD -->
               <div
                 class="form-group"
                 @mouseenter="showHint('confirmpassword')"
@@ -214,11 +201,9 @@
             </div>
           </fieldset>
 
-          <!-- STEP 2: ADMINISTRATIVE DETAILS -->
           <fieldset class="form-fieldset" v-else-if="currentStep === 1">
             <legend>Détails administratifs</legend>
             <div class="grid two-columns">
-              <!-- CIN -->
               <div
                 class="form-group"
                 @mouseenter="showHint('cin')"
@@ -243,7 +228,6 @@
                 <span v-if="formData.cin && validFields.cin" class="valid-icon">✓</span>
               </div>
 
-              <!-- PHONE -->
               <div
                 class="form-group"
                 @mouseenter="showHint('phone')"
@@ -272,9 +256,7 @@
               </div>
             </div>
 
-            <!-- DATE & PLACE OF BIRTH -->
             <div class="grid two-columns">
-              <!-- DATE -->
               <div
                 class="form-group"
                 @mouseenter="showHint('nomsociete')"
@@ -304,7 +286,6 @@
                 >
               </div>
 
-              <!-- LIEU -->
               <div
                 class="form-group"
                 @mouseenter="showHint('siteweb')"
@@ -330,35 +311,6 @@
                   >✓</span
                 >
               </div>
-              <!-- 
-              <div
-                class="form-group"
-                @mouseenter="showHint('departement')"
-                @mouseleave="hideHint('departement')"
-              >
-                <label for="departement">Département</label>
-                <input
-                  id="departement"btt
-                  type="text"
-                  v-model.trim="formData.departement"
-                  placeholder="Ecrire votre département"
-                  :class="inputClass('departement')"
-                  @input="validateField('departement')"
-                  autocomplete="address-level2"
-                  required
-                />
-                <span v-if="errors.departement" class="error-message">{{
-                  errors.departement
-                }}</span>
-                <span v-else-if="hints.departement" class="hint-message"
-                  >Entrez un departement valide
-                </span>
-                <span
-                  v-if="formData.departement && validFields.departement"
-                  class="valid-icon"
-                  >✓</span
-                >
-              </div> -->
 
               <div
                 class="form-group"
@@ -388,44 +340,13 @@
                   >✓</span
                 >
               </div>
-
-              <!-- <div
-                class="form-group"
-                @mouseenter="showHint('description')"
-                @mouseleave="hideHint('description')"
-              >
-                <label for="description">Description</label>
-                <textarea
-                  id="description"
-                  type="text"
-                  v-model.trim="formData.description"
-                  placeholder="Ecrire votre description"
-                  :class="inputClass('description')"
-                  @input="validateField('description')"
-                  autocomplete="address-level2"
-                  required
-                />
-                <span v-if="errors.description" class="error-message">{{
-                  errors.description
-                }}</span>
-                <span v-else-if="hints.description" class="hint-message"
-                  >Entrez une ville ou commune valide</span
-                >
-                <span
-                  v-if="formData.description && validFields.description"
-                  class="valid-icon"
-                  >✓</span
-                >
-              </div> -->
             </div>
           </fieldset>
 
-          <!-- STEP 3: CONFIRMATION -->
           <fieldset class="form-fieldset" v-else>
             <legend>Confirmer votre inscription</legend>
             <div class="summary-container">
               <h3 class="summary-title">Résumé de vos informations</h3>
-              <!-- PERSONAL SUMMARY -->
               <div class="summary-section">
                 <h4>Informations personnelles</h4>
                 <div class="summary-grid">
@@ -440,7 +361,6 @@
                   </div>
                 </div>
               </div>
-              <!-- ADMIN SUMMARY -->
               <div class="summary-section">
                 <h4>Détails administratifs</h4>
                 <div class="summary-grid">
@@ -457,15 +377,10 @@
                   <div class="summary-item">
                     <label>Site web:</label><span>{{ formData.siteweb }}</span>
                   </div>
-                  <!-- <div class="summary-item">
-                    <label>Département:</label><span>{{ formData.departement }}</span>
-                  </div> -->
+
                   <div class="summary-item">
                     <label>Localisation:</label><span>{{ formData.localisation }}</span>
                   </div>
-                  <!-- <div class="summary-item">
-                    <label>Description:</label><span>{{ formData.description }}</span>
-                  </div> -->
                 </div>
               </div>
 
@@ -507,21 +422,6 @@
               </template>
             </button>
           </div>
-
-          <!-- NOTIFICATIONS -->
-          <!-- <transition name="fade">
-            <div v-if="success" class="notification success">
-              <p>
-                Inscription réussie !
-                <router-link to="/LoginCandidat">Connectez‑vous</router-link>
-              </p>
-            </div>
-          </transition> -->
-          <transition name="fade">
-            <div v-if="serverError" class="notification error">
-              <p>{{ serverError }}</p>
-            </div>
-          </transition>
         </form>
       </div>
     </div>
@@ -531,7 +431,7 @@
 <script setup>
 import { ref, reactive, computed, watch } from "vue";
 import { useRouter } from "vue-router";
-import api from "@/axios";
+import axios from "@/axios";
 import { useToast } from "vue-toastification";
 // import hiringImage from '../..assets/rec';
 
@@ -605,8 +505,8 @@ const validFields = reactive({
 const nameRegex = /^[a-zA-ZÀ-ſ0-9\s'-]+$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const descriptionRegex = /^[a-zA-Z0-9\s,.'-()&;!?%]*$/;
-const siteRegex = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/; // Regex pour une URL
-
+const siteRegex = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/[^\s]*)?$/;
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 const numberRegex = /^\d{8}$/;
 
 function validateField(field) {
@@ -627,7 +527,7 @@ function validateField(field) {
       if (!valid) errors[field] = "Email invalide";
       break;
     case "password":
-      valid = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(val);
+      valid = passwordRegex.test(val);
       if (!valid) errors[field] = "Mot de passe trop faible";
       break;
     case "confirmpassword":
@@ -642,7 +542,7 @@ function validateField(field) {
     case "siteweb":
       valid = siteRegex.test(val);
       if (!valid) errors[field] = "Site invalide";
-      validFields.siteweb = false; //  ⬅️ retire la coche verte
+      validFields.siteweb = false;
 
       break;
     default:
@@ -689,11 +589,10 @@ const progressWidth = computed(
   () => `${(currentStep.value / (steps.length - 1)) * 100}%`
 );
 
-// === NAVIGATION ===
 function nextStep() {
   if (currentStep.value === steps.length - 1) {
     if (!termsAccepted.value) {
-      errors.terms = "Vous devez accepter les conditions d'utilisation.";
+      toast.error("Vous devez accepter les conditions d'utilisation.");
       return;
     }
     register();
@@ -704,7 +603,6 @@ function nextStep() {
     currentStep.value += 1;
     window.scrollTo({ top: 0, behavior: "smooth" });
   } else {
-    // force validation display
     Object.keys(validFields).forEach((f) => validateField(f));
   }
 }
@@ -724,13 +622,12 @@ function togglePassword() {
   showPassword.value = !showPassword.value;
 }
 
-// === API ===
 async function register() {
   loading.value = true;
   serverError.value = "";
   try {
-    await api.get("/sanctum/csrf-cookie");
-    await api.post("/api/register", { ...formData, role: "recruteur" });
+    await axios.get("/sanctum/csrf-cookie");
+    await axios.post("/api/register", { ...formData, role: "recruteur" });
     toast.success("inscription réussite");
     setTimeout(() => router.push("/LoginRecruteur"), 2000);
   } catch (e) {
@@ -738,7 +635,7 @@ async function register() {
       const v = e.response.data?.errors;
 
       if (v?.email?.length) {
-        errors.email = "Cet email est déjà utilisé";
+        toast.error("Cet email est déjà utilisé");
         currentStep.value = 0;
         validFields.email = false;
       } else {
@@ -1019,6 +916,8 @@ a:hover {
   gap: 0.5rem;
 }
 .btn-primary {
+  background: linear-gradient(135deg, #1f3d7a 0%, #3c64c8 100%);
+
   filter: brightness(0.8);
   color: white;
 }

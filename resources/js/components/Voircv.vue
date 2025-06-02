@@ -1,13 +1,11 @@
 <template>
   <div class="page-wrapper">
     <div class="cv-container">
-      <!-- Loader -->
       <div v-if="isLoading" class="loading-container" role="status" aria-live="polite">
         <div class="loader"></div>
         <p class="loading-text">Chargement du CV…</p>
       </div>
 
-      <!-- Erreur -->
       <div v-else-if="error" class="error-message" role="alert">
         <p>{{ error }}</p>
         <button
@@ -19,7 +17,6 @@
         </button>
       </div>
 
-      <!-- Affichage lecture seule -->
       <div v-else-if="!editMode" ref="cvElement" class="cv-form preview-form">
         <div class="cv-left-column">
           <div class="profile-section">
@@ -77,13 +74,7 @@
         </div>
       </div>
 
-      <!-- Formulaire édition -->
-      <form
-        v-else
-        @submit.prevent="updateProfile"
-        class="cv-form edit-form"
-        ref="cvElement"
-      >
+      <form v-else @submit.prevent="updatecv" class="cv-form edit-form" ref="cvElement">
         <div class="cv-left-column">
           <div class="profile-section">
             <div class="profile-picture-container">
@@ -297,7 +288,6 @@
       </form>
     </div>
 
-    <!-- Boutons d'actions principaux -->
     <div v-if="cv && !isLoading" class="global-actions">
       <button
         class="btn btn-back"
@@ -407,10 +397,6 @@ async function loadCv() {
 }
 onMounted(loadCv);
 
-function toggleEditMode() {
-  editMode.value = !editMode.value;
-}
-
 function cancelEditing() {
   editMode.value = false;
 }
@@ -433,7 +419,7 @@ function removeItem(field, index) {
   if (form[field].length === 0) form[field].push("");
 }
 
-async function updateProfile() {
+async function updatecv() {
   isLoading.value = true;
   error.value = null;
 
@@ -456,9 +442,9 @@ async function updateProfile() {
     await axios.put(`/api/cv/${route.params.id}`, dataToSend);
     cv.value = { ...dataToSend };
     editMode.value = false;
-    toast.success("Candidature envoyée avec succès !");
+    toast.success("Cv mis a jour avec succès !");
   } catch (e) {
-    error.value = e.response?.data?.message || "Erreur lors de la mise à jour";
+    toast.error("Erreur lors de la mise à jour");
   } finally {
     isLoading.value = false;
   }
@@ -503,7 +489,7 @@ async function deleteCv() {
     toast.success("CV supprimé avec succès");
     router.push("/mescv");
   } catch (e) {
-    alert(e.response?.data?.message || "Erreur lors de la suppression");
+    toast.error("Erreur lors de la suppression");
   }
 }
 

@@ -1,25 +1,17 @@
 <template>
   <div class="page-wrapper">
     <div class="cv-container">
-      <!-- Loader -->
       <div v-if="isLoading" class="loading-container" role="status" aria-live="polite">
         <div class="loader"></div>
         <p class="loading-text">Chargement du CV…</p>
       </div>
 
-      <!-- Erreur -->
       <div v-else-if="error" class="error-message" role="alert">
         <p>{{ error }}</p>
         <button @click="loadCv" class="btn btn-retry">Réessayer</button>
       </div>
 
-      <!-- Formulaire édition -->
-      <form
-        v-else
-        @submit.prevent="updateProfile"
-        class="cv-form edit-form"
-        ref="cvElement"
-      >
+      <form v-else @submit.prevent="updatecv" class="cv-form edit-form" ref="cvElement">
         <div class="cv-left-column">
           <div class="profile-section">
             <div class="profile-picture-container">
@@ -198,8 +190,6 @@
         </div>
       </form>
     </div>
-
-    <!-- Boutons d'actions principaux -->
   </div>
 </template>
 
@@ -212,7 +202,7 @@ import { useToast } from "vue-toastification";
 
 const route = useRoute();
 const router = useRouter();
-const toast = useToast(); // Ajout de l'import manquant
+const toast = useToast();
 
 const cv = ref(null);
 const isLoading = ref(true);
@@ -279,10 +269,6 @@ async function loadCv() {
 }
 onMounted(loadCv);
 
-function toggleEditMode() {
-  editMode.value = !editMode.value;
-}
-
 async function cancelEditing() {
   editMode.value = false;
 
@@ -307,28 +293,22 @@ function removeItem(field, index) {
   if (form[field].length === 0) form[field].push("");
 }
 
-async function updateProfile() {
+async function updatecv() {
   isLoading.value = true;
   error.value = null;
 
   const dataToSend = {
-    prenom: (form.prenom ?? "").trim(),
-    nom: (form.nom ?? "").trim(),
+    prenom: form.prenom.trim(),
+    nom: form.nom.trim(),
     date_naissance: form.date_naissance,
-    email: (form.email ?? "").trim(),
-    adresse: (form.adresse ?? "").trim(),
-    presentation: (form.presentation ?? "").trim(),
-    competences: form.competences
-      .filter((c) => (c ?? "").trim() !== "")
-      .map((c) => c.trim()),
-    langues: form.langues.filter((l) => (l ?? "").trim() !== "").map((l) => l.trim()),
-    experiences: form.experiences
-      .filter((e) => (e ?? "").trim() !== "")
-      .map((e) => e.trim()),
-    educations_formations: form.educations_formations
-      .filter((f) => (f ?? "").trim() !== "")
-      .map((f) => f.trim()),
-    projets: form.projets.filter((p) => (p ?? "").trim() !== "").map((p) => p.trim()),
+    email: form.email.trim(),
+    adresse: form.adresse.trim(),
+    presentation: form.presentation.trim(),
+    competences: form.competences.filter((c) => c.trim() !== ""),
+    langues: form.langues.filter((l) => l.trim() !== ""),
+    experiences: form.experiences.filter((e) => e.trim() !== ""),
+    educations_formations: form.educations_formations.filter((f) => f.trim() !== ""),
+    projets: form.projets.filter((p) => p.trim() !== ""),
     image: form.image,
   };
 
@@ -336,10 +316,10 @@ async function updateProfile() {
     await axios.put(`/api/cv/${route.params.id}`, dataToSend);
     cv.value = { ...dataToSend };
     editMode.value = false;
-    toast.success("cv mis a jour avec succès !");
+    toast.success("Cv mis a jour avec succès !");
     router.push("/mescv");
   } catch (e) {
-    error.value = e.response?.data?.message || "Erreur lors de la mise à jour";
+    toast.error("Erreur lors de la mise à jour");
   } finally {
     isLoading.value = false;
   }
@@ -351,37 +331,6 @@ const profileImageStyle = computed(() => ({
     (editMode.value ? form.image : cv.value?.image) || DEFAULT_PROFILE
   })`,
 }));
-
-function downloadPdf() {
-  if (!cvElement.value) return;
-  cvElement.value.classList.add("printing");
-  html2pdf()
-    .set({
-      margin: 10,
-      filename: `CV_${cv.value.prenom}_${cv.value.nom}.pdf`,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-    })
-    .from(cvElement.value)
-    .save()
-    .then(() => cvElement.value?.classList.remove("printing"));
-}
-
-async function deleteCv() {
-  if (
-    !confirm(
-      `Confirmez-vous la suppression du CV de ${cv.value.prenom} ${cv.value.nom} ?`
-    )
-  )
-    return;
-  try {
-    await axios.delete(`/api/cv/${route.params.id}`);
-    router.push("/mescv");
-  } catch (e) {
-    alert(e.response?.data?.message || "Erreur lors de la suppression");
-  }
-}
 </script>
 
 <style scoped>

@@ -9,13 +9,11 @@
         </button>
       </div>
 
-      <!-- État de chargement -->
       <div v-if="loading" class="loading-state">
         <div class="spinner"></div>
         <p>Chargement de vos CV...</p>
       </div>
 
-      <!-- Liste de CV -->
       <div v-else-if="cvs.length" class="cv-list">
         <div v-for="cv in cvs" :key="cv.id" class="cv-card">
           <div class="cv-info">
@@ -116,7 +114,6 @@
         <button @click="ajoutercv" class="empty-cta">Créer mon premier CV</button>
       </div>
 
-      <!-- Modal de confirmation de suppression -->
       <div
         v-if="showConfirmModal"
         class="modal-overlay"
@@ -152,7 +149,6 @@ const cvs = ref([]);
 const showConfirmModal = ref(false);
 const cvToDelete = ref(null);
 
-// Format de date
 function formatDate(dateString) {
   if (!dateString) return "Date inconnue";
   const date = new Date(dateString);
@@ -165,7 +161,6 @@ function formatDate(dateString) {
   }).format(date);
 }
 
-// Navigations
 function ajoutercv() {
   router.push({ name: "CreerCv", query: { from: "mescv" } });
 }
@@ -188,7 +183,6 @@ async function confirmerEtSupprimer() {
     await axios.delete(`/api/cv/${cvToDelete.value.id}`);
     cvs.value = cvs.value.filter((c) => c.id !== cvToDelete.value.id);
     showConfirmModal.value = false;
-    // Notification de succès
     toast.success("CV supprimé avec succès");
   } catch (err) {
     console.error("Erreur suppression CV :", err);
@@ -196,28 +190,6 @@ async function confirmerEtSupprimer() {
   }
 }
 
-// // Notification temporaire (simule un système de toast)
-// function showNotification(message) {
-//   const notif = document.createElement("div");
-//   notif.className = "notification";
-//   notif.textContent = message;
-//   document.body.appendChild(notif);
-
-//   // Animation d'entrée
-//   setTimeout(() => {
-//     notif.classList.add("show");
-//   }, 10);
-
-//   // Auto-suppression après 3 secondes
-//   setTimeout(() => {
-//     notif.classList.remove("show");
-//     setTimeout(() => {
-//       document.body.removeChild(notif);
-//     }, 300);
-//   }, 3000);
-// }
-
-// Chargement
 onMounted(async () => {
   try {
     loading.value = true;

@@ -199,9 +199,9 @@
 import axios from "axios";
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-
+import { useToast } from "vue-toastification";
 const router = useRouter();
-
+const toast = useToast();
 // Profil utilisateur
 const profile = ref({
   nom: "", // Assurez-vous que 'nom' est bien initialisé
@@ -286,24 +286,11 @@ async function updateProfile() {
       store.setItem(key, JSON.stringify({ ...stored, ...formData.value }));
     }
     editMode.value = false;
-    showSuccessMessage("Profil mis à jour avec succès !");
+    toast.success("profile mis à jour ");
   } catch (err) {
     console.error("Erreur mise à jour:", err);
-    alert("❌ Échec de la mise à jour.");
+    toast.error("Erreur lors du mis a jour");
   }
-}
-
-// Notification succès
-function showSuccessMessage(msg) {
-  const el = document.createElement("div");
-  el.className = "success-notification";
-  el.textContent = "✅ " + msg;
-  document.body.appendChild(el);
-  setTimeout(() => el.classList.add("show"), 100);
-  setTimeout(() => {
-    el.classList.remove("show");
-    setTimeout(() => document.body.removeChild(el), 500);
-  }, 3000);
 }
 
 onMounted(loadProfileData);

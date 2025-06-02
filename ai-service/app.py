@@ -1,23 +1,18 @@
 from fastapi import FastAPI
-#defnir des modeles de donnees avec validation
 from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
 
 #sera utlisé pour creer des endpoints des api 
 app1 = FastAPI()
-#all-MiniLM-L6-v2 modele pre entrainé  utilisé pour encoder le texte en embeddings sémantiques.
+#sentenceTransformer bib raml transformation ml text ila embeddings grace au modele all minilm mtee ML
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
-#def de modeele de donnes Ce modèle est utilisé pour valider les données d'entrée reçues par l'API.
+#textin Basemodel  class ml bib pydantic ythabbattlk li données recues ml r=api sous frome text (json )wela le Text in testanna f chaine bech thabat 
 class TextIn(BaseModel):
     text: str
-#éfinit un endpoint POST /embed dans l'application FastAPI.
 @app1.post("/embed")
-#Définit une fonction embed qui prend un objet data de type TextIn en entrée. Cet objet contient le texte à encoder.
 
-
+#def te fonction , yekhou teext verifié y3adih al model yrajalou lvecteur embedding 
 def embed(data: TextIn):
-    #Utilise le modèle Sentence Transformers pour encoder le texte (data.text) en un vecteur d'embedding sémantique
     vec = model.encode(data.text)
-    #Renvoie un objet JSON contenant l'embedding sous forme de liste (vec.tolist()).
     return {"embedding": vec.tolist()}

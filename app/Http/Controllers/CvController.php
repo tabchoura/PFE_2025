@@ -9,18 +9,12 @@ use Dompdf\Options;
 
 class CvController extends Controller
 {
-    /** Liste de tous les CV (admin ou utilisateur authentifié) */
-    public function index(Request $request)
-    {
-        $userId = $request->user()->id;
-        $cvs = Cv::where('user_id', $userId)->get();
-        return response()->json($cvs);
-    }
 
-    /** Création d’un CV */
     public function store(Request $request)
     {
-        $validatedata = $request->validate([
+
+
+        $validated = $request->validate([
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
             'email' => 'nullable|email',
@@ -36,11 +30,11 @@ class CvController extends Controller
         ]);
 
         // Ajouter le user_id avant de créer le CV
-        $validatedata['user_id'] = $request->user()->id;
+        $validated['user_id'] = $request->user()->id;
 
         try {
             // Créer le CV dans la base de données
-            $cv = Cv::create($validatedata);
+            $cv = Cv::create($validated);
 
             // Créer le PDF avec les données du CV
             $pdfContent = $this->generatePdf($cv);
@@ -58,6 +52,13 @@ class CvController extends Controller
             return response()->json(['message' => 'Erreur lors de la création du CV', 'error' => $e->getMessage()], 500);
         }
     }
+        public function index(Request $request)
+    {
+        $userId = $request->user()->id;
+        $cvs = Cv::where('user_id', $userId)->get();
+        return response()->json($cvs);
+    }
+
 
     /** Générer un fichier PDF à partir des données du CV */
     private function generatePdf($cv)
@@ -74,24 +75,23 @@ class CvController extends Controller
         $dompdf->setOptions($options);
 
         // Créer le contenu du PDF
-        //jbed ml template 	el compat Prépare les données à injecter dans la vue Blade $cv render hia Transforme le Blade en vrai HTML final prêt à imprimer bech ynajm bib yaml telechargement khatrou visible ken ll html purrr
+        //recuperer ml bladde el template wbaed compact bch yesna kif tableau associative yaani cv : $cv eli adineha fl blade bech ynajm tsir recuperation , wmbaed render bech ygenirilek el blade ila html puur 
         $html = view('cv_pdf_template', compact('cv'))->render(); // Récupérer un template Blade pour générer le HTML
 
         // Charger le contenu HTML dans DomPDF
-        //loadthtml tebaa bib dompdf telechargili html recuperer ml template yaani 
+        //loadthtml tebaa bib dompdf charge html dans dompdf
         $dompdf->loadHtml($html);
 
         // (Optional) Définir la taille du papier
         $dompdf->setPaper('A4', 'portrait');
 
-//concertie html en pdf 
+//convertie html en pdf 
         $dompdf->render();
 
         // Retourner le contenu du PDF
         return $dompdf->output();
     }
 
-    /** Affichage d’un CV précis */
     public function show($id)
     {
         $cv = Cv::find($id);
@@ -101,7 +101,6 @@ class CvController extends Controller
         return response()->json($cv);
     }
 
-    /** Mise à jour d’un CV */
     public function update(Request $request, $id)
     {
         $cv = Cv::find($id);
@@ -109,7 +108,7 @@ class CvController extends Controller
             return response()->json(['message' => 'CV non trouvé'], 404);
         }
 
-        $validatedata = $request->validate([
+        $validated = $request->validate([
             'nom' => 'sometimes|string|max:255',
             'prenom' => 'sometimes|string|max:255',
             'email' => 'sometimes|email|unique:cvs,email,' . $cv->id,
@@ -124,14 +123,13 @@ class CvController extends Controller
             'image' => 'nullable|url',
         ]);
 
-        $cv->update($validatedata);
-        return response()->json([
+$cv->update($validated)   ;
+   return response()->json([
             'message' => 'CV mis à jour avec succès',
             'cv' => $cv->fresh(),
         ], 200);
     }
 
-    /** Suppression d’un CV */
     public function destroy($id)
     {
         $cv = Cv::find($id);

@@ -1,7 +1,6 @@
 <template>
   <div class="register-container">
     <div class="register-card">
-      <!-- IMAGE SECTION -->
       <div class="image-section">
         <div class="overlay">
           <div class="brand-text">
@@ -11,11 +10,9 @@
         </div>
       </div>
 
-      <!-- FORM SECTION -->
       <div class="form-section">
         <h1 class="form-title">Créez votre compte</h1>
 
-        <!-- STEPPER NAVIGATION -->
         <div class="stepper">
           <div
             v-for="(step, index) in steps"
@@ -35,18 +32,14 @@
           </div>
         </div>
 
-        <!-- PROGRESS BAR -->
         <div class="progress-container">
           <div class="progress-bar" :style="{ width: progressWidth }"></div>
         </div>
 
-        <!-- === FORM === -->
         <form @submit.prevent="nextStep" class="form" novalidate>
-          <!-- STEP 1: PERSONAL INFORMATION -->
           <fieldset class="form-fieldset" v-if="currentStep === 0">
             <legend>Informations personnelles</legend>
             <div class="grid two-columns">
-              <!-- NOM -->
               <div
                 class="form-group"
                 @mouseenter="showHint('nom')"
@@ -70,7 +63,6 @@
                 <span v-if="formData.nom && validFields.nom" class="valid-icon">✓</span>
               </div>
 
-              <!-- PRENOM -->
               <div
                 class="form-group"
                 @mouseenter="showHint('prenom')"
@@ -99,7 +91,6 @@
               </div>
             </div>
 
-            <!-- EMAIL -->
             <div
               class="form-group"
               @mouseenter="showHint('email')"
@@ -123,9 +114,7 @@
               <span v-if="formData.email && validFields.email" class="valid-icon">✓</span>
             </div>
 
-            <!-- GROUPE DE MOTS DE PASSE -->
             <div class="password-fields-container">
-              <!-- PASSWORD -->
               <div
                 class="form-group"
                 @mouseenter="showHint('password')"
@@ -168,7 +157,6 @@
                 >
               </div>
 
-              <!-- CONFIRM PASSWORD -->
               <div
                 class="form-group"
                 @mouseenter="showHint('confirmpassword')"
@@ -214,11 +202,9 @@
             </div>
           </fieldset>
 
-          <!-- STEP 2: ADMINISTRATIVE DETAILS -->
           <fieldset class="form-fieldset" v-else-if="currentStep === 1">
             <legend>Détails administratifs</legend>
             <div class="grid two-columns">
-              <!-- CIN -->
               <div
                 class="form-group"
                 @mouseenter="showHint('cin')"
@@ -243,7 +229,6 @@
                 <span v-if="formData.cin && validFields.cin" class="valid-icon">✓</span>
               </div>
 
-              <!-- PHONE -->
               <div
                 class="form-group"
                 @mouseenter="showHint('phone')"
@@ -272,9 +257,7 @@
               </div>
             </div>
 
-            <!-- DATE & PLACE OF BIRTH -->
             <div class="grid two-columns">
-              <!-- DATE -->
               <div
                 class="form-group"
                 @mouseenter="showHint('date_naissance')"
@@ -304,7 +287,6 @@
                 >
               </div>
 
-              <!-- LIEU -->
               <div
                 class="form-group"
                 @mouseenter="showHint('lieudenaissance')"
@@ -336,12 +318,10 @@
             </div>
           </fieldset>
 
-          <!-- STEP 3: CONFIRMATION -->
           <fieldset class="form-fieldset" v-else>
             <legend>Confirmer votre inscription</legend>
             <div class="summary-container">
               <h3 class="summary-title">Résumé de vos informations</h3>
-              <!-- PERSONAL SUMMARY -->
               <div class="summary-section">
                 <h4>Informations personnelles</h4>
                 <div class="summary-grid">
@@ -356,7 +336,6 @@
                   </div>
                 </div>
               </div>
-              <!-- ADMIN SUMMARY -->
               <div class="summary-section">
                 <h4>Détails administratifs</h4>
                 <div class="summary-grid">
@@ -377,7 +356,6 @@
                 </div>
               </div>
 
-              <!-- TERMS -->
               <div class="terms-checkbox">
                 <input id="termsAccepted" type="checkbox" v-model="termsAccepted" />
                 <label for="termsAccepted">
@@ -395,7 +373,6 @@
             </div>
           </fieldset>
 
-          <!-- ACTION BUTTONS -->
           <div class="form-actions">
             <button
               v-if="currentStep > 0"
@@ -415,21 +392,6 @@
               </template>
             </button>
           </div>
-
-          <!-- NOTIFICATIONS -->
-          <!-- <transition name="fade">
-            <div v-if="success" class="notification success">
-              <p>
-                Inscription réussie !
-                <router-link to="/LoginCandidat">Connectez‑vous</router-link>
-              </p>
-            </div>
-          </transition>
-          <transition name="fade">
-            <div v-if="serverError" class="notification error">
-              <p>{{ serverError }}</p>
-            </div>
-          </transition> -->
         </form>
       </div>
     </div>
@@ -439,13 +401,12 @@
 <script setup>
 import { ref, reactive, computed, watch } from "vue";
 import { useRouter } from "vue-router";
-import api from "@/axios";
-// import hiringImage from '../..assets/rec';
+import axios from "@/axios";
+import { useToast } from "vue-toastification";
 
-// === STATE ===
+const toast = useToast();
 const router = useRouter();
 const loading = ref(false);
-const success = ref(false);
 const serverError = ref("");
 const showPassword = ref(false);
 const showTerms = ref(false);
@@ -453,7 +414,6 @@ const showPrivacy = ref(false);
 const termsAccepted = ref(false);
 const currentStep = ref(0);
 
-// === UI HELPERS ===
 const hints = reactive({
   nom: false,
   prenom: false,
@@ -479,7 +439,6 @@ const steps = [
   { label: "Confirmation" },
 ];
 
-// === FORM DATA ===
 const formData = reactive({
   nom: "",
   prenom: "",
@@ -505,11 +464,6 @@ const validFields = reactive({
   lieudenaissance: false,
 });
 
-// === VALIDATION CONSTANTS ===
-const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ0-9'\-\s]+$/;
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-// === COMPUTEDS ===
 const maxDate = computed(() => {
   const d = new Date();
   d.setFullYear(d.getFullYear() - 18);
@@ -544,8 +498,12 @@ const canProceed = computed(() =>
 const progressWidth = computed(
   () => `${(currentStep.value / (steps.length - 1)) * 100}%`
 );
+const nameRegex = /^[A-Za-zÀ-ÖØ-öø-ÿ0-9'\-\s]+$/;
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 
-// === VALIDATION ===
+const numberRegex = /^\d{8}$/;
+
 function validateField(field) {
   delete errors[field];
   let valid = false;
@@ -563,7 +521,7 @@ function validateField(field) {
       if (!valid) errors[field] = "Email invalide";
       break;
     case "password":
-      valid = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(val);
+      valid = passwordRegex.test(val);
       if (!valid) errors[field] = "Mot de passe trop faible";
       break;
     case "confirmpassword":
@@ -572,7 +530,7 @@ function validateField(field) {
       break;
     case "cin":
     case "phone":
-      valid = /^\d{8}$/.test(val);
+      valid = numberRegex.test(val);
       if (!valid) errors[field] = "8 chiffres requis";
       break;
     case "date_naissance":
@@ -598,7 +556,6 @@ function inputClass(field) {
   };
 }
 
-// === NAVIGATION ===
 function nextStep() {
   if (currentStep.value === steps.length - 1) {
     if (!termsAccepted.value) {
@@ -613,7 +570,6 @@ function nextStep() {
     currentStep.value += 1;
     window.scrollTo({ top: 0, behavior: "smooth" });
   } else {
-    // force validation display
     Object.keys(validFields).forEach((f) => validateField(f));
   }
 }
@@ -629,7 +585,6 @@ function goToStep(index) {
   if (index <= currentStep.value) currentStep.value = index;
 }
 
-// === HELPERS ===
 function formatDate(dateString) {
   return dateString
     ? new Date(dateString).toLocaleDateString("fr-FR", {
@@ -644,20 +599,19 @@ function togglePassword() {
   showPassword.value = !showPassword.value;
 }
 
-// === API ===
 async function register() {
   loading.value = true;
   serverError.value = "";
   try {
-    await api.get("/sanctum/csrf-cookie");
-    await api.post("/api/register", { ...formData, role: "candidat" });
-    success.value = true;
+    await axios.get("/sanctum/csrf-cookie");
+    await axios.post("/api/register", { ...formData, role: "candidat" });
+    toast.success("inscription réussite");
     setTimeout(() => router.push("/LoginCandidat"), 2000);
   } catch (e) {
     if (e.response?.status === 422) {
       const v = e.response.data?.errors;
       if (v?.email?.length) {
-        errors.email = "Cet email est déjà utilisé";
+        toast.error("Cet email est déjà utilisé");
         currentStep.value = 0;
       } else {
         serverError.value = e.response.data.message || "Erreur de validation";

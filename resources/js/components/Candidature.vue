@@ -1,7 +1,6 @@
 <template>
   <div class="page-wrapper">
     <div class="candidatures-container">
-      <!-- Header avec titre et filtre -->
       <div class="header-actions mescandidatures">
         <h2><i class="fas fa-user-check"></i> Mes candidatures</h2>
         <select v-model="filtreStatut" class="statut-filter">
@@ -13,13 +12,11 @@
         </select>
       </div>
 
-      <!-- Loading state -->
       <div v-if="loading" class="loading-state">
         <div class="spinner"></div>
         <p>Chargement des candidatures...</p>
       </div>
 
-      <!-- Error state -->
       <div v-else-if="error" class="error-state">
         <i class="fas fa-exclamation-circle error-icon"></i>
         <p>{{ error }}</p>
@@ -28,7 +25,6 @@
         </button>
       </div>
 
-      <!-- Empty state -->
       <div v-else-if="candidaturesFiltrees.length === 0" class="empty-state">
         <i class="fas fa-inbox empty-icon"></i>
         <p>
@@ -38,7 +34,6 @@
         </p>
       </div>
 
-      <!-- Candidatures list -->
       <ul v-else class="candidature-grid">
         <li
           v-for="c in candidaturesFiltrees"
@@ -48,7 +43,6 @@
           <div class="candidature-header">
             <h3 class="title-offre">{{ c.offre?.titre || "Offre inconnue" }}</h3>
 
-            <!-- Affichage du statut IA avec correction -->
             <div :class="['status-badge', `statut-${c.status_ia}`]">
               <span>
                 {{ labels[c.status_ia] || "Statut inconnu" }}
@@ -91,7 +85,6 @@
               <p><strong>Date :</strong> {{ formatDate(c.created_at) }}</p>
             </div>
 
-            <!-- Affichage amélioré de la date d'entretien -->
             <div v-if="c.date_entretien" class="card-info-row">
               <i class="fas fa-handshake"></i>
               <p>
@@ -115,18 +108,14 @@ const loading = ref(true);
 const error = ref(null);
 const filtreStatut = ref("");
 
-// Status labels for display
 const labels = {
   accepter: "Acceptée",
   entretien: "Entretien",
   embauche: "Embauchée",
   refuser: "Refusée",
-  enattente: "En attente",
+  // enattente: "En attente",
 };
 
-/**
- * Format date in a user-friendly format
- */
 function formatDate(dateString) {
   if (!dateString) return "—";
   try {
@@ -141,9 +130,6 @@ function formatDate(dateString) {
   }
 }
 
-/**
- * Format date and time with 12h format
- */
 function formatDateTime12h(dateString) {
   if (!dateString) return "—";
   try {
@@ -159,24 +145,16 @@ function formatDateTime12h(dateString) {
       hour12: true, // active le format 12h avec AM/PM
     };
 
-    // Formatter en fr-FR (mais avec hour12: true pour avoir AM/PM)
     return new Intl.DateTimeFormat("fr-FR", options).format(date);
   } catch (e) {
     return dateString;
   }
 }
 
-/**
- * Truncate text with ellipsis if it exceeds max length
- */
 const truncateText = (text, max) => {
   if (!text) return "";
   return text.length > max ? text.slice(0, max) + "…" : text;
 };
-
-/**
- * Filter candidatures based on selected status
- */
 
 const candidaturesFiltrees = computed(() => {
   if (!filtreStatut.value) return candidatures.value;
@@ -188,16 +166,13 @@ async function getCandidatures() {
   error.value = null;
 
   try {
-    // Init CSRF cookie pour Laravel Sanctum
     await axios.get("/sanctum/csrf-cookie");
 
-    // Récupère les candidatures
     const response = await axios.get("/api/mescandidatures", {
       withCredentials: true,
     });
     const data = response.data;
 
-    // On s'assure que data est un tableau, sinon on remet un tableau vide
     candidatures.value = Array.isArray(data)
       ? data.map((c) => {
           if (c.date_entretien) {
@@ -224,7 +199,6 @@ async function getCandidatures() {
 }
 
 onMounted(() => {
-  // Fetch data
   getCandidatures();
 });
 </script>

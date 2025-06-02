@@ -4,9 +4,7 @@
       <form @submit.prevent="submitCv" class="cv-form" enctype="multipart/form-data">
         <h1 class="cv-title">Créer Votre CV&nbsp;!</h1>
 
-        <!-- Colonne gauche -->
         <div class="cv-left-column">
-          <!-- Photo de profil -->
           <div class="profile-section">
             <div class="profile-picture-container">
               <div
