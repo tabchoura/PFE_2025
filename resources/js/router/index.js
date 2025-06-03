@@ -121,6 +121,9 @@ const routes = [
   { path: '/offresrecruteur', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
     { path: '', name: 'Offresrecruteur', component: Offresrecruteur },
 
+     { path: '/ajouteroffre', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Ajouteroffre', component: Ajouteroffre ,  props: true, }
+  ]},
   { path: '/modifieroffre/:id', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
     { path: '', name: 'Modifieroffre', component: Modifieroffre ,  props: true, }
   ]},

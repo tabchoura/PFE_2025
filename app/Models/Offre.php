@@ -8,19 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class Offre extends Model
 {
     use HasFactory;
-    protected $fillable = [
-       'titre', 'description', 'salaire', 'details','embedding',
+     protected $guarded = [];
 
-    ];
 
     protected $casts = [
   'embedding' => 'array',
 ];
-
-    // public function user()
-    // {
-    //     return $this->belongsTo(User::class);
-    // }
 
 public function candidatures()
 {

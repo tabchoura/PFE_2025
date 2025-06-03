@@ -20,7 +20,6 @@ class OfferController extends Controller
 
  public function store(Request $request)
 {
-    // Validation
   $validated = $request->validate([
     'titre'       => 'required|string|max:255',
     'description' => 'required|string|max:65535', 
@@ -48,13 +47,7 @@ class OfferController extends Controller
             'details'     => 'nullable|string|max:255',
         ]);
 
-        // Mise à jour des champs classiques
-
-        // Regénération de l'embedding si la description est fournie
-        // if (isset($validated['description'])) {
-        //     $vector = app(LocalEmbeddingService::class)
-        //                  ->embedText($offre->description);
-        //    $offre->update(['embedding' => $vector]);
+       
          
   $offre->update($validated);
         return response()->json([
@@ -116,7 +109,6 @@ class OfferController extends Controller
 
         return response()->json(['message' => 'Offre enregistrée avec succès !'], 200);
     }
-    //offres enregistrées
 
    public function Mesoffres()
 {

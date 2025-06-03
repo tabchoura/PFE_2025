@@ -9,7 +9,6 @@ use App\Models\User;
 
 class AuthController extends Controller
 {
-    // Inscription d'un utilisa+teur ( recruteur ou candidat)
     public function register(Request $request)
     {
        $validated= $request->validate([
@@ -34,7 +33,6 @@ class AuthController extends Controller
 
 
 
-    // Connexion d'un utilisateur
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -57,7 +55,6 @@ class AuthController extends Controller
     }
 
 
-    // Déconnexion de l'utilisateur
     public function logout(Request $request)
     {
         Auth::user()->tokens->each(function ($token) {

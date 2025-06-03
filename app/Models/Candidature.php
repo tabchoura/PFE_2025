@@ -9,22 +9,8 @@ class Candidature extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'offre_id',
-        'cv_id',
-        'user_id',  
-        'message',
-        'statut',
- 'status_ia',
-        'date_entretien',
-        'cv_embedding', 'match_score',
-                'similarity_score', 
+    protected $guarded = [];
 
-                
-
-        'lien_visio'   ,
-
-    ];
     protected $attributes = [
         'statut' => 'enattente',
     ];
@@ -40,13 +26,11 @@ class Candidature extends Model
         return $this->belongsTo(Offre::class);
     }
 
-    // Relation avec le CV
     public function cv()
     {
         return $this->belongsTo(CV::class);
     }
 
-    // Relation avec l'utilisateur
     public function user()
     {
         return $this->belongsTo(User::class);

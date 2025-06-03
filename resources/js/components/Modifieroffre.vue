@@ -16,12 +16,13 @@
 
         <div class="form-group">
           <label for="description">Description</label>
-          <input
-            type="text"
+          <textarea
+            name="description"
             id="description"
             v-model="formdata.description"
             placeholder="Décrivez brièvement le poste"
-          />
+            rows="3"
+          ></textarea>
         </div>
 
         <div class="form-group">
@@ -36,12 +37,13 @@
 
         <div class="form-group">
           <label for="details">Détails</label>
-          <input
-            type="text"
+          <textarea
+            name="details"
             id="details"
             v-model="formdata.details"
-            placeholder="Informations complémentaires, avantages…"
-          />
+            placeholder="Informations complémentaires, avantages, etc."
+            rows="5"
+          ></textarea>
         </div>
         <div class="btn-group">
           <button type="submit" class="submit-btn">Enregistrer les modifications</button>
@@ -150,6 +152,16 @@ label {
   margin-bottom: 0.5rem;
   font-weight: 500;
   color: #2c3e50;
+}
+
+textarea {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid #e1e5ee;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: #f8fafc;
+  transition: all 0.2s ease;
 }
 input {
   width: 100%;

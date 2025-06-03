@@ -9,7 +9,6 @@ class Cv extends Model
 {
     use HasFactory;
 
-    // Définir le nom de la table si ce n'est pas conventionnel
     protected $table = 'cvs';  
     protected $guarded = [];
 
@@ -19,12 +18,10 @@ class Cv extends Model
         'competences' => 'array',
         'langues' => 'array',
         'projets' => 'array',
-        // 'date_naissance' => 'date', // Si vous avez une colonne date, vous pouvez décommenter
+        // 'date_naissance' => 'date',
     ];
 
-    /**
-     * Un CV peut avoir plusieurs candidatures.
-     */
+  
     public function candidatures()
     {
         return $this->hasMany(Candidature::class);  

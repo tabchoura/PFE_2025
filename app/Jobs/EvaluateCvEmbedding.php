@@ -28,19 +28,19 @@ class EvaluateCvEmbedding implements ShouldQueue
 
     public function handle(): void
     {
-        Log::info("Début de l'évaluation du CV pour la candidature ID : {$this->candidature->id}");
+        // Log::info("Début de l'évaluation du CV pour la candidature ID : {$this->candidature->id}");
         
         $cvPath = storage_path('app/' . $this->cv->cv_path);
         
         if (!file_exists($cvPath)) {
-            Log::error("Le fichier CV n'existe pas à l'emplacement : $cvPath");
+            // Log::error("Le fichier CV n'existe pas à l'emplacement : $cvPath");
             throw new \Exception("Le fichier CV n'existe pas.");
         }
 
         $text = $this->extractTextFromFile($cvPath);
 
         if (empty($text)) {
-            Log::error("Le texte extrait du CV est vide.");
+            // Log::error("Le texte extrait du CV est vide.");
             throw new \Exception("Le texte extrait du CV est vide.");
         }
 //app fonction laravel bech ynedi ssrvice local 
@@ -48,14 +48,14 @@ class EvaluateCvEmbedding implements ShouldQueue
         $cvEmbedding = $embeddingService->embedText($text);
 
         if (!is_array($cvEmbedding)) {
-            Log::error("L'embedding du CV est invalide.");
+            // Log::error("L'embedding du CV est invalide.");
             throw new \Exception("L'embedding du CV est invalide.");
         }
 
         $offerEmbedding = $embeddingService->embedText($this->candidature->offre->description);
 
         $similarityScore = $this->calculateSimilarity($cvEmbedding, $offerEmbedding);
-$statusIa = $similarityScore >= 0.6 ? 'accepted' : 'rejected';  
+$statusIa = $similarityScore >= 0.7 ? 'accepted' : 'rejected';  
 
         $this->candidature->update([
         'similarity_score' => $similarityScore,
@@ -77,7 +77,7 @@ $statusIa = $similarityScore >= 0.6 ? 'accepted' : 'rejected';
                 throw new \Exception("Format de fichier non pris en charge : $ext");
             }
         } catch (\Exception $e) {
-            Log::error("Erreur lors de l'extraction du texte du fichier CV : " . $e->getMessage());
+            // Log::error("Erreur lors de l'extraction du texte du fichier CV : " . $e->getMessage());
             throw new \Exception("Erreur lors de l'extraction du texte du fichier CV.");
         }
     }

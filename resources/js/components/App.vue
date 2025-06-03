@@ -1,21 +1,3 @@
-<script setup>
-import { ref } from 'vue';
-import logo from "../../assets/logo.png";
-
-// State to control mobile menu visibility
-const mobileMenuOpen = ref(false);
-
-// Toggle mobile menu
-const toggleMobileMenu = () => {
-  mobileMenuOpen.value = !mobileMenuOpen.value;
-};
-
-// Close mobile menu when a link is clicked
-const closeMenu = () => {
-  mobileMenuOpen.value = false;
-};
-</script>
-
 <template>
   <div id="app">
     <nav class="navbar">
@@ -24,20 +6,25 @@ const closeMenu = () => {
           <img class="logo-img" :src="logo" alt="Logo JobGo" />
           <p class="jobgo">JobGo</p>
         </router-link>
-        
-        <!-- Hamburger menu button (mobile only) -->
+
         <div class="hamburger" @click="toggleMobileMenu">
           <span></span>
           <span></span>
           <span></span>
         </div>
 
-        <div class="nav-links" :class="{ 'active': mobileMenuOpen }">
+        <div class="nav-links" :class="{ active: mobileMenuOpen }">
           <router-link to="/" class="nav-btn" @click="closeMenu">Accueil</router-link>
-          <router-link to="/Apropos" class="nav-btn" @click="closeMenu">A propos</router-link>
-          <router-link to="/Offres" class="nav-btn" @click="closeMenu">Nos Offres</router-link>
-         
-          <router-link to="/authentification" class="nav-btn auth-btn" @click="closeMenu">Mon Espace</router-link>
+          <router-link to="/Apropos" class="nav-btn" @click="closeMenu"
+            >A propos</router-link
+          >
+          <router-link to="/Offres" class="nav-btn" @click="closeMenu"
+            >Nos Offres</router-link
+          >
+
+          <router-link to="/authentification" class="nav-btn auth-btn" @click="closeMenu"
+            >Mon Espace</router-link
+          >
         </div>
       </div>
     </nav>
@@ -51,7 +38,20 @@ const closeMenu = () => {
     </div>
   </div>
 </template>
+<script setup>
+import { ref } from "vue";
+import logo from "../../assets/logo.png";
 
+const mobileMenuOpen = ref(false);
+
+const toggleMobileMenu = () => {
+  mobileMenuOpen.value = !mobileMenuOpen.value;
+};
+
+const closeMenu = () => {
+  mobileMenuOpen.value = false;
+};
+</script>
 <style scoped>
 /* Navbar Styling */
 .navbar {
@@ -162,11 +162,11 @@ const closeMenu = () => {
   .search-input {
     width: 160px;
   }
-  
+
   .nav-links {
     gap: 15px;
   }
-  
+
   .nav-btn {
     padding: 8px 12px;
   }
@@ -176,7 +176,7 @@ const closeMenu = () => {
   .hamburger {
     display: flex;
   }
-  
+
   .nav-links {
     position: fixed;
     top: 0;
@@ -193,21 +193,21 @@ const closeMenu = () => {
     gap: 20px;
     align-items: flex-start;
   }
-  
+
   .nav-links.active {
     right: 0;
   }
-  
+
   .search {
     width: 100%;
     margin: 10px 0;
   }
-  
+
   .search-input {
     width: 100%;
     margin: 0;
   }
-  
+
   .auth-btn {
     margin-top: 10px;
     width: 100%;
@@ -220,15 +220,15 @@ const closeMenu = () => {
   .navbar {
     padding: 15px;
   }
-  
+
   .logo-img {
     height: 32px;
   }
-  
+
   .jobgo {
     font-size: 22px;
   }
-  
+
   .nav-links {
     width: 250px;
     right: -260px;

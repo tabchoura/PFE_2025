@@ -107,7 +107,7 @@ public function postuler(Request $request, $id)
 
 public function envoyerEntretien(Request $request, $id)
 {
-    Log::info('envoyerEntretien payload', $request->all());
+    // Log::info('envoyerEntretien payload', $request->all());
 
   
         $validated = $request->validate([
@@ -115,7 +115,7 @@ public function envoyerEntretien(Request $request, $id)
             'lien_visio'     => ['required', 'url'],
         ]);
         
-        Log::info('Validation OK', $validated);
+        // Log::info('Validation OK', $validated);
         $dt = Carbon::createFromFormat('d/m/Y H:i', $validated['date_entretien']);
         Log::info('Carbon parsed', ['datetime' => $dt->toDateTimeString()]);
 
