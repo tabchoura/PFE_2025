@@ -27,7 +27,6 @@ import Mescv from '../components/Mescv.vue';
 import Mesoffres from '../components/Mesoffres.vue';
 
 import Creercv from '../components/Creercv.vue';
-// import Aftercvpostuler from '../components/Aftercvpostuler.vue'
 import DetailsCandidature from '../components/DetailsCandidature.vue';
 import detailsoffre_recruteur from '../components/detailsoffre_recruteur.vue';
 
@@ -35,15 +34,14 @@ const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/offres', name: 'Offres', component: Offres },
   { path: '/authentification', name: 'Authentification', component: Authentification },
-  { path: '/registercandidat', name: 'RegisterCandidat', component: RegisterCandidat },
-  { path: '/registerrecruteur', name: 'RegisterRecruteur', component: RegisterRecruteur },
   { path: '/apropos', name: 'Apropos', component: Apropos },
 
+  //candidat 
+  { path: '/registercandidat', name: 'RegisterCandidat', component: RegisterCandidat },
 
-  { path: '/ajouterimage', name: 'Ajouterimage', component:Ajouterimage },
+    { path: '/LoginCandidat', name: 'LoginCandidat', component: LoginCandidat },
 
-  // Candidat
-  { 
+      { 
     path: '/CompteCandidat', 
     component: CompteCandidat,
     meta: { requiresAuth: true },
@@ -51,36 +49,96 @@ const routes = [
       { path: '', name: 'CompteCandidat', component: CompteCandidat }
     ]
   },
- 
+
+
+
 
   { path: '/monprofile', component: CompteCandidat, meta: { requiresAuth: true }, children: [
     { path: '', name: 'Monprofile', component: Monprofile }
-  ]},
-  { path: '/candidature', component: CompteCandidat, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'Candidature', component: Candidature }
-  ]},
-
-// router/index.ts
-
-
-, { path:  '/planifier-entretien/:candidatureId', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'PlanifierEntretien', component:  EntretiensRecruteurs }
-  ]}, 
+  ]},  
   
-  { path: '/mesoffres', component: CompteCandidat, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'Mesoffres', component: Mesoffres }
-  ]},
-  { path: '/mescv', component: CompteCandidat, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'Mescv', component: Mescv }
-  ]},
   { path: '/creercv', component: CompteCandidat, meta: { requiresAuth: true }, children: [
     { path: '', name: 'CreerCv', component: Creercv }
   ]},
 
+  { path: '/ajouterimage', name: 'Ajouterimage', component:Ajouterimage },
+
+   { path: '/mescv', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Mescv', component: Mescv }
+  ]},
+ { path: '/voircv/:id', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'VoirCv', component: Voircv }
+  ]},
+   { path: '/modifiercv/:id', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Modifiercv', component: Modifiercv }
+  ]},
+ 
+
+  { path: '/mesoffres', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Mesoffres', component: Mesoffres }
+  ]},
+   { path: '/postuler/:id', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Postuler', component: Postuler }
+  ]}, 
+
+  { path: '/candidature', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Candidature', component: Candidature }
+  ]},
+
+ 
+  { path: '/voirdetails/:id' , component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Voirdetails', component: Voirdetails }
+  ]},
+
+
+   { path:'/candidat/offres/:id', component: CompteCandidat, meta: { requiresAuth: true }, children: [
+    { path: '',  name: 'CandidatVoirdetails',
+  component: Voirdetails,
+  props: true, }
+  ]},
+
+
   
-  // { path: '/aftercvpostuler', component: CompteCandidat, meta: { requiresAuth: true }, children: [
-  //   { path: '', name: 'Aftercvpostuler', component: Aftercvpostuler }
-  // ]},
+
+
+
+  
+
+
+
+// Recruteur 
+    { path: '/registerrecruteur', name: 'RegisterRecruteur', component: RegisterRecruteur },
+
+  { path: '/LoginRecruteur', name: 'LoginRecruteur', component: LoginRecruteur },
+
+  
+  { path: '/CompteRecruteur', name: 'CompteRecruteur', component: CompteRecruteur, meta: { requiresAuth: true } },
+
+
+  { path: '/monprofilerecruteur', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Monprofilerecruteur', component: Monprofilerecruteur }
+  ]},
+  { path: '/offresrecruteur', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Offresrecruteur', component: Offresrecruteur },
+
+  { path: '/modifieroffre/:id', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Modifieroffre', component: Modifieroffre ,  props: true, }
+  ]},
+  { path: '/supprimeroffre/:id', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Supprimeroffre', component: Supprimeroffre ,  props: true, }
+  ]},
+
+  {  path: '/recruteur/offres/:id',
+ component: CompteRecruteur, meta: { requiresAuth: true }, children: [
+    { path: '',   name: 'RecruteurVoirdetails',  component: detailsoffre_recruteur,
+  props: true, }
+  ]},
+    
+  ]},
+  { path: '/Candidaturesrecruteur', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'Candidaturesrecruteur', component: Candidaturesrecruteur }
+  ]},
+
 {
   path: '/candidatures/:candidatureId',
   component: CompteRecruteur,
@@ -90,74 +148,11 @@ const routes = [
 }
 ,
 
-  // Vue recruteur
- 
-  
-  { path: '/voircv/:id', component: CompteCandidat, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'VoirCv', component: Voircv }
-  ]},
- 
-  { path: '/modifiercv/:id', component: CompteCandidat, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'Modifiercv', component: Modifiercv }
-  ]},
- 
-  
-  
-
-   
-   // … vos autres routes …
-  
-,  
-  // { path: '/CreateLettre', component: CompteCandidat, meta: { requiresAuth: true }, children: [
-  //   { path: '', name: 'CreateLettre', component: CreateLettre }
-  // ]},
-  { path: '/voirdetails/:id' , component: CompteCandidat, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'Voirdetails', component: Voirdetails }
-  ]},
-
-  { path: '/postuler/:id', component: CompteCandidat, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'Postuler', component: Postuler }
+, { path:  '/planifier-entretien/:candidatureId', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
+    { path: '', name: 'PlanifierEntretien', component:  EntretiensRecruteurs }
   ]}, 
-  { path: '/LoginCandidat', name: 'LoginCandidat', component: LoginCandidat },
-  { path: '/LoginRecruteur', name: 'LoginRecruteur', component: LoginRecruteur },
+  
 
-  // Recruteur
-  { path: '/CompteRecruteur', name: 'CompteRecruteur', component: CompteRecruteur, meta: { requiresAuth: true } },
-  { path: '/monprofilerecruteur', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'Monprofilerecruteur', component: Monprofilerecruteur }
-  ]},
-  { path: '/offresrecruteur', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'Offresrecruteur', component: Offresrecruteur }
-  ]},
-  { path: '/Candidaturesrecruteur', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'Candidaturesrecruteur', component: Candidaturesrecruteur }
-  ]},
-  { path: '/ajouteroffre', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'Ajouteroffre', component: Ajouteroffre }
-  ]},
-  { path: '/modifieroffre/:id', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'Modifieroffre', component: Modifieroffre ,  props: true, }
-  ]},
-  { path: '/supprimeroffre/:id', component: CompteRecruteur, meta: { requiresAuth: true }, children: [
-    { path: '', name: 'Supprimeroffre', component: Supprimeroffre ,  props: true, }
-  ]},
-
-
-
-  {  path: '/recruteur/offres/:id',
- component: CompteRecruteur, meta: { requiresAuth: true }, children: [
-    { path: '',   name: 'RecruteurVoirdetails',  component: detailsoffre_recruteur,
-  props: true, }
-  ]},
-
-   { path:'/candidat/offres/:id', component: CompteCandidat, meta: { requiresAuth: true }, children: [
-    { path: '',  name: 'CandidatVoirdetails',
-  component: Voirdetails,
-  props: true, }
-  ]},
-
-
-  // Détails de l'offre
 
   // Catch-all
   { path: '/:pathMatch(.*)*', redirect: '/' }

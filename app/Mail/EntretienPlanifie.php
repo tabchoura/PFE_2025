@@ -20,7 +20,6 @@ class EntretienPlanifie extends Mailable
 
 public function build()
 {
-    // On transforme l'objet Carbon en chaîne formatée
     $dt = Carbon::parse($this->candidature->date_entretien)
                 ->locale('fr')
                 ->setTimezone('Europe/Paris');

@@ -89,7 +89,6 @@ public function postuler(Request $request, $id)
     }
  public function show($id)
     {
-        //with permet de charger offre et cv ensemble 
         $candidature = Candidature::with(['offre', 'cv', ])->find($id);
 
         if (! $candidature) {
@@ -98,10 +97,7 @@ public function postuler(Request $request, $id)
 
         return response()->json($candidature);
     }
-    /* ---------------------
-    ---------------------------------------------
-     * 3. Envoyer un entretien à un candidat
-     * ------------------------------------------------------------------ */
+  
     public function index()
     {
         return response()->json(
@@ -111,22 +107,18 @@ public function postuler(Request $request, $id)
 
 public function envoyerEntretien(Request $request, $id)
 {
-    // 0️⃣ Logging du payload brut
     Log::info('envoyerEntretien payload', $request->all());
 
   
-        // 1️⃣ Validation des champs
         $validated = $request->validate([
             'date_entretien' => ['required', 'date_format:d/m/Y H:i'],
             'lien_visio'     => ['required', 'url'],
         ]);
         
         Log::info('Validation OK', $validated);
-        // 2️⃣ Combinaison date + heure en Carbon
         $dt = Carbon::createFromFormat('d/m/Y H:i', $validated['date_entretien']);
         Log::info('Carbon parsed', ['datetime' => $dt->toDateTimeString()]);
 
-        // 3️⃣ Mise à jour de la candidature
         $candidature = Candidature::findOrFail($id);
         $candidature->update([
             'date_entretien' => $dt->format('Y-m-d H:i:s'),
@@ -134,7 +126,6 @@ public function envoyerEntretien(Request $request, $id)
             'statut'         => 'entretien',
         ]);
 
-        // 4️⃣ Envoi de l’email uniquement si le CV et son email existent
         if ($candidature->cv && $candidature->cv->email) {
             Mail::to($candidature->cv->email)
                 ->send(new EntretienPlanifie($candidature));
@@ -142,7 +133,6 @@ public function envoyerEntretien(Request $request, $id)
             Log::warning("La candidature $id n'a pas de CV ou d'email valide pour l'envoi du mail.");
         }
 
-        // 5️⃣ Réponse JSON
         return response()->json([
             'message'     => 'Entretien planifié et email envoyé.',
             'candidature' => $candidature,
@@ -152,9 +142,6 @@ public function envoyerEntretien(Request $request, $id)
   
 }
 
-    /* ------------------------------------------------------------------
-     * 6. Supprimer une candidature
-     * ------------------------------------------------------------------ */
     public function destroy($id)
     {
         $candidature = Candidature::find($id);

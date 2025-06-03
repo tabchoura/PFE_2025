@@ -17,10 +17,10 @@ class Offre extends Model
   'embedding' => 'array',
 ];
 
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
+    // public function user()
+    // {
+    //     return $this->belongsTo(User::class);
+    // }
 
 public function candidatures()
 {

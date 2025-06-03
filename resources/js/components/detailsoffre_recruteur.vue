@@ -87,19 +87,25 @@ onMounted(getOfferDetails);
 </script>
 
 <style scoped>
-.page-wrapper {
+body {
   background: linear-gradient(135deg, #e0eafc, #cfdef3);
+  font-family: "Inter", sans-serif;
+  margin: 0;
+  padding: 0;
+}
+.page-wrapper {
+  background: linear-gradient(135deg, #f0f7ff, #e6f0ff);
   min-height: 100vh;
   padding: 2rem;
 }
 
 .profil-container {
-  background: #fff;
-  padding: 2rem;
-  border-radius: 1rem;
-  max-width: 900px;
-  margin: 6rem auto 2rem;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  background: white;
+  border-radius: 16px;
+  padding: 2.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 .profil-container:hover {

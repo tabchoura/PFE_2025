@@ -4,19 +4,11 @@
       <h1>🗓️ Planifier l'entretien</h1>
       <p class="instructions">Choisissez la date puis cliquez sur « Envoyer ».</p>
 
-      <!-- Bouton toggle formulaire -->
       <button @click="formVisible = !formVisible" class="toggle-btn">
         {{ formVisible ? "✖️ Annuler l'ajout" : "➕ Ajouter un événement" }}
       </button>
 
-      <!-- Formulaire d'ajout événement -->
       <form v-if="formVisible" @submit.prevent="ajouterEvenement" class="form">
-        <input
-          v-model="titre"
-          placeholder="Titre de l'événement"
-          required
-          autocomplete="off"
-        />
         <input v-model="date" type="date" required />
         <input v-model="heure" type="time" required />
         <input
@@ -33,15 +25,13 @@
         </div>
       </form>
 
-      <!-- Calendrier affichant tous les événements -->
       <pro-calendar :events="events" :config="calendarConfig" />
 
-      <!-- Liste des événements -->
       <div v-if="events.length" class="event-list">
         <h3>📅 Événements enregistrés :</h3>
         <ul>
           <li v-for="(event, index) in events" :key="event.id" class="event-item">
-            {{ event.name }} – {{ formatDate(event.date) }} –
+            {{ formatDate(event.date) }} –
             <a :href="event.lienVisio" target="_blank" rel="noopener noreferrer">
               {{ event.lienVisio }}
             </a>
@@ -67,7 +57,6 @@
         </button>
       </div>
 
-      <!-- Message de confirmation -->
       <div v-if="entretien" class="success-message" role="alert">
         <h3>Entretien enregistré ✅</h3>
         <p>🗓️ {{ formatDate(entretien.date_entretien) || "Date indisponible" }}</p>
@@ -85,8 +74,7 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
+<script setup>
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
@@ -99,14 +87,13 @@ const toast = useToast();
 
 const candidatureId = Number(route.params.candidatureId);
 
-const events = ref<any[]>([]);
+const events = ref([]);
 const formVisible = ref(false);
-const titre = ref("");
 const date = ref("");
 const heure = ref("");
 const lienVisio = ref("");
 
-const entretien = ref<any | null>(null);
+const entretien = ref(null);
 const isSubmitting = ref(false);
 
 const calendarConfig = {
@@ -119,34 +106,23 @@ const calendarConfig = {
   closeText: "Fermer",
 };
 
-function formatDateDMY(dateStr: string) {
-  if (!dateStr) return "";
-  const parts = dateStr.split("-");
-  if (parts.length !== 3) return dateStr;
-  const [year, month, day] = parts;
-  return `${day}/${month}/${year}`;
-}
-
-function formatDate(d?: string) {
+function formatDate(d) {
   if (!d) return "";
-
   try {
-    const date = new Date(d);
-    return date.toLocaleString("fr-FR", {
+    const dateObj = new Date(d);
+    return dateObj.toLocaleString("fr-FR", {
       day: "numeric",
       month: "long",
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     });
-  } catch (error) {
-    console.error("Erreur de formatage de date:", error);
+  } catch {
     return "Date invalide";
   }
 }
 
-// Fonction pour nettoyer le lien visio s'il est répété deux fois
-function nettoyerLien(lien: string): string {
+function nettoyerLien(lien) {
   if (!lien) return "";
   if (lien.length % 2 === 0) {
     const moitié = lien.length / 2;
@@ -158,10 +134,6 @@ function nettoyerLien(lien: string): string {
 }
 
 function ajouterEvenement() {
-  if (!titre.value.trim()) {
-    toast.warning("Merci de saisir un titre pour l'événement");
-    return;
-  }
   if (!date.value || !heure.value) {
     toast.warning("Merci de saisir la date et l'heure");
     return;
@@ -179,12 +151,11 @@ function ajouterEvenement() {
     return;
   }
 
-  const mysql = `${date.value} ${heure.value}:00`;
+  const Date_entretien = `${date.value} ${heure.value}:00`;
 
   events.value.push({
     id: Date.now().toString(),
-    name: titre.value.trim(),
-    date: mysql,
+    date: Date_entretien,
     lienVisio: lienVisio.value.trim(),
   });
 
@@ -198,13 +169,12 @@ function annuler() {
 }
 
 function resetForm() {
-  titre.value = "";
   date.value = "";
   heure.value = "";
   lienVisio.value = "";
 }
 
-function supprimerEvenement(index: number) {
+function supprimerEvenement(index) {
   events.value.splice(index, 1);
 }
 
@@ -212,7 +182,7 @@ function retour() {
   router.push("/candidaturesrecruteur");
 }
 
-function formatDateDMY_HM(dateStr: string, timeStr: string) {
+function formatDateDMY_HM(dateStr, timeStr) {
   if (!dateStr) return "";
   const parts = dateStr.split("-");
   if (parts.length !== 3) return dateStr;
@@ -234,43 +204,52 @@ async function envoyer() {
   const timePart = timePartWithSeconds.slice(0, 5);
 
   const dateHeureFormatee = formatDateDMY_HM(datePart, timePart);
-
-  // Nettoyage simple pour éviter double lien
-  let lienNettoye = premierEvenement.lienVisio;
-  if (lienNettoye.length % 2 === 0) {
-    const moitié = lienNettoye.length / 2;
-    if (lienNettoye.slice(0, moitié) === lienNettoye.slice(moitié)) {
-      lienNettoye = lienNettoye.slice(0, moitié);
-    }
-  }
+  const lienNettoye = nettoyerLien(premierEvenement.lienVisio);
 
   try {
     const { data } = await axios.post(`/api/candidatures/${candidatureId}/entretien`, {
       date_entretien: dateHeureFormatee,
       lien_visio: lienNettoye,
     });
-    // On récupère juste l'objet candidature pour faciliter l'affichage
     entretien.value = data.candidature;
     toast.success("Entretien planifié avec succès !");
     router.push("/Candidaturesrecruteur");
-  } catch (err: any) {
-    const message =
-      err.response?.data?.message || err.message || "Erreur lors de l'envoi";
+  } catch (err) {
+    const message = toast.error("Erreur lors de l'envoi");
     toast.error(message);
   } finally {
     isSubmitting.value = false;
   }
 }
 </script>
+
 <style scoped>
-/* Vos styles ici (inchangés) */
 .page-wrapper {
   background: linear-gradient(135deg, #e0eafc, #cfdef3);
   padding: 2rem;
   min-height: 100vh;
 }
+.entretiens-container h1 {
+  color: #1e3a8a;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  position: relative;
+  padding-bottom: 0.5rem;
+}
+.entretiens-container h1::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 4px;
+  background: #3b82f6;
+  border-radius: 2px;
+}
+
 .entretiens-container {
-  max-width: 700px;
+  max-width: 900px;
   margin: auto;
   background: white;
   padding: 2rem;

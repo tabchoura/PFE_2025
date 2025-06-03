@@ -60,7 +60,6 @@ class CvController extends Controller
     }
 
 
-    /** Générer un fichier PDF à partir des données du CV */
     private function generatePdf($cv)
     {
         $dompdf = new Dompdf();

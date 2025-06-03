@@ -27,14 +27,11 @@ class Cv extends Model
      */
     public function candidatures()
     {
-        return $this->hasMany(Candidature::class);  // Une relation hasMany avec le modèle Candidature
-    }
+        return $this->hasMany(Candidature::class);  
 
-    /**
-     * Un CV appartient à un utilisateur.
-     */
+    }
     public function user()
     {
-        return $this->belongsTo(User::class);  // Relation inverse avec le modèle User
+        return $this->belongsTo(User::class); 
     }
 }

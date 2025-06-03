@@ -7,7 +7,7 @@ use GuzzleHttp\Client;
 class LocalEmbeddingService
 {
     protected Client $http;
-//bib GuzzleHttp bech namlou instanciation http ml classe client tkhalina nesnou des requets http bech najmou nbathou requete ll srvice ia 
+//bib GuzzleHttp bech namlou instanciation http ml classe client tkhalina nesn3ou des requets http bech najmou nbathou requete ll srvice ia 
     public function __construct()
     {
         $this->http = new Client([
@@ -17,7 +17,6 @@ class LocalEmbeddingService
     }
 
     /**
-     * Envoie le texte au micro-service Python et retourne l'embedding.
      *
      * @param string $text
      * @return array

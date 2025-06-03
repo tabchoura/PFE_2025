@@ -23,7 +23,7 @@ class EvaluateCvEmbedding implements ShouldQueue
     public function __construct(Candidature $candidature)
     {
         $this->candidature = $candidature;
-        $this->cv = $candidature->cv; // Assurer que nous récupérons le CV lié à la candidature
+        $this->cv = $candidature->cv; 
     }
 
     public function handle(): void
@@ -32,22 +32,18 @@ class EvaluateCvEmbedding implements ShouldQueue
         
         $cvPath = storage_path('app/' . $this->cv->cv_path);
         
-        // Vérifier si le fichier CV existe
         if (!file_exists($cvPath)) {
             Log::error("Le fichier CV n'existe pas à l'emplacement : $cvPath");
             throw new \Exception("Le fichier CV n'existe pas.");
         }
 
-        // Extraire le texte du fichier CV
         $text = $this->extractTextFromFile($cvPath);
 
-        // Vérifier si le texte est bien extrait
         if (empty($text)) {
             Log::error("Le texte extrait du CV est vide.");
             throw new \Exception("Le texte extrait du CV est vide.");
         }
-
-        // Obtenir l'embedding du texte extrait
+//app fonction laravel bech ynedi ssrvice local 
         $embeddingService = app(LocalEmbeddingService::class);
         $cvEmbedding = $embeddingService->embedText($text);
 
@@ -56,17 +52,14 @@ class EvaluateCvEmbedding implements ShouldQueue
             throw new \Exception("L'embedding du CV est invalide.");
         }
 
-        // Récupérer l'offre d'emploi associée à la candidature
         $offerEmbedding = $embeddingService->embedText($this->candidature->offre->description);
 
-        // Calculer la similarité entre l'embedding du CV et de l'offre d'emploi
         $similarityScore = $this->calculateSimilarity($cvEmbedding, $offerEmbedding);
-$statusIa = $similarityScore >= 0.6 ? 'accepted' : 'rejected';  // Assurez-vous que le nom de la variable est cohérent
+$statusIa = $similarityScore >= 0.6 ? 'accepted' : 'rejected';  
 
-        // Mettre à jour le score de similarité dans la base de données une seule fois
         $this->candidature->update([
         'similarity_score' => $similarityScore,
-        'status_ia' => $statusIa,  // Mise à jour du champ status_ia
+        'status_ia' => $statusIa,  
     ]);
 
     Log::info("Évaluation du CV terminée. Similarité : $similarityScore, Status IA : $statusIa");
@@ -89,18 +82,14 @@ $statusIa = $similarityScore >= 0.6 ? 'accepted' : 'rejected';  // Assurez-vous 
         }
     }
 
-    /**
-     * Extraire le texte d'un fichier PDF
-     */
     private function extractTextFromPdf($path): string
     {
+        //parser instance men bib Parser smlot parserpdf capable bech yakra apartir men pdf w ykharj text 
         $parser = new Parser();
         $pdf = $parser->parseFile($path);
         return $pdf->getText();
     }
-    /**
-     * Calcul de la similarité cosinus entre deux embeddings
-     */
+ 
     private function calculateSimilarity(array $embedding1, array $embedding2): float
     {
         // Produit scalaire

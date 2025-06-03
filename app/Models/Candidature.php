@@ -12,7 +12,7 @@ class Candidature extends Model
     protected $fillable = [
         'offre_id',
         'cv_id',
-        'user_id',  // Assurez-vous que user_id est bien dans les fillable
+        'user_id',  
         'message',
         'statut',
  'status_ia',
@@ -35,7 +35,6 @@ class Candidature extends Model
         
     ];
 
-    // Relation avec l'offre
     public function offre()
     {
         return $this->belongsTo(Offre::class);
@@ -52,7 +51,7 @@ class Candidature extends Model
     {
         return $this->belongsTo(User::class);
     }
-    // app/Models/Candidature.php
+    
 
 
 }

@@ -52,7 +52,6 @@
             </div>
           </div>
 
-          <!-- Infos personnelles -->
           <div class="section">
             <div class="input-group">
               <label for="date_naissance">Date de naissance</label>
@@ -105,7 +104,6 @@
             </button>
           </div>
 
-          <!-- Langues -->
           <div class="section">
             <h3 class="section-title2">Langues</h3>
             <div
@@ -130,7 +128,6 @@
           </div>
         </div>
 
-        <!-- Colonne droite -->
         <div class="cv-right-column">
           <!-- Présentation -->
           <div class="section">
@@ -171,7 +168,6 @@
             </button>
           </div>
 
-          <!-- Éducation -->
           <div class="section">
             <h3 class="section-title">Éducation & Formation</h3>
             <div
@@ -203,7 +199,6 @@
             </button>
           </div>
 
-          <!-- Projets -->
           <div class="section">
             <h3 class="section-title">Projets</h3>
             <div
@@ -327,7 +322,7 @@ async function handleImage(e) {
 
   const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
   if (!allowedTypes.includes(file.type)) {
-    errors.value.image = "Format d'image non supporté (JPG ou PNG uniquement)";
+    errors.value.image = "Format d'image non supporté (JPG ou  JEPG  ou PNG uniquement)";
     toast.error(errors.value.image);
     return;
   }

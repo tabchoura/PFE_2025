@@ -1,7 +1,6 @@
 <template>
   <div class="page-wrapper">
     <div class="candidatures-container">
-      <!-- Header with title and filter -->
       <div class="header-actions mescandidatures">
         <h2><i class="fas fa-user-check"></i> Candidatures reçues</h2>
         <div class="actions-zone">
@@ -241,7 +240,6 @@ const getSteps = (statut) => {
   ];
 };
 
-// stepOrder modifiée pour prendre en compte la date d'entretien
 const stepOrder = (statut, dateEntretien) => {
   if (dateEntretien) {
     return 1; // étape "Entretien"
@@ -277,7 +275,6 @@ const getCandidatures = async () => {
     const data = response.data;
     candidatures.value = Array.isArray(data)
       ? data.map((c) => {
-          // Si date d'entretien renseignée, priorité au statut 'entretien'
           if (c.date_entretien) {
             c.statut = "entretien";
           } else if (c.status_ia === "rejected") {
@@ -287,7 +284,7 @@ const getCandidatures = async () => {
           } else if (c.status_ia === "hired") {
             c.statut = "embauche";
           } else {
-            c.statut = "enattente"; // statut par défaut
+            c.statut = "enattente";
           }
           return c;
         })

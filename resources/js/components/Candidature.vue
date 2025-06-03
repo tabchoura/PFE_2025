@@ -38,22 +38,22 @@
         <li
           v-for="c in candidaturesFiltrees"
           :key="c.id"
-          :class="['candidature-item', `statut-${c.status_ia}`]"
+          :class="['candidature-item', `statut-${c.status}`]"
         >
           <div class="candidature-header">
             <h3 class="title-offre">{{ c.offre?.titre || "Offre inconnue" }}</h3>
 
-            <div :class="['status-badge', `statut-${c.status_ia}`]">
+            <div :class="['status-badge', `statut-${c.status}`]">
               <span>
-                {{ labels[c.status_ia] || "Statut inconnu" }}
+                {{ labels[c.status] || "Statut inconnu" }}
                 {{
-                  c.status_ia === "accepter"
+                  c.status === "accepter"
                     ? "✅"
-                    : c.status_ia === "refuser"
+                    : c.status === "refuser"
                     ? "❌"
-                    : c.status_ia === "entretien"
+                    : c.status === "entretien"
                     ? "🗓️"
-                    : c.status_ia === "embauche"
+                    : c.status === "embauche"
                     ? "🎉"
                     : ""
                 }}
@@ -135,14 +135,13 @@ function formatDateTime12h(dateString) {
   try {
     const date = new Date(dateString);
 
-    // Options pour Intl.DateTimeFormat
     const options = {
       day: "numeric",
       month: "long",
       year: "numeric",
       hour: "numeric",
       minute: "numeric",
-      hour12: true, // active le format 12h avec AM/PM
+      hour12: true,
     };
 
     return new Intl.DateTimeFormat("fr-FR", options).format(date);
@@ -158,7 +157,7 @@ const truncateText = (text, max) => {
 
 const candidaturesFiltrees = computed(() => {
   if (!filtreStatut.value) return candidatures.value;
-  return candidatures.value.filter((c) => c.status_ia === filtreStatut.value);
+  return candidatures.value.filter((c) => c.status === filtreStatut.value);
 });
 
 async function getCandidatures() {
@@ -176,13 +175,13 @@ async function getCandidatures() {
     candidatures.value = Array.isArray(data)
       ? data.map((c) => {
           if (c.date_entretien) {
-            c.status_ia = "entretien"; // Priorité au statut entretien si date présente
+            c.status = "entretien";
           } else if (c.status_ia === "rejected") {
-            c.status_ia = "refuser";
+            c.status = "refuser";
           } else if (c.status_ia === "accepted") {
-            c.status_ia = "accepter";
+            c.status = "accepter";
           } else {
-            c.status_ia = "enattente";
+            c.status = "enattente";
           }
           return c;
         })
@@ -204,7 +203,7 @@ onMounted(() => {
 </script>
 <style scoped>
 .mescandidatures h2 {
-  color: #1e3a8a; /* bleu foncé proche de la capture */
+  color: #1e3a8a;
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 2rem;
