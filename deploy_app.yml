@@ -1,0 +1,193 @@
+---
+- name: Déployer l'application Laravel/Vue.js PFE_2025
+  hosts: serveurs_web
+  become: yes
+  vars:
+    app_path: /var/www/pfe2025
+    db_name: pfe2025
+    db_user: pfe2025_user
+    db_password: "PfeSecret2025!"
+
+  tasks:
+    - name: Mettre à jour le cache apt
+      apt:
+        update_cache: yes
+
+    - name: Installer PHP et les extensions nécessaires
+      apt:
+        name:
+          - php
+          - php-cli
+          - php-mbstring
+          - php-xml
+          - php-mysql
+          - php-curl
+          - php-zip
+          - unzip
+          - curl
+          - python3-pymysql
+        state: present
+
+    - name: Installer MySQL Server
+      apt:
+        name: mysql-server
+        state: present
+
+    - name: Démarrer et activer MySQL
+      service:
+        name: mysql
+        state: started
+        enabled: yes
+
+    - name: Télécharger l'installateur de Composer
+      get_url:
+        url: https://getcomposer.org/installer
+        dest: /tmp/composer-setup.php
+
+    - name: Installer Composer globalement
+      command: php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer
+      args:
+        creates: /usr/local/bin/composer
+
+    - name: Installer Node.js et npm
+      apt:
+        name:
+          - nodejs
+          - npm
+        state: present
+
+    - name: Copier le projet vers le dossier personnel (sans sudo)
+      synchronize:
+        src: /mnt/d/PFE_2025/
+        dest: "/home/mariem/pfe2025_temp/"
+        delete: yes
+        rsync_opts:
+          - "--exclude=vendor"
+          - "--exclude=node_modules"
+          - "--exclude=.git"
+      become: no
+
+    - name: Créer le dossier de destination final
+      file:
+        path: "{{ app_path }}"
+        state: directory
+        owner: mariem
+        group: mariem
+
+    - name: Vider le dossier de destination avant copie (évite les résidus)
+      command: bash -c "rm -rf {{ app_path }}/* {{ app_path }}/.[!.]*"
+      ignore_errors: yes
+
+    - name: Déplacer le projet vers /var/www
+      command: cp -r /home/mariem/pfe2025_temp/. "{{ app_path }}/"
+
+    - name: Nettoyer le dossier temporaire
+      file:
+        path: /home/mariem/pfe2025_temp
+        state: absent
+
+    - name: Copier le fichier .env
+      copy:
+        src: /mnt/d/PFE_2025/.env
+        dest: "{{ app_path }}/.env"
+
+    - name: Installer les dépendances PHP (Composer)
+      composer:
+        command: install
+        working_dir: "{{ app_path }}"
+        no_dev: no
+      environment:
+        COMPOSER_ALLOW_SUPERUSER: "1"
+
+    - name: Générer la clé d'application Laravel
+      command: php artisan key:generate
+      args:
+        chdir: "{{ app_path }}"
+
+    - name: Créer la base de données MySQL
+      mysql_db:
+        name: "{{ db_name }}"
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Créer un utilisateur MySQL dédié pour l'application
+      mysql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+        priv: "{{ db_name }}.*:ALL"
+        host: localhost
+        state: present
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Mettre à jour DB_USERNAME dans le .env
+      lineinfile:
+        path: "{{ app_path }}/.env"
+        regexp: '^DB_USERNAME='
+        line: "DB_USERNAME={{ db_user }}"
+
+    - name: Mettre à jour DB_PASSWORD dans le .env
+      lineinfile:
+        path: "{{ app_path }}/.env"
+        regexp: '^DB_PASSWORD='
+        line: "DB_PASSWORD={{ db_password }}"
+
+    - name: Lancer les migrations Laravel
+      command: php artisan migrate --force
+      args:
+        chdir: "{{ app_path }}"
+
+    - name: Installer les dépendances npm
+      npm:
+        path: "{{ app_path }}"
+
+    - name: Compiler les assets Vue.js (build production)
+      command: npm run build
+      args:
+        chdir: "{{ app_path }}"
+
+    - name: Donner les bonnes permissions à Laravel
+      file:
+        path: "{{ app_path }}"
+        owner: www-data
+        group: www-data
+        recurse: yes
+
+    - name: Rendre storage et bootstrap/cache accessibles en écriture
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0775'
+        owner: www-data
+        group: www-data
+        recurse: yes
+      loop:
+        - "{{ app_path }}/storage"
+        - "{{ app_path }}/bootstrap/cache"
+
+    - name: Installer PHP-FPM et Nginx
+      apt:
+        name:
+          - php-fpm
+          - nginx
+        state: present
+
+    - name: Copier la configuration Nginx
+      copy:
+        src: /mnt/c/Users/Marii/ansible/nginx-pfe2025.conf
+        dest: /etc/nginx/sites-available/pfe2025
+
+    - name: Activer le site
+      file:
+        src: /etc/nginx/sites-available/pfe2025
+        dest: /etc/nginx/sites-enabled/pfe2025
+        state: link
+
+    - name: Désactiver le site par défaut
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Redémarrer Nginx
+      service:
+        name: nginx
+        state: restarted
